@@ -27,10 +27,10 @@ namespace ATCJourneyJapan.UI
         private string commandHelpMessage = "航空機を選択すると、次の指示を確認できます。";
         private bool resultVisible;
 
+        private GameObject startBackdrop;
         private GameObject startPanel;
         private GameObject hudRoot;
         private GameObject selectedPanel;
-        private GameObject helpPanel;
         private GameObject warningPanel;
         private GameObject resultPanel;
         private Text scoreText;
@@ -65,6 +65,7 @@ namespace ATCJourneyJapan.UI
                 return;
             }
 
+            startBackdrop.SetActive(!gameManager.IsTrainingStarted);
             startPanel.SetActive(!gameManager.IsTrainingStarted);
             hudRoot.SetActive(gameManager.IsTrainingStarted && !gameManager.StageClear && !resultVisible);
             resultPanel.SetActive(gameManager.StageClear || resultVisible);
@@ -133,28 +134,27 @@ namespace ATCJourneyJapan.UI
 
             canvasObject.AddComponent<GraphicRaycaster>();
 
-            startPanel = CreatePanel("Start Panel", canvasObject.transform, new Vector2(0.5f, 0.5f), new Vector2(660f, 250f));
-            CreateText("Start Title", startPanel.transform, "Basic Runway Training", 28, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(0f, 74f), new Vector2(560f, 42f));
-            CreateText("Start Body", startPanel.transform, "A滑走路の基本訓練です。\n到着機を着陸させ、出発機を離陸させましょう。", 22, FontStyle.Normal, TextAnchor.MiddleCenter, new Vector2(0f, 10f), new Vector2(560f, 70f));
-            var startButton = CreateButton("Start Button", startPanel.transform, "訓練開始\nStart Training", new Vector2(0f, -78f), new Vector2(220f, 58f), 20);
+            startBackdrop = CreateFullscreenImage("Start Backdrop", canvasObject.transform, new Color(0.02f, 0.03f, 0.04f, 0.68f));
+            startPanel = CreatePanel("Start Panel", canvasObject.transform, new Vector2(0.5f, 0.5f), new Vector2(780f, 360f));
+            CreateText("Start Title", startPanel.transform, "Basic Runway Training", 34, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(0f, 118f), new Vector2(680f, 54f));
+            CreateText("Start Body", startPanel.transform, "A滑走路の基本訓練です。\n到着機を着陸させ、出発機を離陸させましょう。", 25, FontStyle.Normal, TextAnchor.MiddleCenter, new Vector2(0f, 28f), new Vector2(660f, 86f));
+            var startButton = CreateButton("Start Button", startPanel.transform, "訓練開始\nStart Training", new Vector2(0f, -116f), new Vector2(260f, 72f), 22);
             startButton.onClick.AddListener(() => gameManager.StartTraining());
 
             hudRoot = CreateRoot("HUD Root", canvasObject.transform);
             scoreText = CreateText("Score", hudRoot.transform, string.Empty, 22, FontStyle.Bold, TextAnchor.UpperLeft, new Vector2(24f, -22f), new Vector2(280f, 86f), AnchorPreset.TopLeft);
             instructorText = CreatePanelText("Instructor", hudRoot.transform, new Vector2(-24f, -22f), new Vector2(430f, 112f), AnchorPreset.TopRight, "教官コメント", 19, TextAnchor.UpperLeft);
-            guideText = CreatePanelText("Guide", hudRoot.transform, new Vector2(0f, 40f), new Vector2(860f, 92f), AnchorPreset.BottomCenter, string.Empty, 23, TextAnchor.MiddleCenter);
+            guideText = CreatePanelText("Guide", hudRoot.transform, new Vector2(0f, 30f), new Vector2(780f, 92f), AnchorPreset.BottomCenter, string.Empty, 23, TextAnchor.MiddleCenter);
 
-            selectedPanel = CreatePanel("Selected Aircraft", hudRoot.transform, new Vector2(0f, 0f), new Vector2(350f, 136f), AnchorPreset.BottomLeft, new Vector2(24f, 54f));
-            selectedText = CreateText("Selected Text", selectedPanel.transform, string.Empty, 19, FontStyle.Normal, TextAnchor.UpperLeft, Vector2.zero, new Vector2(302f, 102f));
+            selectedPanel = CreatePanel("Selected Aircraft", hudRoot.transform, new Vector2(0f, 0f), new Vector2(330f, 128f), AnchorPreset.BottomLeft, new Vector2(24f, 34f));
+            selectedText = CreateText("Selected Text", selectedPanel.transform, string.Empty, 18, FontStyle.Normal, TextAnchor.UpperLeft, Vector2.zero, new Vector2(286f, 94f));
 
-            helpPanel = CreatePanel("Command Help", hudRoot.transform, new Vector2(0f, 0f), new Vector2(440f, 100f), AnchorPreset.BottomLeft, new Vector2(394f, 54f));
-            helpText = CreateText("Help Text", helpPanel.transform, string.Empty, 19, FontStyle.Normal, TextAnchor.MiddleLeft, Vector2.zero, new Vector2(392f, 68f));
-
-            var commandPanel = CreatePanel("Command Panel", hudRoot.transform, new Vector2(0f, 0f), new Vector2(330f, 390f), AnchorPreset.MiddleRight, new Vector2(-24f, 0f));
-            CreateText("Command Title", commandPanel.transform, "コマンド", 22, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(0f, 144f), new Vector2(270f, 36f));
-            commandButton = CreateButton("Recommended Command", commandPanel.transform, string.Empty, new Vector2(0f, 62f), new Vector2(278f, 96f), 20);
+            var commandPanel = CreatePanel("Command Panel", hudRoot.transform, new Vector2(0f, 0f), new Vector2(300f, 410f), AnchorPreset.MiddleRight, new Vector2(-12f, 0f));
+            CreateText("Command Title", commandPanel.transform, "コマンド", 21, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(0f, 154f), new Vector2(250f, 34f));
+            commandButton = CreateButton("Recommended Command", commandPanel.transform, string.Empty, new Vector2(0f, 74f), new Vector2(250f, 94f), 19);
             commandButton.onClick.AddListener(ExecuteRecommendedCommand);
-            commandStatusText = CreateText("Command Status", commandPanel.transform, string.Empty, 21, FontStyle.Normal, TextAnchor.MiddleCenter, new Vector2(0f, -58f), new Vector2(270f, 96f));
+            helpText = CreateText("Command Help", commandPanel.transform, string.Empty, 18, FontStyle.Normal, TextAnchor.UpperLeft, new Vector2(0f, -96f), new Vector2(250f, 94f));
+            commandStatusText = CreateText("Command Status", commandPanel.transform, string.Empty, 20, FontStyle.Normal, TextAnchor.MiddleCenter, new Vector2(0f, 28f), new Vector2(250f, 86f));
 
             warningPanel = CreatePanel("Warning", hudRoot.transform, new Vector2(0f, 0f), new Vector2(760f, 44f), AnchorPreset.TopCenter, new Vector2(0f, -22f));
             warningText = CreateText("Warning Text", warningPanel.transform, string.Empty, 20, FontStyle.Bold, TextAnchor.MiddleCenter, Vector2.zero, new Vector2(720f, 32f));
@@ -186,12 +186,15 @@ namespace ATCJourneyJapan.UI
             instructorText.text = $"教官コメント\n{GetInstructorHint()}";
 
             selectedPanel.SetActive(selected != null);
-            helpPanel.SetActive(selected != null);
 
             if (selected != null)
             {
                 selectedText.text = $"便名: {selected.FlightNumber}\n状態: {GetStateLabel(selected.CurrentState)}\n推奨: {(recommended.HasValue ? GetCommandShortLabel(recommended.Value) : "監視")}";
                 helpText.text = recommended.HasValue ? GetCommandDescription(recommended.Value) : commandHelpMessage;
+            }
+            else
+            {
+                helpText.text = "航空機を選択すると、使える指示が表示されます。";
             }
 
             commandButton.gameObject.SetActive(recommended.HasValue && selected != null && selected.CanExecute(recommended.Value));
@@ -235,6 +238,22 @@ namespace ATCJourneyJapan.UI
             rectTransform.offsetMin = Vector2.zero;
             rectTransform.offsetMax = Vector2.zero;
             return root;
+        }
+
+        private GameObject CreateFullscreenImage(string name, Transform parent, Color color)
+        {
+            var imageObject = new GameObject(name);
+            imageObject.transform.SetParent(parent, false);
+            var rectTransform = imageObject.AddComponent<RectTransform>();
+            rectTransform.anchorMin = Vector2.zero;
+            rectTransform.anchorMax = Vector2.one;
+            rectTransform.offsetMin = Vector2.zero;
+            rectTransform.offsetMax = Vector2.zero;
+
+            var image = imageObject.AddComponent<Image>();
+            image.color = color;
+            image.raycastTarget = false;
+            return imageObject;
         }
 
         private GameObject CreatePanel(string name, Transform parent, Vector2 pivot, Vector2 size)

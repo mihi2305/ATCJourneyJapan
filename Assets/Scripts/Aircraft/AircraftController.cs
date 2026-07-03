@@ -195,12 +195,12 @@ namespace ATCJourneyJapan.Aircraft
         {
             var labelObject = new GameObject("Flight Label");
             labelObject.transform.SetParent(transform);
-            labelObject.transform.localPosition = new Vector3(0f, 1.4f, 0f);
+            labelObject.transform.localPosition = new Vector3(0f, 1.9f, 0.35f);
             label = labelObject.AddComponent<TextMesh>();
             label.anchor = TextAnchor.MiddleCenter;
             label.alignment = TextAlignment.Center;
-            label.characterSize = 0.4f;
-            label.fontSize = 42;
+            label.characterSize = 0.22f;
+            label.fontSize = 34;
             label.color = Color.white;
         }
 
@@ -211,11 +211,39 @@ namespace ATCJourneyJapan.Aircraft
                 return;
             }
 
-            label.text = $"{flightNumber}\n{currentState}";
+            label.gameObject.SetActive(gameManager != null && gameManager.IsTrainingStarted);
+            label.text = $"{flightNumber}\n{GetShortStateLabel()}";
             var cameraTransform = Camera.main != null ? Camera.main.transform : null;
             if (cameraTransform != null)
             {
-                label.transform.rotation = Quaternion.LookRotation(label.transform.position - cameraTransform.position);
+                label.transform.rotation = cameraTransform.rotation;
+            }
+        }
+
+        private string GetShortStateLabel()
+        {
+            switch (currentState)
+            {
+                case AircraftState.Inbound:
+                case AircraftState.FinalApproach:
+                case AircraftState.LandingRoll:
+                case AircraftState.VacatingRunway:
+                    return "到着";
+                case AircraftState.AtGate:
+                    return "ゲート";
+                case AircraftState.Waiting:
+                case AircraftState.HoldingShort:
+                case AircraftState.LiningUp:
+                    return "待機";
+                case AircraftState.TaxiToGate:
+                case AircraftState.TaxiToHold:
+                    return "地上走行";
+                case AircraftState.TakeoffRoll:
+                    return "離陸";
+                case AircraftState.AirborneDeparture:
+                    return "離陸済";
+                default:
+                    return currentState.ToString();
             }
         }
     }
