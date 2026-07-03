@@ -13,6 +13,43 @@
 - 今回実装すること
 - 今回は実装せず後続Phaseに回すこと
 
+## 2026-07-03 Phase 1.8
+
+- 変更したPhase: Phase 1.8 / Phase 2.0
+- 理由: Phase 1.7で追加した管制文ログを、今後の英語表示、英語音声、パイロット復唱、フライトストリップ連携へ拡張しやすくするため
+- 変更内容:
+  - Phase 1.8として管制文テンプレート化を実装
+  - commandId、controllerJapaneseText、controllerEnglishText、futurePilotReadbackJapaneseText、futurePilotReadbackEnglishText、futureAudioKey を持つ構造を追加
+  - Clear to Land / Taxi to Gate / Pushback / Taxi to Holding Point / Hold Short / Line Up and Wait / Cleared for Takeoff のテンプレートを登録
+  - 画面表示は日本語の管制官指示のみを維持
+  - パイロット復唱、英語表示、英語音声は後続Phaseで扱う方針を維持
+  - Phase 1.8完了後、CURRENT_PHASE.mdをPhase 2.0準備中へ更新
+- 今回実装すること:
+  - 管制文テンプレート用のCommandPhrase構造
+  - コマンドごとのCommandPhraseCatalog
+  - UIManagerがテンプレートから controllerJapaneseText のみを表示する流れ
+  - 簡易ログ/詳細ログ、表示言語切替、futureAudioKeyの将来方針Docs追記
+- 今回は実装せず後続Phaseに回すこと:
+  - パイロット復唱の画面表示
+  - 英語文の画面表示
+  - 英語音声の実装
+  - 音声ファイル追加
+  - Text to Speech連携
+  - Contact Ground / Contact Tower / Contact Departure
+  - Departure管制
+  - フライトストリップ本実装
+  - レーダー/ミニマップ
+  - 空港全体俯瞰ビュー
+  - 経路プレビュー
+  - スコアランク制
+  - 効率性評価の本格実装
+  - 複数機運用
+  - B滑走路
+  - 那覇らしい3D背景
+- 次Phase判断:
+  - 次はPhase 2.0「航空機データ拡張」とする
+  - 理由: 管制文テンプレートが整ったため、フライトストリップ方式や複数機運用へ進む前に、便名、機種、使用滑走路、ゲート/スポット、状態、担当管制ポジション、出発地/目的地のデータ土台を整理するのが自然
+
 ## 2026-07-03 Phase 1.7 QA
 
 - 変更したPhase: Phase 1.7

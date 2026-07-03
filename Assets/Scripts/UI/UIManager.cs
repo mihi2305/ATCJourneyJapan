@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using ATCJourneyJapan.Aircraft;
 using ATCJourneyJapan.Core;
+using ATCJourneyJapan.Radio;
 using ATCJourneyJapan.Scoring;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -287,7 +288,7 @@ namespace ATCJourneyJapan.UI
 
         public void AddControllerCommandLog(AircraftController aircraft, AircraftCommand command)
         {
-            var phrase = GetCommandPhrase(command, aircraft);
+            var phrase = CommandPhraseCatalog.Get(command);
             if (phrase == null)
             {
                 return;
@@ -950,72 +951,6 @@ namespace ATCJourneyJapan.UI
             }
         }
 
-        private CommandPhrase GetCommandPhrase(AircraftCommand command, AircraftController aircraft)
-        {
-            var flightNumber = aircraft != null ? aircraft.FlightNumber : "航空機";
-            switch (command)
-            {
-                case AircraftCommand.ClearLanding:
-                    return new CommandPhrase(
-                        command.ToString(),
-                        $"管制官：{flightNumber}、A滑走路への着陸を許可します。",
-                        $"{flightNumber}, cleared to land Runway A.",
-                        string.Empty,
-                        string.Empty,
-                        "tower_clear_landing_a");
-                case AircraftCommand.TaxiToGate:
-                    return new CommandPhrase(
-                        command.ToString(),
-                        $"管制官：{flightNumber}、Gate 1へ地上走行してください。",
-                        $"{flightNumber}, taxi to Gate 1.",
-                        string.Empty,
-                        string.Empty,
-                        "ground_taxi_gate_1");
-                case AircraftCommand.Pushback:
-                    return new CommandPhrase(
-                        command.ToString(),
-                        $"管制官：{flightNumber}、プッシュバックを許可します。",
-                        $"{flightNumber}, pushback approved.",
-                        string.Empty,
-                        string.Empty,
-                        "ground_pushback_approved");
-                case AircraftCommand.TaxiToHold:
-                    return new CommandPhrase(
-                        command.ToString(),
-                        $"管制官：{flightNumber}、A滑走路手前まで地上走行してください。",
-                        $"{flightNumber}, taxi to holding point Runway A.",
-                        string.Empty,
-                        string.Empty,
-                        "ground_taxi_holding_point_a");
-                case AircraftCommand.HoldShort:
-                    return new CommandPhrase(
-                        command.ToString(),
-                        $"管制官：{flightNumber}、A滑走路手前で待機してください。",
-                        $"{flightNumber}, hold short of Runway A.",
-                        string.Empty,
-                        string.Empty,
-                        "ground_hold_short_a");
-                case AircraftCommand.LineUp:
-                    return new CommandPhrase(
-                        command.ToString(),
-                        $"管制官：{flightNumber}、A滑走路に入り、待機してください。",
-                        $"{flightNumber}, line up and wait Runway A.",
-                        string.Empty,
-                        string.Empty,
-                        "tower_line_up_wait_a");
-                case AircraftCommand.ClearTakeoff:
-                    return new CommandPhrase(
-                        command.ToString(),
-                        $"管制官：{flightNumber}、A滑走路からの離陸を許可します。",
-                        $"{flightNumber}, cleared for takeoff Runway A.",
-                        string.Empty,
-                        string.Empty,
-                        "tower_clear_takeoff_a");
-                default:
-                    return null;
-            }
-        }
-
         private string GetStateLabel(AircraftState state)
         {
             switch (state)
@@ -1162,30 +1097,5 @@ namespace ATCJourneyJapan.UI
             }
         }
 
-        private class CommandPhrase
-        {
-            public CommandPhrase(
-                string commandId,
-                string controllerJapaneseText,
-                string controllerEnglishText,
-                string futurePilotReadbackJapaneseText,
-                string futurePilotReadbackEnglishText,
-                string futureAudioKey)
-            {
-                CommandId = commandId;
-                ControllerJapaneseText = controllerJapaneseText;
-                ControllerEnglishText = controllerEnglishText;
-                FuturePilotReadbackJapaneseText = futurePilotReadbackJapaneseText;
-                FuturePilotReadbackEnglishText = futurePilotReadbackEnglishText;
-                FutureAudioKey = futureAudioKey;
-            }
-
-            public string CommandId { get; private set; }
-            public string ControllerJapaneseText { get; private set; }
-            public string ControllerEnglishText { get; private set; }
-            public string FuturePilotReadbackJapaneseText { get; private set; }
-            public string FuturePilotReadbackEnglishText { get; private set; }
-            public string FutureAudioKey { get; private set; }
-        }
     }
 }
