@@ -13,6 +13,43 @@
 - 今回実装すること
 - 今回は実装せず後続Phaseに回すこと
 
+## 2026-07-03 Phase 2.3 QA
+
+- 変更したPhase: Phase 2.3 / Phase 2.4 / Phase 3.4
+- 理由: Unity Play確認で、左側フライトストリップの文字と情報量が詰まっており、一覧として読みづらかったため
+- 変更内容:
+  - Phase 2.3 QA修正として、ストリップUIを一覧性重視に改善
+  - ストリップの文字サイズ、余白、高さを調整
+  - ストリップ表示を、便名、機種、RWY、SPOT、短い状態/推奨指示に整理
+  - 長い説明や詳細情報をストリップから外し、将来的な右下詳細パネルへ分離する方針を追記
+  - 機体ラベルを少し小さくし、便名、機種、次目的地だけを短く表示する方針を維持
+  - 航空機データに scheduledDepartureTime / estimatedDepartureTime / actualDepartureTime / scheduledArrivalTime / estimatedArrivalTime / actualArrivalTime / delayMinutes を持てるようにした
+  - AJJ101に到着予定/推定時刻 08:05、AJJ202に出発予定/推定時刻 08:10 の仮データを設定
+  - 右下詳細パネルの将来役割をDocsに追記
+  - 右側固定指示欄を将来的にストリップ内またはストリップ横へ統合する方針を維持
+  - Phase 3.4候補として、Clearance Delivery / 出発承認基礎をROADMAPに追加
+  - CURRENT_PHASE.mdはPhase 2.4準備中を維持
+- 今回実装すること:
+  - ストリップUIの表示密度調整
+  - ストリップ内情報の短縮
+  - 機体ラベルの微調整
+  - 航空機データへの時刻フィールド追加
+  - Docsへの右下詳細パネル、時刻情報、Departure Clearance方針追記
+- 今回は実装せず後続Phaseに回すこと:
+  - 右下詳細パネルの本格実装
+  - 時刻による遅延評価
+  - スコアランク制
+  - 出発承認ボタン追加
+  - Clearance Delivery管制ポジションの本格実装
+  - Contact Ground / Contact Tower / Contact Departure
+  - ストリップ付近に指示ボタンを出す本格実装
+  - 右側指示欄の完全廃止
+  - 航空機Objectクリックの廃止
+  - 複数機運用
+  - レーダー/ミニマップ
+  - 空港全体俯瞰ビュー
+  - 経路プレビュー
+
 ## 2026-07-03 Phase 2.3
 
 - 変更したPhase: Phase 2.3 / Phase 2.4

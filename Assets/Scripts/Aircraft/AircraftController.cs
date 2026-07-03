@@ -417,8 +417,8 @@ namespace ATCJourneyJapan.Aircraft
             label = labelObject.AddComponent<TextMesh>();
             label.anchor = TextAnchor.MiddleCenter;
             label.alignment = TextAlignment.Center;
-            label.characterSize = 0.16f;
-            label.fontSize = 30;
+            label.characterSize = 0.145f;
+            label.fontSize = 28;
             label.color = Color.white;
         }
 

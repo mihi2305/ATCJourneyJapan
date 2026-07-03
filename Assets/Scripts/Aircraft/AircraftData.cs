@@ -12,7 +12,14 @@ namespace ATCJourneyJapan.Aircraft
             string spotId,
             string spotDisplayName,
             string origin,
-            string destination)
+            string destination,
+            string scheduledDepartureTime = "",
+            string estimatedDepartureTime = "",
+            string actualDepartureTime = "",
+            string scheduledArrivalTime = "",
+            string estimatedArrivalTime = "",
+            string actualArrivalTime = "",
+            int delayMinutes = 0)
         {
             FlightId = flightId;
             AircraftType = aircraftType;
@@ -24,6 +31,13 @@ namespace ATCJourneyJapan.Aircraft
             SpotDisplayName = spotDisplayName;
             Origin = origin;
             Destination = destination;
+            ScheduledDepartureTime = scheduledDepartureTime;
+            EstimatedDepartureTime = estimatedDepartureTime;
+            ActualDepartureTime = actualDepartureTime;
+            ScheduledArrivalTime = scheduledArrivalTime;
+            EstimatedArrivalTime = estimatedArrivalTime;
+            ActualArrivalTime = actualArrivalTime;
+            DelayMinutes = delayMinutes;
         }
 
         public string FlightId { get; private set; }
@@ -39,6 +53,13 @@ namespace ATCJourneyJapan.Aircraft
         public string ControllerPosition { get; private set; }
         public string Origin { get; private set; }
         public string Destination { get; private set; }
+        public string ScheduledDepartureTime { get; private set; }
+        public string EstimatedDepartureTime { get; private set; }
+        public string ActualDepartureTime { get; private set; }
+        public string ScheduledArrivalTime { get; private set; }
+        public string EstimatedArrivalTime { get; private set; }
+        public string ActualArrivalTime { get; private set; }
+        public int DelayMinutes { get; private set; }
         public string RecommendedCommandId { get; private set; }
         public string NextTargetType { get; private set; }
         public string NextTargetId { get; private set; }

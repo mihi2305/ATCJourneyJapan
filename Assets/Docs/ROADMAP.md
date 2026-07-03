@@ -24,6 +24,7 @@
 | Phase 2.7 | 未着手 | 空港全体俯瞰ビュー | 上空カメラ / 滑走路 / 誘導路 / ゲート / 航空機ラベル / 空港全体を管制している感覚 |
 | Phase 3.0 | 未着手 | 安全管理をゲーム化 | 滑走路占有 / Hold Short違反 / 間隔不足 / 危険操作ペナルティ / Safetyに意味を持たせる |
 | Phase 3.2 | 未着手 | スコア・ランク・制限時間 | Point / Rank / Clear条件 / Time Bonus / 遅延評価 / 効率性評価 / S/A/B/Cランク / 既存ゲームを参考に評価設計を検討 |
+| Phase 3.4 | 未着手 | Clearance Delivery / 出発承認基礎 | 出発承認 / Departure Clearance / Pushback前の前提承認 / Clearance Delivery・Ground・Towerの役割整理 |
 | Phase 3.5 | 未着手 | Contact / Handoff導入 | Contact Ground / Contact Tower / Contact Departure / 管制ポジション引き継ぎ |
 | Phase 4.0 | 未着手 | ステージ制 | 必要に応じて到着訓練・出発訓練・Ground訓練を別ステージ化 / Tower -> Ground -> Approach -> Departure の段階解放 / 空港管制官として成長していく構造 |
 | Phase 5.0 | 未着手 | ストーリー導入 | 沖縄出身の新人管制官 / 教官 / 那覇配属 / 訓練イベント / 成長物語 |
@@ -47,3 +48,10 @@
 - 将来的には航空機Objectクリックを補助操作とし、フライトストリップを主操作にする
 - 右側固定の指示欄は暫定UIであり、Phase 2.4で選択中ストリップ内またはストリップ横の指示UIへ段階的に統合する
 - 複数機運用を増やす前に、ストリップ方式とストリップ連動コマンドUIを整える
+- Phase 2.3 QA以降、ストリップは一覧性を優先し、便名、機種、RWY、SPOT、短い状態/推奨指示だけを表示する
+- 時刻、出発地、到着地、詳細ルートは将来的な右下詳細パネルへ分離する
+- 航空機データには将来的に scheduledDepartureTime / estimatedDepartureTime / actualDepartureTime / scheduledArrivalTime / estimatedArrivalTime / actualArrivalTime / delayMinutes を持たせる
+- 左側ストリップには必要になった場合のみ `DEP 08:10` / `ARR 08:25` のように短く時刻を表示し、詳細な時刻比較や遅延分は右下詳細で扱う
+- 遅延や効率性評価の本格実装はPhase 3.2で扱う
+- Phase 3.4では、Pushback前に「出発承認 / Departure Clearance」を受ける流れを追加し、Clearance Delivery、Ground、Towerの違いを教える入口にする
+- Phase 3.4ではDeparture ClearanceボタンやClearance Delivery管制ポジションを検討するが、Phase 2.3 QAでは実装しない

@@ -336,13 +336,13 @@ namespace ATCJourneyJapan.UI
 
         private void BuildFlightStripPanel()
         {
-            flightStripPanel = CreatePanel("Flight Strip Panel", hudRoot.transform, new Vector2(0f, 1f), new Vector2(360f, 430f), AnchorPreset.TopLeft, new Vector2(24f, -164f));
+            flightStripPanel = CreatePanel("Flight Strip Panel", hudRoot.transform, new Vector2(0f, 1f), new Vector2(340f, 470f), AnchorPreset.TopLeft, new Vector2(24f, -164f));
             flightStripPanel.GetComponent<Image>().color = new Color(0.025f, 0.032f, 0.04f, 0.82f);
-            CreateText("Strip Title", flightStripPanel.transform, "STRIPS", 18, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-132f, 184f), new Vector2(76f, 28f));
-            CreateText("Arrival Header", flightStripPanel.transform, "到着  ARRIVAL", 17, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-92f, 142f), new Vector2(228f, 28f));
-            CreateText("Departure Header", flightStripPanel.transform, "出発  DEPARTURE", 17, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-92f, -56f), new Vector2(228f, 28f));
-            CreateFlightStripButton("AJJ101", new Vector2(0f, 74f));
-            CreateFlightStripButton("AJJ202", new Vector2(0f, -124f));
+            CreateText("Strip Title", flightStripPanel.transform, "STRIPS", 18, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-122f, 204f), new Vector2(76f, 28f));
+            CreateText("Arrival Header", flightStripPanel.transform, "到着  ARRIVAL", 18, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-78f, 160f), new Vector2(220f, 30f));
+            CreateText("Departure Header", flightStripPanel.transform, "出発  DEPARTURE", 18, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-78f, -66f), new Vector2(220f, 30f));
+            CreateFlightStripButton("AJJ101", new Vector2(0f, 84f));
+            CreateFlightStripButton("AJJ202", new Vector2(0f, -142f));
         }
 
         private void CreateFlightStripButton(string flightNumber, Vector2 anchoredPosition)
@@ -351,7 +351,7 @@ namespace ATCJourneyJapan.UI
             stripObject.transform.SetParent(flightStripPanel.transform, false);
             var rectTransform = stripObject.AddComponent<RectTransform>();
             ApplyAnchor(rectTransform, AnchorPreset.Center);
-            rectTransform.sizeDelta = new Vector2(312f, 116f);
+            rectTransform.sizeDelta = new Vector2(292f, 142f);
             rectTransform.anchoredPosition = anchoredPosition;
 
             var image = stripObject.AddComponent<Image>();
@@ -366,7 +366,7 @@ namespace ATCJourneyJapan.UI
             button.colors = colors;
             button.onClick.AddListener(() => SelectFlightStripAircraft(flightNumber));
 
-            var stripText = CreateText($"{flightNumber} Strip Text", stripObject.transform, string.Empty, 15, FontStyle.Bold, TextAnchor.UpperLeft, Vector2.zero, new Vector2(282f, 92f));
+            var stripText = CreateText($"{flightNumber} Strip Text", stripObject.transform, string.Empty, 19, FontStyle.Bold, TextAnchor.UpperLeft, Vector2.zero, new Vector2(250f, 116f));
             flightStripButtons[flightNumber] = button;
             flightStripTexts[flightNumber] = stripText;
             flightStripImages[flightNumber] = image;
@@ -419,23 +419,77 @@ namespace ATCJourneyJapan.UI
 
         private Vector2 GetFlightStripPosition(bool isArrival, int index)
         {
-            var baseY = isArrival ? 74f : -124f;
-            return new Vector2(0f, baseY - index * 126f);
+            var baseY = isArrival ? 84f : -142f;
+            return new Vector2(0f, baseY - index * 154f);
         }
 
         private string GetFlightStripText(AircraftController aircraft, AircraftCommand? recommended)
         {
             var data = aircraft.FlightData;
-            var route = data.OperationType == "Arrival"
-                ? $"{data.RunwayShortDisplay} -> {data.SpotDisplayName}"
-                : $"{data.SpotDisplayName} -> {data.RunwayShortDisplay}";
-            var recommendedLabel = recommended.HasValue ? GetCommandShortLabel(recommended.Value) : "監視";
-            var waitLabel = recommended.HasValue ? "指示待ち" : "監視中";
+            var firstTarget = data.OperationType == "Arrival" ? data.RunwayShortDisplay : data.SpotDisplayName;
+            var secondTarget = data.OperationType == "Arrival" ? data.SpotDisplayName : data.RunwayShortDisplay;
 
-            return $"{data.FlightId} | {data.AircraftType}\n"
-                + $"{route}\n"
-                + $"{data.CurrentState}\n"
-                + $"{waitLabel} / 推奨：{recommendedLabel}";
+            return $"{data.FlightId}  {data.AircraftType}\n"
+                + $"{firstTarget}\n"
+                + $"{secondTarget}\n"
+                + $"{GetStripActionLabel(aircraft, recommended)}";
+        }
+
+        private string GetStripActionLabel(AircraftController aircraft, AircraftCommand? recommended)
+        {
+            if (recommended.HasValue)
+            {
+                switch (recommended.Value)
+                {
+                    case AircraftCommand.ClearLanding:
+                        return "着陸許可待ち";
+                    case AircraftCommand.TaxiToGate:
+                        return "SPOT誘導待ち";
+                    case AircraftCommand.Pushback:
+                        return "Pushback待ち";
+                    case AircraftCommand.TaxiToHold:
+                        return "Taxi待ち";
+                    case AircraftCommand.HoldShort:
+                        return "Hold Short待ち";
+                    case AircraftCommand.LineUp:
+                        return "Line Up待ち";
+                    case AircraftCommand.ClearTakeoff:
+                        return "離陸許可待ち";
+                }
+            }
+
+            return GetStripStateLabel(aircraft.CurrentState);
+        }
+
+        private string GetStripStateLabel(AircraftState state)
+        {
+            switch (state)
+            {
+                case AircraftState.FinalApproach:
+                case AircraftState.LandingRoll:
+                    return "着陸中";
+                case AircraftState.VacatingRunway:
+                    return "離脱中";
+                case AircraftState.TaxiToGate:
+                    return "SPOTへ移動中";
+                case AircraftState.AtGate:
+                    return "SPOT";
+                case AircraftState.Pushbacking:
+                    return "後退中";
+                case AircraftState.TaxiToHold:
+                    return "地上走行中";
+                case AircraftState.HoldingPoint:
+                case AircraftState.HoldingShort:
+                    return "HOLD A";
+                case AircraftState.LiningUp:
+                    return "RWY待機";
+                case AircraftState.TakeoffRoll:
+                    return "離陸中";
+                case AircraftState.AirborneDeparture:
+                    return "離陸済";
+                default:
+                    return "監視中";
+            }
         }
 
         private Color GetFlightStripColor(AircraftController aircraft, AircraftController selected, bool hasRecommendedCommand)
