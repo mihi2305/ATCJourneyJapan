@@ -19,9 +19,11 @@ namespace ATCJourneyJapan.Core
         private UIManager uiManager;
         private bool runwayConflictActive;
         private bool stageClear;
+        private bool trainingStarted;
 
         public IReadOnlyList<AircraftController> Aircraft => aircraft;
         public bool StageClear => stageClear;
+        public bool IsTrainingStarted => trainingStarted;
 
         public void Initialize()
         {
@@ -44,6 +46,12 @@ namespace ATCJourneyJapan.Core
 
         private void Update()
         {
+            if (!trainingStarted)
+            {
+                uiManager.Refresh();
+                return;
+            }
+
             scoreManager.Tick(Time.deltaTime, stageClear);
             RefreshRunwaySafety();
             uiManager.Refresh();
@@ -68,6 +76,41 @@ namespace ATCJourneyJapan.Core
             if (controller != null && handledAircraft.Add(controller))
             {
                 scoreManager.SetHandledAircraftCount(handledAircraft.Count);
+            }
+        }
+
+        public void StartTraining()
+        {
+            trainingStarted = true;
+            uiManager.ShowInstructorComment("この訓練では、到着機と出発機の基本的な順番を覚えよう");
+        }
+
+        public void NotifyCommandExecuted(AircraftController controller, AircraftCommand command)
+        {
+            uiManager.ShowCommandDescription(command);
+            uiManager.ShowInstructorComment(GetInstructorComment(command));
+        }
+
+        private string GetInstructorComment(AircraftCommand command)
+        {
+            switch (command)
+            {
+                case AircraftCommand.ClearLanding:
+                    return "まずは到着機を安全に着陸させよう";
+                case AircraftCommand.TaxiToGate:
+                    return "滑走路が空いた。到着機をゲートへ進めよう";
+                case AircraftCommand.TaxiToHold:
+                    return "出発機を滑走路手前まで進めて、離陸の準備をしよう";
+                case AircraftCommand.LineUp:
+                    return "滑走路上に入れる前に、他の機体がいないことを確認しよう";
+                case AircraftCommand.ClearTakeoff:
+                    return "よし、安全に処理できている。離陸許可を出そう";
+                case AircraftCommand.HoldShort:
+                    return "滑走路に2機を同時に入れないことが基本だ";
+                case AircraftCommand.Stop:
+                    return "迷ったら止める判断も大切だ";
+                default:
+                    return "落ち着いて、次に必要な指示を選ぼう";
             }
         }
 
