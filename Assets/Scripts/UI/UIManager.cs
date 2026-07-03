@@ -22,6 +22,7 @@ namespace ATCJourneyJapan.UI
         };
 
         private readonly Dictionary<Renderer, Color> highlightedObjectColors = new Dictionary<Renderer, Color>();
+        private readonly List<string> commandLogEntries = new List<string>();
         private GameManager gameManager;
         private ScoreManager scoreManager;
         private CommandSystem commandSystem;
@@ -193,8 +194,9 @@ namespace ATCJourneyJapan.UI
             hudRoot = CreateRoot("HUD Root", canvasObject.transform);
             scoreText = CreatePanelText("Score", hudRoot.transform, new Vector2(24f, -22f), new Vector2(320f, 126f), AnchorPreset.TopLeft, string.Empty, 24, TextAnchor.UpperLeft);
             instructorText = CreatePanelText("Instructor", hudRoot.transform, new Vector2(-24f, -22f), new Vector2(430f, 112f), AnchorPreset.TopRight, "教官コメント", 19, TextAnchor.UpperLeft);
-            guideText = CreatePanelText("Guide", hudRoot.transform, new Vector2(0f, 30f), new Vector2(780f, 92f), AnchorPreset.BottomCenter, string.Empty, 23, TextAnchor.MiddleCenter);
+            guideText = CreatePanelText("Command Log", hudRoot.transform, new Vector2(0f, 16f), new Vector2(880f, 120f), AnchorPreset.BottomCenter, string.Empty, 17, TextAnchor.UpperLeft);
             guidePanel = guideText.transform.parent.gameObject;
+            guidePanel.GetComponent<Image>().color = new Color(0.02f, 0.03f, 0.04f, 0.7f);
 
             selectedPanel = CreatePanel("Selected Aircraft", hudRoot.transform, new Vector2(0f, 0f), new Vector2(330f, 128f), AnchorPreset.BottomLeft, new Vector2(24f, 34f));
             selectedText = CreateText("Selected Text", selectedPanel.transform, string.Empty, 18, FontStyle.Normal, TextAnchor.UpperLeft, Vector2.zero, new Vector2(286f, 94f));
@@ -206,7 +208,7 @@ namespace ATCJourneyJapan.UI
             helpText = CreateText("Command Help", commandPanel.transform, string.Empty, 18, FontStyle.Normal, TextAnchor.UpperLeft, new Vector2(0f, -96f), new Vector2(250f, 94f));
             commandStatusText = CreateText("Command Status", commandPanel.transform, string.Empty, 20, FontStyle.Normal, TextAnchor.MiddleCenter, new Vector2(0f, 28f), new Vector2(250f, 86f));
 
-            tutorialPanel = CreatePanel("Tutorial Panel", hudRoot.transform, new Vector2(0.5f, 0f), new Vector2(880f, 188f), AnchorPreset.BottomCenter, new Vector2(0f, 48f));
+            tutorialPanel = CreatePanel("Tutorial Panel", hudRoot.transform, new Vector2(0.5f, 0f), new Vector2(880f, 188f), AnchorPreset.BottomCenter, new Vector2(0f, 154f));
             tutorialPanel.GetComponent<Image>().color = new Color(0.01f, 0.015f, 0.02f, 0.94f);
             tutorialText = CreateText("Tutorial Text", tutorialPanel.transform, string.Empty, 29, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-96f, 8f), new Vector2(596f, 120f));
             tutorialNextButton = CreateButton("Tutorial Next", tutorialPanel.transform, "次へ", new Vector2(318f, -36f), new Vector2(156f, 64f), 22);
@@ -238,10 +240,10 @@ namespace ATCJourneyJapan.UI
             var recommended = selected != null ? GetRecommendedCommand(selected) : null;
 
             scoreText.text = $"安全度：  {scoreManager.Safety}\n遅延：    {Mathf.FloorToInt(scoreManager.Delay)}\n処理機数：{scoreManager.HandledAircraftCount}";
-            guideText.text = GetCurrentGuide();
             instructorText.text = $"教官コメント\n{GetInstructorHint()}";
             AdvanceTutorialIfReady();
             UpdateTutorialPanel();
+            UpdateCommandLogPanel();
 
             selectedPanel.SetActive(selected != null);
 
@@ -271,7 +273,6 @@ namespace ATCJourneyJapan.UI
         private void UpdateTutorialPanel()
         {
             var step = CurrentTutorialStep;
-            guidePanel.SetActive(step == null);
             tutorialPanel.SetActive(step != null);
             if (step == null)
             {
@@ -282,6 +283,32 @@ namespace ATCJourneyJapan.UI
             tutorialText.text = step.Message;
             tutorialNextButton.gameObject.SetActive(step.WaitMode == TutorialWaitMode.Info);
             ApplyTutorialHighlight(step.Highlight);
+        }
+
+        public void AddControllerCommandLog(AircraftController aircraft, AircraftCommand command)
+        {
+            var phrase = GetCommandPhrase(command, aircraft);
+            if (phrase == null)
+            {
+                return;
+            }
+
+            commandLogEntries.Add(phrase.ControllerJapaneseText);
+            while (commandLogEntries.Count > 3)
+            {
+                commandLogEntries.RemoveAt(0);
+            }
+
+            Refresh();
+        }
+
+        private void UpdateCommandLogPanel()
+        {
+            var hasLogs = commandLogEntries.Count > 0;
+            guidePanel.SetActive(hasLogs || CurrentTutorialStep == null);
+            guideText.text = hasLogs
+                ? $"管制ログ\n{string.Join("\n", commandLogEntries)}"
+                : "管制ログ\n指示を出すと、ここに日本語で記録されます。";
         }
 
         private string GetCommandStatusText(AircraftController selected, AircraftCommand? recommended)
@@ -923,6 +950,72 @@ namespace ATCJourneyJapan.UI
             }
         }
 
+        private CommandPhrase GetCommandPhrase(AircraftCommand command, AircraftController aircraft)
+        {
+            var flightNumber = aircraft != null ? aircraft.FlightNumber : "航空機";
+            switch (command)
+            {
+                case AircraftCommand.ClearLanding:
+                    return new CommandPhrase(
+                        command.ToString(),
+                        $"管制官：{flightNumber}、A滑走路への着陸を許可します。",
+                        $"{flightNumber}, cleared to land Runway A.",
+                        string.Empty,
+                        string.Empty,
+                        "tower_clear_landing_a");
+                case AircraftCommand.TaxiToGate:
+                    return new CommandPhrase(
+                        command.ToString(),
+                        $"管制官：{flightNumber}、Gate 1へ地上走行してください。",
+                        $"{flightNumber}, taxi to Gate 1.",
+                        string.Empty,
+                        string.Empty,
+                        "ground_taxi_gate_1");
+                case AircraftCommand.Pushback:
+                    return new CommandPhrase(
+                        command.ToString(),
+                        $"管制官：{flightNumber}、プッシュバックを許可します。",
+                        $"{flightNumber}, pushback approved.",
+                        string.Empty,
+                        string.Empty,
+                        "ground_pushback_approved");
+                case AircraftCommand.TaxiToHold:
+                    return new CommandPhrase(
+                        command.ToString(),
+                        $"管制官：{flightNumber}、A滑走路手前まで地上走行してください。",
+                        $"{flightNumber}, taxi to holding point Runway A.",
+                        string.Empty,
+                        string.Empty,
+                        "ground_taxi_holding_point_a");
+                case AircraftCommand.HoldShort:
+                    return new CommandPhrase(
+                        command.ToString(),
+                        $"管制官：{flightNumber}、A滑走路手前で待機してください。",
+                        $"{flightNumber}, hold short of Runway A.",
+                        string.Empty,
+                        string.Empty,
+                        "ground_hold_short_a");
+                case AircraftCommand.LineUp:
+                    return new CommandPhrase(
+                        command.ToString(),
+                        $"管制官：{flightNumber}、A滑走路に入り、待機してください。",
+                        $"{flightNumber}, line up and wait Runway A.",
+                        string.Empty,
+                        string.Empty,
+                        "tower_line_up_wait_a");
+                case AircraftCommand.ClearTakeoff:
+                    return new CommandPhrase(
+                        command.ToString(),
+                        $"管制官：{flightNumber}、A滑走路からの離陸を許可します。",
+                        $"{flightNumber}, cleared for takeoff Runway A.",
+                        string.Empty,
+                        string.Empty,
+                        "tower_clear_takeoff_a");
+                default:
+                    return null;
+            }
+        }
+
         private string GetStateLabel(AircraftState state)
         {
             switch (state)
@@ -1067,6 +1160,32 @@ namespace ATCJourneyJapan.UI
                     Highlight = highlight
                 };
             }
+        }
+
+        private class CommandPhrase
+        {
+            public CommandPhrase(
+                string commandId,
+                string controllerJapaneseText,
+                string controllerEnglishText,
+                string futurePilotReadbackJapaneseText,
+                string futurePilotReadbackEnglishText,
+                string futureAudioKey)
+            {
+                CommandId = commandId;
+                ControllerJapaneseText = controllerJapaneseText;
+                ControllerEnglishText = controllerEnglishText;
+                FuturePilotReadbackJapaneseText = futurePilotReadbackJapaneseText;
+                FuturePilotReadbackEnglishText = futurePilotReadbackEnglishText;
+                FutureAudioKey = futureAudioKey;
+            }
+
+            public string CommandId { get; private set; }
+            public string ControllerJapaneseText { get; private set; }
+            public string ControllerEnglishText { get; private set; }
+            public string FuturePilotReadbackJapaneseText { get; private set; }
+            public string FuturePilotReadbackEnglishText { get; private set; }
+            public string FutureAudioKey { get; private set; }
         }
     }
 }

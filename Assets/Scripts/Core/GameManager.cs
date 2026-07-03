@@ -96,6 +96,7 @@ namespace ATCJourneyJapan.Core
         {
             uiManager.ShowCommandDescription(command);
             uiManager.ShowInstructorComment(GetInstructorComment(command));
+            uiManager.AddControllerCommandLog(controller, command);
             uiManager.NotifyCommandExecuted(command);
         }
 
