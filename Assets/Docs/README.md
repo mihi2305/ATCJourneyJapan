@@ -6,6 +6,24 @@
 
 今回の実装は `Assets/Scenes/SampleScene.unity` をそのまま使い、Play開始時に `GameBootstrapper` が空港・航空機・UIを生成します。
 
+## Docs参照順
+
+今後Codexで作業する時は、以下の順番でDocsを確認してください。
+
+1. `CODEX_WORKFLOW.md`: Codex作業ルール
+2. `CURRENT_PHASE.md`: 現在作業中のPhase
+3. `ROADMAP.md`: 全体開発ロードマップ
+4. `UI_DESIGN_PRINCIPLES.md`: UI設計原則
+5. `CHANGELOG_ROADMAP.md`: ロードマップ変更履歴
+
+## Docs一覧
+
+- 開発ロードマップは `ROADMAP.md` を参照
+- 現在作業中のPhaseは `CURRENT_PHASE.md` を参照
+- UI設計原則は `UI_DESIGN_PRINCIPLES.md` を参照
+- ロードマップの変更履歴は `CHANGELOG_ROADMAP.md` を参照
+- Codex作業ルールは `CODEX_WORKFLOW.md` を参照
+
 ## 今後の設計メモ
 
 - Phase 1.15: 航空機移動経路を滑走路・誘導路・ゲートに沿うよう自然化し、一時停止型チュートリアルを導入する
