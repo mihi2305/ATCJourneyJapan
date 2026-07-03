@@ -72,7 +72,7 @@ namespace ATCJourneyJapan.Aircraft
             switch (command)
             {
                 case AircraftCommand.ClearLanding:
-                    return arrivalAircraft && (currentState == AircraftState.Inbound || currentState == AircraftState.Waiting);
+                    return arrivalAircraft && currentState == AircraftState.Inbound;
                 case AircraftCommand.TaxiToGate:
                     return arrivalAircraft && (currentState == AircraftState.Waiting || currentState == AircraftState.VacatingRunway);
                 case AircraftCommand.TaxiToHold:

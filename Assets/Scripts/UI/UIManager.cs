@@ -13,10 +13,8 @@ namespace ATCJourneyJapan.UI
             AircraftCommand.ClearLanding,
             AircraftCommand.TaxiToGate,
             AircraftCommand.TaxiToHold,
-            AircraftCommand.HoldShort,
             AircraftCommand.LineUp,
-            AircraftCommand.ClearTakeoff,
-            AircraftCommand.Stop
+            AircraftCommand.ClearTakeoff
         };
 
         private GameManager gameManager;
@@ -31,6 +29,7 @@ namespace ATCJourneyJapan.UI
         private GUIStyle titleStyle;
         private GUIStyle guideStyle;
         private GUIStyle buttonStyle;
+        private GUIStyle recommendedButtonStyle;
         private GUIStyle warningStyle;
 
         public void Initialize(GameManager manager, ScoreManager scoring)
@@ -166,21 +165,30 @@ namespace ATCJourneyJapan.UI
             var rect = new Rect(Screen.width - 236f, Screen.height - 300f, 220f, 250f);
             GUI.Box(rect, string.Empty, panelStyle);
 
-            var visibleIndex = 0;
+            var recommended = GetRecommendedCommand(selected);
+            if (!recommended.HasValue)
+            {
+                GUI.Label(new Rect(rect.x + 16f, rect.y + 16f, rect.width - 32f, 44f), "現在は監視します", guideStyle);
+                return;
+            }
+
             foreach (var command in commandOrder)
             {
-                if (!selected.CanExecute(command))
+                if (command != recommended.Value || !selected.CanExecute(command))
                 {
                     continue;
                 }
 
-                var buttonRect = new Rect(rect.x + 16f, rect.y + 14f + visibleIndex * 36f, rect.width - 32f, 30f);
-                if (GUI.Button(buttonRect, GetCommandLabel(command), buttonStyle))
+                var buttonRect = new Rect(rect.x + 16f, rect.y + 18f, rect.width - 32f, 58f);
+                var previousColor = GUI.backgroundColor;
+                var pulse = 0.72f + Mathf.PingPong(Time.time * 1.8f, 0.28f);
+                GUI.backgroundColor = new Color(0.16f, pulse, 0.24f, 1f);
+                if (GUI.Button(buttonRect, GetCommandLabel(command), recommendedButtonStyle))
                 {
                     commandSystem.Execute(command);
                 }
-
-                visibleIndex++;
+                GUI.backgroundColor = previousColor;
+                break;
             }
         }
 
@@ -220,52 +228,62 @@ namespace ATCJourneyJapan.UI
 
             if (arrival != null && arrival.CurrentState == AircraftState.Inbound)
             {
-                return selected == arrival ? "Clear Landing を押してください" : "AJJ101をクリックしてください";
+                return selected == arrival
+                    ? "着陸許可 / Clear to Land を押してください。滑走路が空いている時だけ着陸できます。"
+                    : "AJJ101をクリックしてください。まず到着機を選びます。";
             }
 
             if (arrival != null && arrival.CurrentState == AircraftState.FinalApproach)
             {
-                return "AJJ101が着陸中です";
+                return "AJJ101が着陸中です。滑走路は1機ずつ安全に使います。";
             }
 
             if (arrival != null && (arrival.CurrentState == AircraftState.LandingRoll || arrival.CurrentState == AircraftState.VacatingRunway))
             {
-                return "滑走路離脱を待っています";
+                return "滑走路離脱を待っています。出発機はまだ滑走路へ入れません。";
             }
 
             if (arrival != null && arrival.CurrentState == AircraftState.Waiting)
             {
-                return selected == arrival ? "Taxi to Gate を押してください" : "AJJ101をクリックしてください";
+                return selected == arrival
+                    ? "ゲートへ誘導 / Taxi to Gate を押してください。着陸後は滑走路を空けます。"
+                    : "AJJ101をクリックしてください。着陸後はゲートへ誘導します。";
             }
 
             if (arrival != null && arrival.CurrentState == AircraftState.TaxiToGate)
             {
-                return "AJJ101がゲートへ移動中です";
+                return "AJJ101がゲートへ移動中です。滑走路が空いたら出発機を進めます。";
             }
 
             if (departure != null && departure.CurrentState == AircraftState.AtGate)
             {
-                return selected == departure ? "Taxi to Hold を押してください" : "AJJ202をクリックしてください";
+                return selected == departure
+                    ? "滑走路手前へ誘導 / Taxi to Holding Point を押してください。出発機を離陸準備位置へ進めます。"
+                    : "AJJ202をクリックしてください。次は出発機を準備します。";
             }
 
             if (departure != null && departure.CurrentState == AircraftState.TaxiToHold)
             {
-                return "AJJ202が滑走路手前へ移動中です";
+                return "AJJ202が滑走路手前へ移動中です。滑走路へ入る前に一度止めます。";
             }
 
             if (departure != null && departure.CurrentState == AircraftState.HoldingShort)
             {
-                return selected == departure ? "Line Up を押してください" : "AJJ202をクリックしてください";
+                return selected == departure
+                    ? "滑走路上で待機 / Line Up and Wait を押してください。離陸前に滑走路上で待機させます。"
+                    : "AJJ202をクリックしてください。滑走路上で待機させます。";
             }
 
             if (departure != null && departure.CurrentState == AircraftState.LiningUp)
             {
-                return selected == departure ? "Clear Takeoff を押してください" : "AJJ202をクリックしてください";
+                return selected == departure
+                    ? "離陸許可 / Cleared for Takeoff を押してください。滑走路が安全なら離陸できます。"
+                    : "AJJ202をクリックしてください。離陸許可を出します。";
             }
 
             if (departure != null && departure.CurrentState == AircraftState.TakeoffRoll)
             {
-                return "AJJ202が離陸中です";
+                return "AJJ202が離陸中です。離陸完了まで監視します。";
             }
 
             return "次の航空機を選択してください";
@@ -276,22 +294,27 @@ namespace ATCJourneyJapan.UI
             var guide = GetCurrentGuide();
             if (guide.Contains("AJJ101"))
             {
-                return "まずは到着機を処理します。";
+                return "滑走路は離着陸に使う場所です。安全のため基本的に1機ずつ使います。";
             }
 
-            if (guide.Contains("Taxi to Gate"))
+            if (guide.Contains("Taxi to Gate") || guide.Contains("ゲートへ誘導"))
             {
-                return "滑走路を空けてから次へ進めます。";
+                return "着陸後は滑走路を空ける必要があります。到着機をゲートへ誘導しましょう。";
             }
 
-            if (guide.Contains("AJJ202") || guide.Contains("Taxi to Hold"))
+            if (guide.Contains("AJJ202") || guide.Contains("Taxi to Holding Point"))
             {
-                return "出発機は滑走路手前まで進めます。";
+                return "滑走路が空いたら、出発機を滑走路手前まで移動させます。";
             }
 
-            if (guide.Contains("Line Up") || guide.Contains("Clear Takeoff"))
+            if (guide.Contains("Line Up"))
             {
-                return "滑走路が安全なときだけ許可します。";
+                return "離陸前に滑走路上で待機させます。ほかの機体がいないことを確認します。";
+            }
+
+            if (guide.Contains("Cleared for Takeoff"))
+            {
+                return "滑走路が安全なら、離陸許可を出しましょう。";
             }
 
             return instructorMessage;
@@ -378,6 +401,13 @@ namespace ATCJourneyJapan.UI
                 fontStyle = FontStyle.Bold
             };
 
+            recommendedButtonStyle = new GUIStyle(buttonStyle)
+            {
+                fontSize = 13,
+                fontStyle = FontStyle.Bold,
+                wordWrap = true
+            };
+
             warningStyle = new GUIStyle(guideStyle)
             {
                 fontStyle = FontStyle.Bold,
@@ -390,19 +420,19 @@ namespace ATCJourneyJapan.UI
             switch (command)
             {
                 case AircraftCommand.ClearLanding:
-                    return "Clear Landing";
+                    return "着陸許可\nClear to Land";
                 case AircraftCommand.TaxiToGate:
-                    return "Taxi to Gate";
+                    return "ゲートへ誘導\nTaxi to Gate";
                 case AircraftCommand.TaxiToHold:
-                    return "Taxi to Hold";
+                    return "滑走路手前へ誘導\nTaxi to Holding Point";
                 case AircraftCommand.HoldShort:
-                    return "Hold Short";
+                    return "現在位置で待機\nHold Position";
                 case AircraftCommand.LineUp:
-                    return "Line Up";
+                    return "滑走路上で待機\nLine Up and Wait";
                 case AircraftCommand.ClearTakeoff:
-                    return "Clear Takeoff";
+                    return "離陸許可\nCleared for Takeoff";
                 case AircraftCommand.Stop:
-                    return "Stop";
+                    return "現在位置で待機\nHold Position";
                 default:
                     return command.ToString();
             }
@@ -413,15 +443,15 @@ namespace ATCJourneyJapan.UI
             switch (command)
             {
                 case AircraftCommand.ClearLanding:
-                    return "着陸許可。滑走路が空いているときだけ出します。";
+                    return "滑走路が空いているときだけ出す着陸許可です。";
                 case AircraftCommand.TaxiToGate:
-                    return "着陸後、ゲートへ移動させます。";
+                    return "着陸後、滑走路を空けるためゲートへ移動させます。";
                 case AircraftCommand.TaxiToHold:
-                    return "出発機を滑走路手前まで移動させます。";
+                    return "出発機を離陸準備のため滑走路手前まで移動させます。";
                 case AircraftCommand.HoldShort:
-                    return "滑走路手前で停止させます。";
+                    return "安全確認のため現在位置で待機させます。";
                 case AircraftCommand.LineUp:
-                    return "滑走路上で離陸待機させます。";
+                    return "離陸前に滑走路上で待機させます。";
                 case AircraftCommand.ClearTakeoff:
                     return "滑走路が安全なときに出す離陸許可です。";
                 case AircraftCommand.Stop:
