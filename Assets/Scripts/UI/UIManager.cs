@@ -2,10 +2,11 @@ using ATCJourneyJapan.Aircraft;
 using ATCJourneyJapan.Core;
 using ATCJourneyJapan.Scoring;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace ATCJourneyJapan.UI
 {
-    // Package-independent tutorial HUD. Uses IMGUI so the project compiles even if uGUI package resolution is broken.
     public class UIManager : MonoBehaviour
     {
         private readonly AircraftCommand[] commandOrder =
@@ -20,204 +21,341 @@ namespace ATCJourneyJapan.UI
         private GameManager gameManager;
         private ScoreManager scoreManager;
         private CommandSystem commandSystem;
+        private Font uiFont;
         private string warningMessage;
         private string instructorMessage = "まずは到着機を安全に着陸させよう";
-        private string commandHelpMessage = "航空機を選択すると、次に使う指示の意味を確認できます。";
+        private string commandHelpMessage = "航空機を選択すると、次の指示を確認できます。";
         private bool resultVisible;
-        private GUIStyle panelStyle;
-        private GUIStyle textStyle;
-        private GUIStyle titleStyle;
-        private GUIStyle guideStyle;
-        private GUIStyle buttonStyle;
-        private GUIStyle recommendedButtonStyle;
-        private GUIStyle warningStyle;
+
+        private GameObject startPanel;
+        private GameObject hudRoot;
+        private GameObject selectedPanel;
+        private GameObject helpPanel;
+        private GameObject warningPanel;
+        private GameObject resultPanel;
+        private Text scoreText;
+        private Text guideText;
+        private Text instructorText;
+        private Text selectedText;
+        private Text helpText;
+        private Text commandStatusText;
+        private Text warningText;
+        private Text resultText;
+        private Button commandButton;
+        private Text commandButtonText;
 
         public void Initialize(GameManager manager, ScoreManager scoring)
         {
             gameManager = manager;
             scoreManager = scoring;
             commandSystem = manager.GetComponent<CommandSystem>();
+            uiFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            if (uiFont == null)
+            {
+                uiFont = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            }
+            BuildUi();
+            Refresh();
         }
 
         public void Refresh()
         {
-            // OnGUI reads current game state directly.
+            if (hudRoot == null)
+            {
+                return;
+            }
+
+            startPanel.SetActive(!gameManager.IsTrainingStarted);
+            hudRoot.SetActive(gameManager.IsTrainingStarted && !gameManager.StageClear && !resultVisible);
+            resultPanel.SetActive(gameManager.StageClear || resultVisible);
+
+            if (!gameManager.IsTrainingStarted)
+            {
+                return;
+            }
+
+            if (gameManager.StageClear || resultVisible)
+            {
+                UpdateResult();
+                return;
+            }
+
+            UpdateTrainingHud();
         }
 
         public void ShowWarning(string message)
         {
             warningMessage = message;
             instructorMessage = "滑走路に2機を同時に入れないことが基本です。";
+            Refresh();
         }
 
         public void ClearWarning()
         {
             warningMessage = string.Empty;
+            Refresh();
         }
 
         public void ShowStageClear()
         {
             resultVisible = true;
             instructorMessage = "よし、安全に処理できている。";
+            Refresh();
         }
 
         public void ShowCommandDescription(AircraftCommand command)
         {
             commandHelpMessage = GetCommandDescription(command);
+            Refresh();
         }
 
         public void ShowInstructorComment(string message)
         {
             instructorMessage = message;
+            Refresh();
         }
 
-        private void OnGUI()
+        private void BuildUi()
         {
-            EnsureStyles();
+            var canvasObject = new GameObject("Training HUD Canvas");
+            canvasObject.transform.SetParent(transform, false);
+            EnsureEventSystem();
 
-            if (!gameManager.IsTrainingStarted)
+            var canvas = canvasObject.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 20;
+
+            var scaler = canvasObject.AddComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920f, 1080f);
+            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+            scaler.matchWidthOrHeight = 0.5f;
+
+            canvasObject.AddComponent<GraphicRaycaster>();
+
+            startPanel = CreatePanel("Start Panel", canvasObject.transform, new Vector2(0.5f, 0.5f), new Vector2(660f, 250f));
+            CreateText("Start Title", startPanel.transform, "Basic Runway Training", 28, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(0f, 74f), new Vector2(560f, 42f));
+            CreateText("Start Body", startPanel.transform, "A滑走路の基本訓練です。\n到着機を着陸させ、出発機を離陸させましょう。", 22, FontStyle.Normal, TextAnchor.MiddleCenter, new Vector2(0f, 10f), new Vector2(560f, 70f));
+            var startButton = CreateButton("Start Button", startPanel.transform, "訓練開始\nStart Training", new Vector2(0f, -78f), new Vector2(220f, 58f), 20);
+            startButton.onClick.AddListener(() => gameManager.StartTraining());
+
+            hudRoot = CreateRoot("HUD Root", canvasObject.transform);
+            scoreText = CreateText("Score", hudRoot.transform, string.Empty, 22, FontStyle.Bold, TextAnchor.UpperLeft, new Vector2(24f, -22f), new Vector2(280f, 86f), AnchorPreset.TopLeft);
+            instructorText = CreatePanelText("Instructor", hudRoot.transform, new Vector2(-24f, -22f), new Vector2(430f, 112f), AnchorPreset.TopRight, "教官コメント", 19, TextAnchor.UpperLeft);
+            guideText = CreatePanelText("Guide", hudRoot.transform, new Vector2(0f, 40f), new Vector2(860f, 92f), AnchorPreset.BottomCenter, string.Empty, 23, TextAnchor.MiddleCenter);
+
+            selectedPanel = CreatePanel("Selected Aircraft", hudRoot.transform, new Vector2(0f, 0f), new Vector2(350f, 136f), AnchorPreset.BottomLeft, new Vector2(24f, 54f));
+            selectedText = CreateText("Selected Text", selectedPanel.transform, string.Empty, 19, FontStyle.Normal, TextAnchor.UpperLeft, Vector2.zero, new Vector2(302f, 102f));
+
+            helpPanel = CreatePanel("Command Help", hudRoot.transform, new Vector2(0f, 0f), new Vector2(440f, 100f), AnchorPreset.BottomLeft, new Vector2(394f, 54f));
+            helpText = CreateText("Help Text", helpPanel.transform, string.Empty, 19, FontStyle.Normal, TextAnchor.MiddleLeft, Vector2.zero, new Vector2(392f, 68f));
+
+            var commandPanel = CreatePanel("Command Panel", hudRoot.transform, new Vector2(0f, 0f), new Vector2(330f, 390f), AnchorPreset.MiddleRight, new Vector2(-24f, 0f));
+            CreateText("Command Title", commandPanel.transform, "コマンド", 22, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(0f, 144f), new Vector2(270f, 36f));
+            commandButton = CreateButton("Recommended Command", commandPanel.transform, string.Empty, new Vector2(0f, 62f), new Vector2(278f, 96f), 20);
+            commandButton.onClick.AddListener(ExecuteRecommendedCommand);
+            commandStatusText = CreateText("Command Status", commandPanel.transform, string.Empty, 21, FontStyle.Normal, TextAnchor.MiddleCenter, new Vector2(0f, -58f), new Vector2(270f, 96f));
+
+            warningPanel = CreatePanel("Warning", hudRoot.transform, new Vector2(0f, 0f), new Vector2(760f, 44f), AnchorPreset.TopCenter, new Vector2(0f, -22f));
+            warningText = CreateText("Warning Text", warningPanel.transform, string.Empty, 20, FontStyle.Bold, TextAnchor.MiddleCenter, Vector2.zero, new Vector2(720f, 32f));
+            warningText.color = new Color(1f, 0.42f, 0.3f);
+
+            resultPanel = CreatePanel("Result Panel", canvasObject.transform, new Vector2(0.5f, 0.5f), new Vector2(620f, 330f));
+            resultText = CreateText("Result Text", resultPanel.transform, string.Empty, 23, FontStyle.Bold, TextAnchor.MiddleCenter, Vector2.zero, new Vector2(540f, 270f));
+        }
+
+        private void EnsureEventSystem()
+        {
+            if (FindFirstObjectByType<EventSystem>() != null)
             {
-                DrawStartPanel();
                 return;
             }
 
-            if (gameManager.StageClear || resultVisible)
-            {
-                DrawResultPanel();
-                return;
-            }
-
-            DrawTrainingHud();
+            var eventSystemObject = new GameObject("EventSystem");
+            eventSystemObject.AddComponent<EventSystem>();
+            eventSystemObject.AddComponent<StandaloneInputModule>();
         }
 
-        private void DrawStartPanel()
-        {
-            var rect = CenteredRect(560f, 220f);
-            GUI.Box(rect, string.Empty, panelStyle);
-            GUI.Label(new Rect(rect.x + 24f, rect.y + 22f, rect.width - 48f, 34f), "Basic Runway Training", titleStyle);
-            GUI.Label(new Rect(rect.x + 40f, rect.y + 72f, rect.width - 80f, 64f),
-                "新人管制官として、まずはA滑走路のみの基本運用を担当します。\n到着機を安全に着陸させ、出発機を離陸させましょう。",
-                guideStyle);
-
-            if (GUI.Button(new Rect(rect.x + 190f, rect.y + 158f, 180f, 38f), "Start Training", buttonStyle))
-            {
-                gameManager.StartTraining();
-            }
-        }
-
-        private void DrawTrainingHud()
-        {
-            DrawScore();
-            DrawGuide();
-            DrawInstructor();
-            DrawSelectedAircraftUi();
-            DrawWarning();
-        }
-
-        private void DrawScore()
-        {
-            GUI.Label(new Rect(16f, 14f, 260f, 62f),
-                $"Safety: {scoreManager.Safety}\nDelay: {Mathf.FloorToInt(scoreManager.Delay)}\nHandled: {scoreManager.HandledAircraftCount}",
-                textStyle);
-        }
-
-        private void DrawGuide()
-        {
-            var rect = new Rect((Screen.width - 520f) * 0.5f, Screen.height - 54f, 520f, 34f);
-            GUI.Box(rect, string.Empty, panelStyle);
-            GUI.Label(new Rect(rect.x + 10f, rect.y + 6f, rect.width - 20f, rect.height - 12f), GetCurrentGuide(), guideStyle);
-        }
-
-        private void DrawInstructor()
-        {
-            var rect = new Rect(Screen.width - 316f, 16f, 300f, 70f);
-            GUI.Box(rect, string.Empty, panelStyle);
-            GUI.Label(new Rect(rect.x + 10f, rect.y + 8f, rect.width - 20f, rect.height - 16f), $"教官コメント\n{GetInstructorHint()}", textStyle);
-        }
-
-        private void DrawSelectedAircraftUi()
+        private void UpdateTrainingHud()
         {
             var selected = GetSelectedAircraft();
-            if (selected == null)
+            var recommended = selected != null ? GetRecommendedCommand(selected) : null;
+
+            scoreText.text = $"Safety: {scoreManager.Safety}\nDelay: {Mathf.FloorToInt(scoreManager.Delay)}\nHandled: {scoreManager.HandledAircraftCount}";
+            guideText.text = GetCurrentGuide();
+            instructorText.text = $"教官コメント\n{GetInstructorHint()}";
+
+            selectedPanel.SetActive(selected != null);
+            helpPanel.SetActive(selected != null);
+
+            if (selected != null)
             {
-                return;
+                selectedText.text = $"便名: {selected.FlightNumber}\n状態: {GetStateLabel(selected.CurrentState)}\n推奨: {(recommended.HasValue ? GetCommandShortLabel(recommended.Value) : "監視")}";
+                helpText.text = recommended.HasValue ? GetCommandDescription(recommended.Value) : commandHelpMessage;
             }
 
-            var selectedRect = new Rect(16f, Screen.height - 132f, 270f, 82f);
-            GUI.Box(selectedRect, string.Empty, panelStyle);
+            commandButton.gameObject.SetActive(recommended.HasValue && selected != null && selected.CanExecute(recommended.Value));
+            commandStatusText.gameObject.SetActive(!commandButton.gameObject.activeSelf);
+            commandStatusText.text = selected == null ? "航空機を選択" : "現在は監視";
+            if (commandButton.gameObject.activeSelf)
+            {
+                commandButtonText.text = GetCommandLabel(recommended.Value);
+            }
 
-            var recommended = GetRecommendedCommand(selected);
-            GUI.Label(new Rect(selectedRect.x + 10f, selectedRect.y + 8f, selectedRect.width - 20f, selectedRect.height - 16f),
-                $"便名: {selected.FlightNumber}\n状態: {GetStateLabel(selected.CurrentState)}\n推奨: {(recommended.HasValue ? GetCommandLabel(recommended.Value) : "監視")}",
-                textStyle);
-
-            var helpRect = new Rect(296f, Screen.height - 108f, 330f, 58f);
-            GUI.Box(helpRect, string.Empty, panelStyle);
-            GUI.Label(new Rect(helpRect.x + 10f, helpRect.y + 8f, helpRect.width - 20f, helpRect.height - 16f),
-                recommended.HasValue ? GetCommandDescription(recommended.Value) : commandHelpMessage,
-                textStyle);
-
-            DrawCommandButtons(selected);
+            warningPanel.SetActive(!string.IsNullOrEmpty(warningMessage));
+            warningText.text = warningMessage;
         }
 
-        private void DrawCommandButtons(AircraftController selected)
+        private void UpdateResult()
         {
-            var rect = new Rect(Screen.width - 236f, Screen.height - 300f, 220f, 250f);
-            GUI.Box(rect, string.Empty, panelStyle);
-
-            var recommended = GetRecommendedCommand(selected);
-            if (!recommended.HasValue)
-            {
-                GUI.Label(new Rect(rect.x + 16f, rect.y + 16f, rect.width - 32f, 44f), "現在は監視します", guideStyle);
-                return;
-            }
-
-            foreach (var command in commandOrder)
-            {
-                if (command != recommended.Value || !selected.CanExecute(command))
-                {
-                    continue;
-                }
-
-                var buttonRect = new Rect(rect.x + 16f, rect.y + 18f, rect.width - 32f, 58f);
-                var previousColor = GUI.backgroundColor;
-                var pulse = 0.72f + Mathf.PingPong(Time.time * 1.8f, 0.28f);
-                GUI.backgroundColor = new Color(0.16f, pulse, 0.24f, 1f);
-                if (GUI.Button(buttonRect, GetCommandLabel(command), recommendedButtonStyle))
-                {
-                    commandSystem.Execute(command);
-                }
-                GUI.backgroundColor = previousColor;
-                break;
-            }
-        }
-
-        private void DrawWarning()
-        {
-            if (string.IsNullOrEmpty(warningMessage))
-            {
-                return;
-            }
-
-            GUI.Label(new Rect((Screen.width - 620f) * 0.5f, 14f, 620f, 30f), warningMessage, warningStyle);
-        }
-
-        private void DrawResultPanel()
-        {
-            var rect = CenteredRect(520f, 280f);
-            GUI.Box(rect, string.Empty, panelStyle);
-            GUI.Label(new Rect(rect.x + 24f, rect.y + 22f, rect.width - 48f, rect.height - 44f),
-                "Stage Clear\n\n"
+            resultText.text = "Stage Clear\n\n"
                 + $"Safety: {scoreManager.Safety}\n"
                 + $"Delay: {Mathf.FloorToInt(scoreManager.Delay)}\n"
-                + $"Handled Aircraft Count: {scoreManager.HandledAircraftCount}\n\n"
-                + "講評:\n初回訓練完了。到着機と出発機を安全に処理できました。\n次は、複数機が重なる状況に挑戦します。",
-                guideStyle);
+                + $"Handled: {scoreManager.HandledAircraftCount}\n\n"
+                + "講評:\n到着機と出発機を安全に処理できました。";
         }
 
-        private Rect CenteredRect(float width, float height)
+        private void ExecuteRecommendedCommand()
         {
-            return new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
+            var selected = GetSelectedAircraft();
+            var recommended = selected != null ? GetRecommendedCommand(selected) : null;
+            if (recommended.HasValue && selected.CanExecute(recommended.Value))
+            {
+                commandSystem.Execute(recommended.Value);
+            }
+        }
+
+        private GameObject CreateRoot(string name, Transform parent)
+        {
+            var root = new GameObject(name);
+            root.transform.SetParent(parent, false);
+            var rectTransform = root.AddComponent<RectTransform>();
+            rectTransform.anchorMin = Vector2.zero;
+            rectTransform.anchorMax = Vector2.one;
+            rectTransform.offsetMin = Vector2.zero;
+            rectTransform.offsetMax = Vector2.zero;
+            return root;
+        }
+
+        private GameObject CreatePanel(string name, Transform parent, Vector2 pivot, Vector2 size)
+        {
+            return CreatePanel(name, parent, pivot, size, AnchorPreset.Center, Vector2.zero);
+        }
+
+        private GameObject CreatePanel(string name, Transform parent, Vector2 pivot, Vector2 size, AnchorPreset preset, Vector2 anchoredPosition)
+        {
+            var panel = new GameObject(name);
+            panel.transform.SetParent(parent, false);
+            var rectTransform = panel.AddComponent<RectTransform>();
+            ApplyAnchor(rectTransform, preset);
+            if (preset == AnchorPreset.Center)
+            {
+                rectTransform.pivot = pivot;
+            }
+            rectTransform.sizeDelta = size;
+            rectTransform.anchoredPosition = anchoredPosition;
+
+            var image = panel.AddComponent<Image>();
+            image.color = new Color(0.05f, 0.07f, 0.09f, 0.78f);
+            return panel;
+        }
+
+        private Text CreatePanelText(string name, Transform parent, Vector2 anchoredPosition, Vector2 size, AnchorPreset preset, string text, int fontSize, TextAnchor alignment)
+        {
+            var panel = CreatePanel($"{name} Panel", parent, new Vector2(0.5f, 0.5f), size, preset, anchoredPosition);
+            return CreateText($"{name} Text", panel.transform, text, fontSize, FontStyle.Normal, alignment, Vector2.zero, new Vector2(size.x - 48f, size.y - 28f));
+        }
+
+        private Text CreateText(string name, Transform parent, string text, int fontSize, FontStyle fontStyle, TextAnchor alignment, Vector2 anchoredPosition, Vector2 size, AnchorPreset preset = AnchorPreset.Center)
+        {
+            var textObject = new GameObject(name);
+            textObject.transform.SetParent(parent, false);
+            var rectTransform = textObject.AddComponent<RectTransform>();
+            ApplyAnchor(rectTransform, preset);
+            rectTransform.sizeDelta = size;
+            rectTransform.anchoredPosition = anchoredPosition;
+
+            var uiText = textObject.AddComponent<Text>();
+            uiText.text = text;
+            uiText.font = uiFont;
+            uiText.fontSize = fontSize;
+            uiText.fontStyle = fontStyle;
+            uiText.alignment = alignment;
+            uiText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            uiText.verticalOverflow = VerticalWrapMode.Truncate;
+            uiText.color = Color.white;
+            uiText.raycastTarget = false;
+            return uiText;
+        }
+
+        private Button CreateButton(string name, Transform parent, string label, Vector2 anchoredPosition, Vector2 size, int fontSize)
+        {
+            var buttonObject = new GameObject(name);
+            buttonObject.transform.SetParent(parent, false);
+            var rectTransform = buttonObject.AddComponent<RectTransform>();
+            ApplyAnchor(rectTransform, AnchorPreset.Center);
+            rectTransform.sizeDelta = size;
+            rectTransform.anchoredPosition = anchoredPosition;
+
+            var image = buttonObject.AddComponent<Image>();
+            image.color = new Color(0.14f, 0.52f, 0.22f, 0.95f);
+
+            var button = buttonObject.AddComponent<Button>();
+            var colors = button.colors;
+            colors.normalColor = new Color(0.14f, 0.52f, 0.22f, 0.95f);
+            colors.highlightedColor = new Color(0.18f, 0.66f, 0.28f, 1f);
+            colors.pressedColor = new Color(0.1f, 0.42f, 0.18f, 1f);
+            button.colors = colors;
+
+            var labelText = CreateText("Label", buttonObject.transform, label, fontSize, FontStyle.Bold, TextAnchor.MiddleCenter, Vector2.zero, new Vector2(size.x - 24f, size.y - 14f));
+            if (name == "Recommended Command")
+            {
+                commandButtonText = labelText;
+            }
+
+            return button;
+        }
+
+        private void ApplyAnchor(RectTransform rectTransform, AnchorPreset preset)
+        {
+            switch (preset)
+            {
+                case AnchorPreset.TopLeft:
+                    rectTransform.anchorMin = new Vector2(0f, 1f);
+                    rectTransform.anchorMax = new Vector2(0f, 1f);
+                    rectTransform.pivot = new Vector2(0f, 1f);
+                    break;
+                case AnchorPreset.TopCenter:
+                    rectTransform.anchorMin = new Vector2(0.5f, 1f);
+                    rectTransform.anchorMax = new Vector2(0.5f, 1f);
+                    rectTransform.pivot = new Vector2(0.5f, 1f);
+                    break;
+                case AnchorPreset.TopRight:
+                    rectTransform.anchorMin = new Vector2(1f, 1f);
+                    rectTransform.anchorMax = new Vector2(1f, 1f);
+                    rectTransform.pivot = new Vector2(1f, 1f);
+                    break;
+                case AnchorPreset.MiddleRight:
+                    rectTransform.anchorMin = new Vector2(1f, 0.5f);
+                    rectTransform.anchorMax = new Vector2(1f, 0.5f);
+                    rectTransform.pivot = new Vector2(1f, 0.5f);
+                    break;
+                case AnchorPreset.BottomLeft:
+                    rectTransform.anchorMin = Vector2.zero;
+                    rectTransform.anchorMax = Vector2.zero;
+                    rectTransform.pivot = Vector2.zero;
+                    break;
+                case AnchorPreset.BottomCenter:
+                    rectTransform.anchorMin = new Vector2(0.5f, 0f);
+                    rectTransform.anchorMax = new Vector2(0.5f, 0f);
+                    rectTransform.pivot = new Vector2(0.5f, 0f);
+                    break;
+                default:
+                    rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+                    rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+                    rectTransform.pivot = new Vector2(0.5f, 0.5f);
+                    break;
+            }
         }
 
         private string GetCurrentGuide()
@@ -229,61 +367,61 @@ namespace ATCJourneyJapan.UI
             if (arrival != null && arrival.CurrentState == AircraftState.Inbound)
             {
                 return selected == arrival
-                    ? "着陸許可 / Clear to Land を押してください。滑走路が空いている時だけ着陸できます。"
-                    : "AJJ101をクリックしてください。まず到着機を選びます。";
+                    ? "着陸許可 / Clear to Land\n滑走路が空いている時だけ出します。"
+                    : "AJJ101をクリック\nまず到着機を選びます。";
             }
 
             if (arrival != null && arrival.CurrentState == AircraftState.FinalApproach)
             {
-                return "AJJ101が着陸中です。滑走路は1機ずつ安全に使います。";
+                return "AJJ101が着陸中\n滑走路は1機ずつ使います。";
             }
 
             if (arrival != null && (arrival.CurrentState == AircraftState.LandingRoll || arrival.CurrentState == AircraftState.VacatingRunway))
             {
-                return "滑走路離脱を待っています。出発機はまだ滑走路へ入れません。";
+                return "滑走路離脱を待機\n出発機はまだ入れません。";
             }
 
             if (arrival != null && arrival.CurrentState == AircraftState.Waiting)
             {
                 return selected == arrival
-                    ? "ゲートへ誘導 / Taxi to Gate を押してください。着陸後は滑走路を空けます。"
-                    : "AJJ101をクリックしてください。着陸後はゲートへ誘導します。";
+                    ? "ゲートへ誘導 / Taxi to Gate\n着陸後は滑走路を空けます。"
+                    : "AJJ101をクリック\nゲートへ誘導します。";
             }
 
             if (arrival != null && arrival.CurrentState == AircraftState.TaxiToGate)
             {
-                return "AJJ101がゲートへ移動中です。滑走路が空いたら出発機を進めます。";
+                return "AJJ101がゲートへ移動中\n滑走路が空いたら出発機へ。";
             }
 
             if (departure != null && departure.CurrentState == AircraftState.AtGate)
             {
                 return selected == departure
-                    ? "滑走路手前へ誘導 / Taxi to Holding Point を押してください。出発機を離陸準備位置へ進めます。"
-                    : "AJJ202をクリックしてください。次は出発機を準備します。";
+                    ? "滑走路手前へ誘導 / Taxi to Holding Point\n出発機を準備位置へ進めます。"
+                    : "AJJ202をクリック\n次は出発機を準備します。";
             }
 
             if (departure != null && departure.CurrentState == AircraftState.TaxiToHold)
             {
-                return "AJJ202が滑走路手前へ移動中です。滑走路へ入る前に一度止めます。";
+                return "AJJ202が滑走路手前へ移動中\n入る前に一度止めます。";
             }
 
             if (departure != null && departure.CurrentState == AircraftState.HoldingShort)
             {
                 return selected == departure
-                    ? "滑走路上で待機 / Line Up and Wait を押してください。離陸前に滑走路上で待機させます。"
-                    : "AJJ202をクリックしてください。滑走路上で待機させます。";
+                    ? "滑走路上で待機 / Line Up and Wait\n離陸前に待機させます。"
+                    : "AJJ202をクリック\n滑走路上で待機させます。";
             }
 
             if (departure != null && departure.CurrentState == AircraftState.LiningUp)
             {
                 return selected == departure
-                    ? "離陸許可 / Cleared for Takeoff を押してください。滑走路が安全なら離陸できます。"
-                    : "AJJ202をクリックしてください。離陸許可を出します。";
+                    ? "離陸許可 / Cleared for Takeoff\n滑走路が安全なら出します。"
+                    : "AJJ202をクリック\n離陸許可を出します。";
             }
 
             if (departure != null && departure.CurrentState == AircraftState.TakeoffRoll)
             {
-                return "AJJ202が離陸中です。離陸完了まで監視します。";
+                return "AJJ202が離陸中\n完了まで監視します。";
             }
 
             return "次の航空機を選択してください";
@@ -294,27 +432,27 @@ namespace ATCJourneyJapan.UI
             var guide = GetCurrentGuide();
             if (guide.Contains("AJJ101"))
             {
-                return "滑走路は離着陸に使う場所です。安全のため基本的に1機ずつ使います。";
+                return "滑走路は基本的に1機ずつ使います。";
             }
 
             if (guide.Contains("Taxi to Gate") || guide.Contains("ゲートへ誘導"))
             {
-                return "着陸後は滑走路を空ける必要があります。到着機をゲートへ誘導しましょう。";
+                return "着陸後は滑走路を空けましょう。";
             }
 
             if (guide.Contains("AJJ202") || guide.Contains("Taxi to Holding Point"))
             {
-                return "滑走路が空いたら、出発機を滑走路手前まで移動させます。";
+                return "滑走路が空いたら出発機を進めます。";
             }
 
             if (guide.Contains("Line Up"))
             {
-                return "離陸前に滑走路上で待機させます。ほかの機体がいないことを確認します。";
+                return "ほかの機体がいないことを確認します。";
             }
 
             if (guide.Contains("Cleared for Takeoff"))
             {
-                return "滑走路が安全なら、離陸許可を出しましょう。";
+                return "安全なら離陸許可を出しましょう。";
             }
 
             return instructorMessage;
@@ -361,60 +499,6 @@ namespace ATCJourneyJapan.UI
             return SelectionManager.Instance != null ? SelectionManager.Instance.SelectedAircraft : null;
         }
 
-        private void EnsureStyles()
-        {
-            if (panelStyle != null)
-            {
-                return;
-            }
-
-            panelStyle = new GUIStyle(GUI.skin.box)
-            {
-                normal = { background = Texture2D.grayTexture },
-                padding = new RectOffset(8, 8, 6, 6)
-            };
-
-            textStyle = new GUIStyle(GUI.skin.label)
-            {
-                alignment = TextAnchor.UpperLeft,
-                fontSize = 14,
-                wordWrap = true,
-                normal = { textColor = Color.white }
-            };
-
-            titleStyle = new GUIStyle(textStyle)
-            {
-                alignment = TextAnchor.MiddleCenter,
-                fontSize = 24,
-                fontStyle = FontStyle.Bold
-            };
-
-            guideStyle = new GUIStyle(textStyle)
-            {
-                alignment = TextAnchor.MiddleCenter,
-                fontSize = 17
-            };
-
-            buttonStyle = new GUIStyle(GUI.skin.button)
-            {
-                fontSize = 14,
-                fontStyle = FontStyle.Bold
-            };
-
-            recommendedButtonStyle = new GUIStyle(buttonStyle)
-            {
-                fontSize = 13,
-                fontStyle = FontStyle.Bold,
-                wordWrap = true
-            };
-
-            warningStyle = new GUIStyle(guideStyle)
-            {
-                fontStyle = FontStyle.Bold,
-                normal = { textColor = new Color(1f, 0.35f, 0.24f) }
-            };
-        }
-
         private string GetCommandLabel(AircraftCommand command)
         {
             switch (command)
@@ -438,24 +522,47 @@ namespace ATCJourneyJapan.UI
             }
         }
 
+        private string GetCommandShortLabel(AircraftCommand command)
+        {
+            switch (command)
+            {
+                case AircraftCommand.ClearLanding:
+                    return "着陸許可";
+                case AircraftCommand.TaxiToGate:
+                    return "ゲートへ誘導";
+                case AircraftCommand.TaxiToHold:
+                    return "滑走路手前へ誘導";
+                case AircraftCommand.HoldShort:
+                    return "現在位置で待機";
+                case AircraftCommand.LineUp:
+                    return "滑走路上で待機";
+                case AircraftCommand.ClearTakeoff:
+                    return "離陸許可";
+                case AircraftCommand.Stop:
+                    return "現在位置で待機";
+                default:
+                    return command.ToString();
+            }
+        }
+
         private string GetCommandDescription(AircraftCommand command)
         {
             switch (command)
             {
                 case AircraftCommand.ClearLanding:
-                    return "滑走路が空いているときだけ出す着陸許可です。";
+                    return "滑走路が空いている時だけ出します。";
                 case AircraftCommand.TaxiToGate:
-                    return "着陸後、滑走路を空けるためゲートへ移動させます。";
+                    return "着陸後、ゲートへ移動させます。";
                 case AircraftCommand.TaxiToHold:
-                    return "出発機を離陸準備のため滑走路手前まで移動させます。";
+                    return "出発機を滑走路手前へ進めます。";
                 case AircraftCommand.HoldShort:
-                    return "安全確認のため現在位置で待機させます。";
+                    return "安全確認のため待機させます。";
                 case AircraftCommand.LineUp:
                     return "離陸前に滑走路上で待機させます。";
                 case AircraftCommand.ClearTakeoff:
-                    return "滑走路が安全なときに出す離陸許可です。";
+                    return "滑走路が安全な時の離陸許可です。";
                 case AircraftCommand.Stop:
-                    return "移動を止め、安全確認をやり直します。";
+                    return "移動を止めて安全確認します。";
                 default:
                     return "次に必要な指示を選びます。";
             }
@@ -492,6 +599,17 @@ namespace ATCJourneyJapan.UI
                 default:
                     return state.ToString();
             }
+        }
+
+        private enum AnchorPreset
+        {
+            Center,
+            TopLeft,
+            TopCenter,
+            TopRight,
+            MiddleRight,
+            BottomLeft,
+            BottomCenter
         }
     }
 }
