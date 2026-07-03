@@ -125,6 +125,7 @@ namespace ATCJourneyJapan.UI
             var canvas = canvasObject.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvas.sortingOrder = 20;
+            canvas.pixelPerfect = true;
 
             var scaler = canvasObject.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
@@ -142,7 +143,7 @@ namespace ATCJourneyJapan.UI
             startButton.onClick.AddListener(() => gameManager.StartTraining());
 
             hudRoot = CreateRoot("HUD Root", canvasObject.transform);
-            scoreText = CreateText("Score", hudRoot.transform, string.Empty, 22, FontStyle.Bold, TextAnchor.UpperLeft, new Vector2(24f, -22f), new Vector2(280f, 86f), AnchorPreset.TopLeft);
+            scoreText = CreatePanelText("Score", hudRoot.transform, new Vector2(24f, -22f), new Vector2(320f, 126f), AnchorPreset.TopLeft, string.Empty, 24, TextAnchor.UpperLeft);
             instructorText = CreatePanelText("Instructor", hudRoot.transform, new Vector2(-24f, -22f), new Vector2(430f, 112f), AnchorPreset.TopRight, "教官コメント", 19, TextAnchor.UpperLeft);
             guideText = CreatePanelText("Guide", hudRoot.transform, new Vector2(0f, 30f), new Vector2(780f, 92f), AnchorPreset.BottomCenter, string.Empty, 23, TextAnchor.MiddleCenter);
 
@@ -150,7 +151,7 @@ namespace ATCJourneyJapan.UI
             selectedText = CreateText("Selected Text", selectedPanel.transform, string.Empty, 18, FontStyle.Normal, TextAnchor.UpperLeft, Vector2.zero, new Vector2(286f, 94f));
 
             var commandPanel = CreatePanel("Command Panel", hudRoot.transform, new Vector2(0f, 0f), new Vector2(300f, 410f), AnchorPreset.MiddleRight, new Vector2(-12f, 0f));
-            CreateText("Command Title", commandPanel.transform, "コマンド", 21, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(0f, 154f), new Vector2(250f, 34f));
+            CreateText("Command Title", commandPanel.transform, "指示", 22, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(0f, 154f), new Vector2(250f, 34f));
             commandButton = CreateButton("Recommended Command", commandPanel.transform, string.Empty, new Vector2(0f, 74f), new Vector2(250f, 94f), 19);
             commandButton.onClick.AddListener(ExecuteRecommendedCommand);
             helpText = CreateText("Command Help", commandPanel.transform, string.Empty, 18, FontStyle.Normal, TextAnchor.UpperLeft, new Vector2(0f, -96f), new Vector2(250f, 94f));
@@ -181,7 +182,7 @@ namespace ATCJourneyJapan.UI
             var selected = GetSelectedAircraft();
             var recommended = selected != null ? GetRecommendedCommand(selected) : null;
 
-            scoreText.text = $"Safety: {scoreManager.Safety}\nDelay: {Mathf.FloorToInt(scoreManager.Delay)}\nHandled: {scoreManager.HandledAircraftCount}";
+            scoreText.text = $"安全度：  {scoreManager.Safety}\n遅延：    {Mathf.FloorToInt(scoreManager.Delay)}\n処理機数：{scoreManager.HandledAircraftCount}";
             guideText.text = GetCurrentGuide();
             instructorText.text = $"教官コメント\n{GetInstructorHint()}";
 
@@ -386,7 +387,7 @@ namespace ATCJourneyJapan.UI
             if (arrival != null && arrival.CurrentState == AircraftState.Inbound)
             {
                 return selected == arrival
-                    ? "着陸許可 / Clear to Land\n滑走路が空いている時だけ出します。"
+                    ? "着陸許可 / Clear to Land を押してください"
                     : "AJJ101をクリック\nまず到着機を選びます。";
             }
 
@@ -403,7 +404,7 @@ namespace ATCJourneyJapan.UI
             if (arrival != null && arrival.CurrentState == AircraftState.Waiting)
             {
                 return selected == arrival
-                    ? "ゲートへ誘導 / Taxi to Gate\n着陸後は滑走路を空けます。"
+                    ? "ゲートへ誘導 / Taxi to Gate を押してください"
                     : "AJJ101をクリック\nゲートへ誘導します。";
             }
 
@@ -415,7 +416,7 @@ namespace ATCJourneyJapan.UI
             if (departure != null && departure.CurrentState == AircraftState.AtGate)
             {
                 return selected == departure
-                    ? "滑走路手前へ誘導 / Taxi to Holding Point\n出発機を準備位置へ進めます。"
+                    ? "滑走路手前へ誘導 / Taxi to Holding Point を押してください"
                     : "AJJ202をクリック\n次は出発機を準備します。";
             }
 
@@ -427,14 +428,14 @@ namespace ATCJourneyJapan.UI
             if (departure != null && departure.CurrentState == AircraftState.HoldingShort)
             {
                 return selected == departure
-                    ? "滑走路上で待機 / Line Up and Wait\n離陸前に待機させます。"
+                    ? "滑走路上で待機 / Line Up and Wait を押してください"
                     : "AJJ202をクリック\n滑走路上で待機させます。";
             }
 
             if (departure != null && departure.CurrentState == AircraftState.LiningUp)
             {
                 return selected == departure
-                    ? "離陸許可 / Cleared for Takeoff\n滑走路が安全なら出します。"
+                    ? "離陸許可 / Cleared for Takeoff を押してください"
                     : "AJJ202をクリック\n離陸許可を出します。";
             }
 

@@ -195,12 +195,12 @@ namespace ATCJourneyJapan.Aircraft
         {
             var labelObject = new GameObject("Flight Label");
             labelObject.transform.SetParent(transform);
-            labelObject.transform.localPosition = new Vector3(0f, 1.9f, 0.35f);
+            labelObject.transform.localPosition = new Vector3(0f, 2.05f, 0.35f);
             label = labelObject.AddComponent<TextMesh>();
             label.anchor = TextAnchor.MiddleCenter;
             label.alignment = TextAlignment.Center;
-            label.characterSize = 0.22f;
-            label.fontSize = 34;
+            label.characterSize = 0.18f;
+            label.fontSize = 32;
             label.color = Color.white;
         }
 
@@ -226,8 +226,6 @@ namespace ATCJourneyJapan.Aircraft
             {
                 case AircraftState.Inbound:
                 case AircraftState.FinalApproach:
-                case AircraftState.LandingRoll:
-                case AircraftState.VacatingRunway:
                     return "到着";
                 case AircraftState.AtGate:
                     return "ゲート";
@@ -235,6 +233,8 @@ namespace ATCJourneyJapan.Aircraft
                 case AircraftState.HoldingShort:
                 case AircraftState.LiningUp:
                     return "待機";
+                case AircraftState.LandingRoll:
+                case AircraftState.VacatingRunway:
                 case AircraftState.TaxiToGate:
                 case AircraftState.TaxiToHold:
                     return "地上走行";
