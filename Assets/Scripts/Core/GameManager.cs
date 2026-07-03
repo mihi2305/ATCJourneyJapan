@@ -25,6 +25,7 @@ namespace ATCJourneyJapan.Core
         public bool StageClear => stageClear;
         public bool IsTrainingStarted => trainingStarted;
         public bool IsGameplayPaused => uiManager != null && uiManager.IsTutorialBlockingProgress;
+        public bool IsDelayPaused => stageClear || (uiManager != null && uiManager.IsTutorialActive);
 
         public void Initialize()
         {
@@ -55,7 +56,7 @@ namespace ATCJourneyJapan.Core
 
             if (!IsGameplayPaused)
             {
-                scoreManager.Tick(Time.deltaTime, stageClear);
+                scoreManager.Tick(Time.deltaTime, IsDelayPaused);
                 RefreshRunwaySafety();
             }
 

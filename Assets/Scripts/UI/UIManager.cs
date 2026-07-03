@@ -31,6 +31,7 @@ namespace ATCJourneyJapan.UI
         private GameObject startPanel;
         private GameObject hudRoot;
         private GameObject selectedPanel;
+        private GameObject guidePanel;
         private GameObject tutorialPanel;
         private GameObject warningPanel;
         private GameObject resultPanel;
@@ -58,6 +59,8 @@ namespace ATCJourneyJapan.UI
                 return tutorialActive && step != null && !step.WaitForCommand;
             }
         }
+
+        public bool IsTutorialActive => CurrentTutorialStep != null;
 
         public void Initialize(GameManager manager, ScoreManager scoring)
         {
@@ -184,6 +187,7 @@ namespace ATCJourneyJapan.UI
             scoreText = CreatePanelText("Score", hudRoot.transform, new Vector2(24f, -22f), new Vector2(320f, 126f), AnchorPreset.TopLeft, string.Empty, 24, TextAnchor.UpperLeft);
             instructorText = CreatePanelText("Instructor", hudRoot.transform, new Vector2(-24f, -22f), new Vector2(430f, 112f), AnchorPreset.TopRight, "教官コメント", 19, TextAnchor.UpperLeft);
             guideText = CreatePanelText("Guide", hudRoot.transform, new Vector2(0f, 30f), new Vector2(780f, 92f), AnchorPreset.BottomCenter, string.Empty, 23, TextAnchor.MiddleCenter);
+            guidePanel = guideText.transform.parent.gameObject;
 
             selectedPanel = CreatePanel("Selected Aircraft", hudRoot.transform, new Vector2(0f, 0f), new Vector2(330f, 128f), AnchorPreset.BottomLeft, new Vector2(24f, 34f));
             selectedText = CreateText("Selected Text", selectedPanel.transform, string.Empty, 18, FontStyle.Normal, TextAnchor.UpperLeft, Vector2.zero, new Vector2(286f, 94f));
@@ -195,9 +199,9 @@ namespace ATCJourneyJapan.UI
             helpText = CreateText("Command Help", commandPanel.transform, string.Empty, 18, FontStyle.Normal, TextAnchor.UpperLeft, new Vector2(0f, -96f), new Vector2(250f, 94f));
             commandStatusText = CreateText("Command Status", commandPanel.transform, string.Empty, 20, FontStyle.Normal, TextAnchor.MiddleCenter, new Vector2(0f, 28f), new Vector2(250f, 86f));
 
-            tutorialPanel = CreatePanel("Tutorial Panel", hudRoot.transform, new Vector2(0.5f, 0f), new Vector2(760f, 150f), AnchorPreset.BottomCenter, new Vector2(0f, 138f));
-            tutorialText = CreateText("Tutorial Text", tutorialPanel.transform, string.Empty, 24, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-80f, 10f), new Vector2(520f, 94f));
-            tutorialNextButton = CreateButton("Tutorial Next", tutorialPanel.transform, "次へ\nNext", new Vector2(270f, -26f), new Vector2(150f, 58f), 20);
+            tutorialPanel = CreatePanel("Tutorial Panel", hudRoot.transform, new Vector2(0.5f, 0f), new Vector2(840f, 176f), AnchorPreset.BottomCenter, new Vector2(0f, 48f));
+            tutorialText = CreateText("Tutorial Text", tutorialPanel.transform, string.Empty, 27, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-92f, 8f), new Vector2(560f, 112f));
+            tutorialNextButton = CreateButton("Tutorial Next", tutorialPanel.transform, "次へ\nNext", new Vector2(300f, -34f), new Vector2(156f, 64f), 21);
             tutorialNextButton.onClick.AddListener(AdvanceTutorial);
 
             warningPanel = CreatePanel("Warning", hudRoot.transform, new Vector2(0f, 0f), new Vector2(760f, 44f), AnchorPreset.TopCenter, new Vector2(0f, -22f));
@@ -258,6 +262,7 @@ namespace ATCJourneyJapan.UI
         private void UpdateTutorialPanel()
         {
             var step = CurrentTutorialStep;
+            guidePanel.SetActive(step == null);
             tutorialPanel.SetActive(step != null);
             if (step == null)
             {
@@ -326,21 +331,21 @@ namespace ATCJourneyJapan.UI
                 TutorialStep.Info("ここはA滑走路です。\n離陸と着陸に使います。"),
                 TutorialStep.Info("安全のため、滑走路は\n基本的に1機だけ使います。"),
                 TutorialStep.Info("A滑走路は空いています。\nAJJ101に着陸許可を出します。"),
-                TutorialStep.Command("AJJ101を選択して、\n『着陸許可』を押してください。", AircraftCommand.ClearLanding),
+                TutorialStep.Command("AJJ101を選択し、\n着陸許可を出しましょう。", AircraftCommand.ClearLanding),
                 TutorialStep.Info("AJJ101が着陸します。\n滑走路離脱まで見守ります。"),
-                TutorialStep.Command("AJJ101を選択して、\nゲートへ誘導してください。", AircraftCommand.TaxiToGate),
-                TutorialStep.Command("AJJ202を選択して、\n滑走路手前へ進めます。", AircraftCommand.TaxiToHold),
-                TutorialStep.Command("AJJ202を選択して、\n滑走路上で待機させます。", AircraftCommand.LineUp),
-                TutorialStep.Command("滑走路が安全なら、\n離陸許可を出します。", AircraftCommand.ClearTakeoff)
+                TutorialStep.Command("着陸後、AJJ101を\nゲートへ誘導しましょう。", AircraftCommand.TaxiToGate),
+                TutorialStep.Command("AJJ202を選択し、\n滑走路手前へ進めましょう。", AircraftCommand.TaxiToHold),
+                TutorialStep.Command("AJJ202を滑走路上で\n待機させましょう。", AircraftCommand.LineUp),
+                TutorialStep.Command("滑走路が安全なら、\n離陸許可を出しましょう。", AircraftCommand.ClearTakeoff)
             };
         }
 
         private void UpdateResult()
         {
-            resultText.text = "Stage Clear\n\n"
-                + $"Safety: {scoreManager.Safety}\n"
-                + $"Delay: {Mathf.FloorToInt(scoreManager.Delay)}\n"
-                + $"Handled: {scoreManager.HandledAircraftCount}\n\n"
+            resultText.text = "訓練完了\n\n"
+                + $"安全度：{scoreManager.Safety}\n"
+                + $"遅延：{Mathf.FloorToInt(scoreManager.Delay)}\n"
+                + $"処理機数：{scoreManager.HandledAircraftCount}\n\n"
                 + "講評:\n到着機と出発機を安全に処理できました。";
         }
 
