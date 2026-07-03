@@ -112,14 +112,16 @@ namespace ATCJourneyJapan.Core
                     return "まずは到着機を安全に着陸させよう";
                 case AircraftCommand.TaxiToGate:
                     return "滑走路が空いた。到着機をゲートへ進めよう";
+                case AircraftCommand.Pushback:
+                    return "ゲートから後退させて、地上走行の準備をしよう";
                 case AircraftCommand.TaxiToHold:
-                    return "出発機を滑走路手前まで進めて、離陸の準備をしよう";
+                    return "Groundでは滑走路手前まで安全に進める";
                 case AircraftCommand.LineUp:
                     return "滑走路上に入れる前に、他の機体がいないことを確認しよう";
                 case AircraftCommand.ClearTakeoff:
                     return "よし、安全に処理できている。離陸許可を出そう";
                 case AircraftCommand.HoldShort:
-                    return "滑走路に2機を同時に入れないことが基本だ";
+                    return "Hold Shortは滑走路の手前で止める指示だ";
                 case AircraftCommand.Stop:
                     return "迷ったら止める判断も大切だ";
                 default:

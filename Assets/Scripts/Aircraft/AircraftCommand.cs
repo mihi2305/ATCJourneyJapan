@@ -4,6 +4,7 @@ namespace ATCJourneyJapan.Aircraft
     {
         ClearLanding,
         TaxiToGate,
+        Pushback,
         TaxiToHold,
         HoldShort,
         LineUp,

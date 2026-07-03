@@ -85,10 +85,12 @@ namespace ATCJourneyJapan.Aircraft
                     return arrivalAircraft && currentState == AircraftState.Inbound;
                 case AircraftCommand.TaxiToGate:
                     return arrivalAircraft && (currentState == AircraftState.Waiting || currentState == AircraftState.VacatingRunway);
-                case AircraftCommand.TaxiToHold:
+                case AircraftCommand.Pushback:
                     return !arrivalAircraft && currentState == AircraftState.AtGate;
+                case AircraftCommand.TaxiToHold:
+                    return !arrivalAircraft && currentState == AircraftState.PushbackReady;
                 case AircraftCommand.HoldShort:
-                    return !arrivalAircraft && (currentState == AircraftState.TaxiToHold || currentState == AircraftState.HoldingShort);
+                    return !arrivalAircraft && currentState == AircraftState.HoldingPoint;
                 case AircraftCommand.LineUp:
                     return !arrivalAircraft && currentState == AircraftState.HoldingShort;
                 case AircraftCommand.ClearTakeoff:
@@ -114,6 +116,9 @@ namespace ATCJourneyJapan.Aircraft
                     break;
                 case AircraftCommand.TaxiToGate:
                     TaxiToGate();
+                    break;
+                case AircraftCommand.Pushback:
+                    Pushback();
                     break;
                 case AircraftCommand.TaxiToHold:
                     TaxiToHold();
@@ -160,12 +165,21 @@ namespace ATCJourneyJapan.Aircraft
             });
         }
 
+        private void Pushback()
+        {
+            currentState = AircraftState.Pushbacking;
+            route.StartRoute(airportManager.GetPushbackRoute(), groundSpeed * 0.65f, () =>
+            {
+                currentState = AircraftState.PushbackReady;
+            });
+        }
+
         private void TaxiToHold()
         {
             currentState = AircraftState.TaxiToHold;
             route.StartRoute(airportManager.GetTaxiToHoldRoute(), groundSpeed, () =>
             {
-                currentState = AircraftState.HoldingShort;
+                currentState = AircraftState.HoldingPoint;
             });
         }
 
@@ -251,6 +265,11 @@ namespace ATCJourneyJapan.Aircraft
                 case AircraftState.HoldingShort:
                 case AircraftState.LiningUp:
                     return "待機";
+                case AircraftState.Pushbacking:
+                case AircraftState.PushbackReady:
+                    return "出発準備";
+                case AircraftState.HoldingPoint:
+                    return "手前";
                 case AircraftState.LandingRoll:
                 case AircraftState.VacatingRunway:
                 case AircraftState.TaxiToGate:

@@ -13,6 +13,43 @@
 - 今回実装すること
 - 今回は実装せず後続Phaseに回すこと
 
+## 2026-07-03 Phase 1.4
+
+- 変更したPhase: Phase 1.4 / Phase 1.7
+- 理由: 初回訓練の出発訓練前半に、滑走路へ入る前のGround基礎を追加するため
+- 変更内容:
+  - Phase 1.4としてGround基礎編を実装
+  - AJJ202にPushbackを追加し、Gate 2から後退して地上走行準備位置へ移動する流れを追加
+  - Taxi to Holding Pointを、滑走路手前まで地上走行させるGround基礎として説明
+  - Hold Shortを追加し、滑走路に入る前に手前で待機させる流れを追加
+  - Hold ShortとLine Up and Waitの違いを説明する方針を反映
+  - Contact Ground / Contact Tower とGround管制の本格切替は後続Phaseで扱う方針を維持
+  - Phase 1.4完了後、CURRENT_PHASE.mdをPhase 1.7準備中へ更新
+- 今回実装すること:
+  - Pushback / Taxi to Holding Point / Hold Short の段階的チュートリアル
+  - Pushback用の固定waypoint
+  - Hold Short後にLine Up and Waitへ進む出発訓練フロー
+  - Gate 2、誘導路、Hold Short位置、AJJ202の軽いハイライト
+- 今回は実装せず後続Phaseに回すこと:
+  - Contact Ground
+  - Contact Tower
+  - Contact Departure
+  - Departure管制
+  - Ground管制の本格切替
+  - フライトストリップ本実装
+  - レーダー/ミニマップ
+  - 空港全体俯瞰ビュー
+  - 経路プレビュー
+  - スコアランク制
+  - 英語音声
+  - 複数機運用
+  - B滑走路
+  - 那覇らしい3D背景
+  - 到着編・出発編の別ステージ化
+- 次Phase判断:
+  - 次はPhase 1.7「管制文ログ」とする
+  - 理由: Phase 1.4までで初回訓練の基本操作は一通りつながったため、Phase 2.0のデータ拡張へ進む前に、下部パネルを管制官とパイロットの通信ログへ発展させて初回訓練の没入感を高める方が自然
+
 ## 2026-07-03 Phase 1.2/1.3
 
 - 変更したPhase: Phase 1.2 / Phase 1.3 / Phase 1.4 / Phase 4.0

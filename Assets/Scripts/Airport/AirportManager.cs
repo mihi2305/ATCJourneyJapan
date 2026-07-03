@@ -19,6 +19,7 @@ namespace ATCJourneyJapan.Airport
         public IReadOnlyList<RunwayController> Runways => runways;
         public Vector3 ArrivalSpawnPosition => new Vector3(-26f, 0.6f, 0f);
         public Vector3 DepartureSpawnPosition => gatePositions.Count > 1 ? gatePositions[1] : new Vector3(-10f, 0.6f, -9f);
+        public Vector3 PushbackReadyPosition => new Vector3(-11f, 0.6f, -6.5f);
         public Vector3 HoldShortPosition => new Vector3(-7f, 0.55f, -3f);
 
         public void Initialize()
@@ -62,6 +63,15 @@ namespace ATCJourneyJapan.Airport
                 new Vector3(7f, 0.6f, -5f),
                 new Vector3(2f, 0.6f, -5f),
                 gatePositions[0]
+            };
+        }
+
+        public IEnumerable<Vector3> GetPushbackRoute()
+        {
+            return new[]
+            {
+                new Vector3(-11f, 0.6f, -8f),
+                PushbackReadyPosition
             };
         }
 

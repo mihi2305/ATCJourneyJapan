@@ -14,7 +14,9 @@ namespace ATCJourneyJapan.UI
         {
             AircraftCommand.ClearLanding,
             AircraftCommand.TaxiToGate,
+            AircraftCommand.Pushback,
             AircraftCommand.TaxiToHold,
+            AircraftCommand.HoldShort,
             AircraftCommand.LineUp,
             AircraftCommand.ClearTakeoff
         };
@@ -290,7 +292,7 @@ namespace ATCJourneyJapan.UI
             }
 
             var step = CurrentTutorialStep;
-            if (step != null && step.WaitForCommand && recommended.HasValue && step.ExpectedCommand != recommended.Value)
+            if (step != null && step.WaitForCommand)
             {
                 return "説明に沿って操作";
             }
@@ -342,6 +344,28 @@ namespace ATCJourneyJapan.UI
                 {
                     AdvanceTutorial();
                 }
+
+                return;
+            }
+
+            if (step.WaitMode == TutorialWaitMode.PushbackComplete)
+            {
+                var departure = FindAircraft("AJJ202");
+                if (departure != null && departure.CurrentState == AircraftState.PushbackReady)
+                {
+                    AdvanceTutorial();
+                }
+
+                return;
+            }
+
+            if (step.WaitMode == TutorialWaitMode.HoldingPointReady)
+            {
+                var departure = FindAircraft("AJJ202");
+                if (departure != null && departure.CurrentState == AircraftState.HoldingPoint)
+                {
+                    AdvanceTutorial();
+                }
             }
         }
 
@@ -378,8 +402,14 @@ namespace ATCJourneyJapan.UI
                 TutorialStep.ArrivalComplete("AJJ101がGate 1へ移動中です。\n到着完了まで見守ります。", TutorialHighlight.Gate1),
                 TutorialStep.Info("AJJ101がGate 1に到着しました。\n到着機の基本処理は完了です。", TutorialHighlight.Gate1),
                 TutorialStep.Info("出発訓練\nAJJ202を離陸させましょう。"),
-                TutorialStep.Command("AJJ202を選択し、\n滑走路手前へ進めましょう。", AircraftCommand.TaxiToHold),
-                TutorialStep.Command("AJJ202を滑走路上で\n待機させましょう。", AircraftCommand.LineUp),
+                TutorialStep.Info("まずGate 2から\n出発準備をします。", TutorialHighlight.Gate2),
+                TutorialStep.Command("AJJ202を選択し、\nプッシュバックします。", AircraftCommand.Pushback, TutorialHighlight.Pushback),
+                TutorialStep.PushbackComplete("AJJ202が後退中です。\n地上走行の準備をします。", TutorialHighlight.Pushback),
+                TutorialStep.Command("滑走路手前まで\n地上走行させましょう。", AircraftCommand.TaxiToHold, TutorialHighlight.TaxiToHold),
+                TutorialStep.HoldingPointReady("AJJ202が誘導路を走行中です。\n滑走路手前で止めます。", TutorialHighlight.TaxiToHold),
+                TutorialStep.Command("滑走路に入る前に\n手前で待機させます。", AircraftCommand.HoldShort, TutorialHighlight.HoldShort),
+                TutorialStep.Info("Hold Shortは手前、\nLine Upは滑走路上で待機です。", TutorialHighlight.HoldShort),
+                TutorialStep.Command("滑走路が空いたので\n滑走路上で待機させます。", AircraftCommand.LineUp, TutorialHighlight.LineUp),
                 TutorialStep.Command("滑走路が安全なら、\n離陸許可を出しましょう。", AircraftCommand.ClearTakeoff)
             };
         }
@@ -417,6 +447,27 @@ namespace ATCJourneyJapan.UI
                 case TutorialHighlight.TaxiToGate:
                     HighlightObject("Gate 1 Stand", new Color(0.15f, 0.75f, 0.65f));
                     HighlightAircraft("AJJ101");
+                    break;
+                case TutorialHighlight.Gate2:
+                    HighlightObject("Gate 2 Stand", new Color(0.15f, 0.75f, 0.65f));
+                    HighlightAircraft("AJJ202");
+                    break;
+                case TutorialHighlight.Pushback:
+                    HighlightObject("Gate 2 Stand", new Color(0.15f, 0.75f, 0.65f));
+                    HighlightAircraft("AJJ202");
+                    break;
+                case TutorialHighlight.TaxiToHold:
+                    HighlightObject("Taxiway Main", new Color(0.25f, 0.62f, 0.78f));
+                    HighlightObject("Hold Short A", new Color(0.9f, 0.72f, 0.18f));
+                    HighlightAircraft("AJJ202");
+                    break;
+                case TutorialHighlight.HoldShort:
+                    HighlightObject("Hold Short A", new Color(0.9f, 0.72f, 0.18f));
+                    HighlightAircraft("AJJ202");
+                    break;
+                case TutorialHighlight.LineUp:
+                    HighlightObject("Runway A", new Color(0.3f, 0.8f, 0.3f));
+                    HighlightAircraft("AJJ202");
                     break;
             }
         }
@@ -674,13 +725,32 @@ namespace ATCJourneyJapan.UI
             if (departure != null && departure.CurrentState == AircraftState.AtGate)
             {
                 return selected == departure
+                    ? "プッシュバックしましょう。"
+                    : "AJJ202をクリック\n出発準備を始めます。";
+            }
+
+            if (departure != null && departure.CurrentState == AircraftState.Pushbacking)
+            {
+                return "AJJ202が後退中\n地上走行の準備中です。";
+            }
+
+            if (departure != null && departure.CurrentState == AircraftState.PushbackReady)
+            {
+                return selected == departure
                     ? "滑走路手前へ進めましょう。"
-                    : "AJJ202をクリック\n次は出発機を準備します。";
+                    : "AJJ202をクリック\n滑走路手前へ誘導します。";
             }
 
             if (departure != null && departure.CurrentState == AircraftState.TaxiToHold)
             {
                 return "AJJ202が滑走路手前へ移動中\n入る前に一度止めます。";
+            }
+
+            if (departure != null && departure.CurrentState == AircraftState.HoldingPoint)
+            {
+                return selected == departure
+                    ? "滑走路手前で待機させましょう。"
+                    : "AJJ202をクリック\n手前で待機させます。";
             }
 
             if (departure != null && departure.CurrentState == AircraftState.HoldingShort)
@@ -720,7 +790,7 @@ namespace ATCJourneyJapan.UI
 
             if (guide.Contains("AJJ202") || guide.Contains("Taxi to Holding Point"))
             {
-                return "滑走路が空いたら出発機を進めます。";
+                return "Groundでは滑走路手前までを整理します。";
             }
 
             if (guide.Contains("Line Up"))
@@ -740,12 +810,13 @@ namespace ATCJourneyJapan.UI
         {
             var recommendedCommands = new[]
             {
+                AircraftCommand.Pushback,
                 AircraftCommand.ClearLanding,
                 AircraftCommand.TaxiToGate,
                 AircraftCommand.TaxiToHold,
+                AircraftCommand.HoldShort,
                 AircraftCommand.LineUp,
-                AircraftCommand.ClearTakeoff,
-                AircraftCommand.HoldShort
+                AircraftCommand.ClearTakeoff
             };
 
             foreach (var command in recommendedCommands)
@@ -785,10 +856,12 @@ namespace ATCJourneyJapan.UI
                     return "着陸許可\nClear to Land";
                 case AircraftCommand.TaxiToGate:
                     return "ゲートへ誘導\nTaxi to Gate";
+                case AircraftCommand.Pushback:
+                    return "プッシュバック\nPushback";
                 case AircraftCommand.TaxiToHold:
                     return "滑走路手前へ誘導\nTaxi to Holding Point";
                 case AircraftCommand.HoldShort:
-                    return "現在位置で待機\nHold Position";
+                    return "滑走路手前で待機\nHold Short";
                 case AircraftCommand.LineUp:
                     return "滑走路上で待機\nLine Up and Wait";
                 case AircraftCommand.ClearTakeoff:
@@ -808,10 +881,12 @@ namespace ATCJourneyJapan.UI
                     return "着陸許可";
                 case AircraftCommand.TaxiToGate:
                     return "ゲートへ誘導";
+                case AircraftCommand.Pushback:
+                    return "プッシュバック";
                 case AircraftCommand.TaxiToHold:
                     return "滑走路手前へ誘導";
                 case AircraftCommand.HoldShort:
-                    return "現在位置で待機";
+                    return "滑走路手前で待機";
                 case AircraftCommand.LineUp:
                     return "滑走路上で待機";
                 case AircraftCommand.ClearTakeoff:
@@ -831,10 +906,12 @@ namespace ATCJourneyJapan.UI
                     return "滑走路が空いている時だけ出します。";
                 case AircraftCommand.TaxiToGate:
                     return "着陸後、ゲートへ移動させます。";
+                case AircraftCommand.Pushback:
+                    return "ゲートから後退し、出発準備をします。";
                 case AircraftCommand.TaxiToHold:
-                    return "出発機を滑走路手前へ進めます。";
+                    return "Groundの基本。滑走路手前へ進めます。";
                 case AircraftCommand.HoldShort:
-                    return "安全確認のため待機させます。";
+                    return "滑走路に入る前に止めます。";
                 case AircraftCommand.LineUp:
                     return "離陸前に滑走路上で待機させます。";
                 case AircraftCommand.ClearTakeoff:
@@ -862,8 +939,14 @@ namespace ATCJourneyJapan.UI
                     return "ゲートへ移動中";
                 case AircraftState.AtGate:
                     return "ゲート待機中";
+                case AircraftState.Pushbacking:
+                    return "プッシュバック中";
+                case AircraftState.PushbackReady:
+                    return "地上走行準備完了";
                 case AircraftState.TaxiToHold:
                     return "滑走路手前へ移動中";
+                case AircraftState.HoldingPoint:
+                    return "滑走路手前に到着";
                 case AircraftState.HoldingShort:
                     return "滑走路手前で待機中";
                 case AircraftState.LiningUp:
@@ -895,7 +978,9 @@ namespace ATCJourneyJapan.UI
             Info,
             Command,
             RunwayExitReady,
-            ArrivalComplete
+            ArrivalComplete,
+            PushbackComplete,
+            HoldingPointReady
         }
 
         private enum TutorialHighlight
@@ -906,7 +991,12 @@ namespace ATCJourneyJapan.UI
             ArrivalAircraft,
             ClearLanding,
             Gate1,
-            TaxiToGate
+            TaxiToGate,
+            Gate2,
+            Pushback,
+            TaxiToHold,
+            HoldShort,
+            LineUp
         }
 
         private class TutorialStep
@@ -954,6 +1044,26 @@ namespace ATCJourneyJapan.UI
                 {
                     Message = message,
                     WaitMode = TutorialWaitMode.RunwayExitReady,
+                    Highlight = highlight
+                };
+            }
+
+            public static TutorialStep PushbackComplete(string message, TutorialHighlight highlight)
+            {
+                return new TutorialStep
+                {
+                    Message = message,
+                    WaitMode = TutorialWaitMode.PushbackComplete,
+                    Highlight = highlight
+                };
+            }
+
+            public static TutorialStep HoldingPointReady(string message, TutorialHighlight highlight)
+            {
+                return new TutorialStep
+                {
+                    Message = message,
+                    WaitMode = TutorialWaitMode.HoldingPointReady,
                     Highlight = highlight
                 };
             }
