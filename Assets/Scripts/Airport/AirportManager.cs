@@ -10,6 +10,7 @@ namespace ATCJourneyJapan.Airport
         [SerializeField] private string airportDisplayName = "Prototype Island Airport";
 
         private readonly List<RunwayController> runways = new List<RunwayController>();
+        private readonly List<RunwayData> runwayData = new List<RunwayData>();
         private readonly List<Vector3> gatePositions = new List<Vector3>();
         private Material runwayMaterial;
         private Material taxiwayMaterial;
@@ -17,6 +18,8 @@ namespace ATCJourneyJapan.Airport
         private Material groundMaterial;
 
         public IReadOnlyList<RunwayController> Runways => runways;
+        public IReadOnlyList<RunwayData> RunwayData => runwayData;
+        public RunwayData PrimaryRunwayData => runwayData.Count > 0 ? runwayData[0] : null;
         public Vector3 ArrivalSpawnPosition => new Vector3(-26f, 0.6f, 0f);
         public Vector3 DepartureSpawnPosition => gatePositions.Count > 1 ? gatePositions[1] : new Vector3(-10f, 0.6f, -9f);
         public Vector3 PushbackReadyPosition => new Vector3(-11f, 0.6f, -6.5f);
@@ -25,7 +28,21 @@ namespace ATCJourneyJapan.Airport
         public void Initialize()
         {
             CreateMaterials();
+            CreateRunwayData();
             CreateEnvironment();
+        }
+
+        public RunwayData GetRunwayData(string runwayId)
+        {
+            foreach (var runway in runwayData)
+            {
+                if (runway.RunwayId == runwayId)
+                {
+                    return runway;
+                }
+            }
+
+            return null;
         }
 
         public IEnumerable<Vector3> GetArrivalFinalRoute()
@@ -121,6 +138,13 @@ namespace ATCJourneyJapan.Airport
                 color = color
             };
             return material;
+        }
+
+        private void CreateRunwayData()
+        {
+            runwayData.Clear();
+            runwayData.Add(new RunwayData("RWY_A", "A滑走路", "Runway A", "18L", "36R", "18L", true, "ArrivalAndDeparture"));
+            runwayData.Add(new RunwayData("RWY_B", "B滑走路", "Runway B", "18R", "36L", "18R", false, "FutureExpansion"));
         }
 
         private void CreateEnvironment()

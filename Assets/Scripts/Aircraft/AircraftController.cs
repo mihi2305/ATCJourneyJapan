@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using ATCJourneyJapan.Airport;
 using ATCJourneyJapan.Core;
+using ATCJourneyJapan.Radio;
 using UnityEngine;
 
 namespace ATCJourneyJapan.Aircraft
@@ -22,10 +23,12 @@ namespace ATCJourneyJapan.Aircraft
         private Renderer aircraftRenderer;
         private Material normalMaterial;
         private Material selectedMaterial;
+        private AircraftData flightData;
         private bool selected;
         private bool tutorialHighlighted;
 
         public string FlightNumber => flightNumber;
+        public AircraftData FlightData => flightData;
         public bool IsArrivalAircraft => arrivalAircraft;
         public AircraftState CurrentState => currentState;
         public bool IsComplete => arrivalAircraft ? currentState == AircraftState.AtGate : currentState == AircraftState.AirborneDeparture;
@@ -34,17 +37,18 @@ namespace ATCJourneyJapan.Aircraft
                                   || currentState == AircraftState.LiningUp
                                   || currentState == AircraftState.TakeoffRoll;
 
-        public void Configure(string callSign, bool isArrival, AircraftState startingState, AirportManager airport, GameManager manager, Material normal, Material selected)
+        public void Configure(AircraftData data, bool isArrival, AircraftState startingState, AirportManager airport, GameManager manager, Material normal, Material selected)
         {
-            flightNumber = callSign;
+            flightData = data;
+            flightNumber = data.FlightId;
             arrivalAircraft = isArrival;
-            currentState = startingState;
             airportManager = airport;
             gameManager = manager;
             normalMaterial = normal;
             selectedMaterial = selected;
 
             aircraftRenderer = GetComponentInChildren<Renderer>();
+            SetState(startingState);
             SetSelected(false);
             CreateLabel();
             UpdateLabel();
@@ -140,16 +144,16 @@ namespace ATCJourneyJapan.Aircraft
 
         private void ClearLanding()
         {
-            currentState = AircraftState.FinalApproach;
+            SetState(AircraftState.FinalApproach);
             route.StartRoute(airportManager.GetArrivalFinalRoute(), airborneSpeed, () =>
             {
-                currentState = AircraftState.LandingRoll;
+                SetState(AircraftState.LandingRoll);
                 route.StartRoute(airportManager.GetLandingRollRoute(), groundSpeed + 1f, () =>
                 {
-                    currentState = AircraftState.VacatingRunway;
+                    SetState(AircraftState.VacatingRunway);
                     route.StartRoute(airportManager.GetVacateRunwayRoute(), groundSpeed, () =>
                     {
-                        currentState = AircraftState.Waiting;
+                        SetState(AircraftState.Waiting);
                     });
                 });
             });
@@ -157,54 +161,54 @@ namespace ATCJourneyJapan.Aircraft
 
         private void TaxiToGate()
         {
-            currentState = AircraftState.TaxiToGate;
+            SetState(AircraftState.TaxiToGate);
             route.StartRoute(airportManager.GetTaxiToAvailableGateRoute(), groundSpeed, () =>
             {
-                currentState = AircraftState.AtGate;
+                SetState(AircraftState.AtGate);
                 gameManager.NotifyAircraftHandled(this);
             });
         }
 
         private void Pushback()
         {
-            currentState = AircraftState.Pushbacking;
+            SetState(AircraftState.Pushbacking);
             route.StartRoute(airportManager.GetPushbackRoute(), groundSpeed * 0.65f, () =>
             {
-                currentState = AircraftState.PushbackReady;
+                SetState(AircraftState.PushbackReady);
             });
         }
 
         private void TaxiToHold()
         {
-            currentState = AircraftState.TaxiToHold;
+            SetState(AircraftState.TaxiToHold);
             route.StartRoute(airportManager.GetTaxiToHoldRoute(), groundSpeed, () =>
             {
-                currentState = AircraftState.HoldingPoint;
+                SetState(AircraftState.HoldingPoint);
             });
         }
 
         private void HoldShort()
         {
             route.Stop();
-            currentState = AircraftState.HoldingShort;
+            SetState(AircraftState.HoldingShort);
             transform.position = airportManager.HoldShortPosition;
         }
 
         private void LineUp()
         {
-            currentState = AircraftState.LiningUp;
+            SetState(AircraftState.LiningUp);
             route.StartRoute(airportManager.GetLineUpRoute(), groundSpeed, () =>
             {
-                currentState = AircraftState.LiningUp;
+                SetState(AircraftState.LiningUp);
             });
         }
 
         private void ClearTakeoff()
         {
-            currentState = AircraftState.TakeoffRoll;
+            SetState(AircraftState.TakeoffRoll);
             route.StartRoute(airportManager.GetTakeoffRoute(), airborneSpeed, () =>
             {
-                currentState = AircraftState.AirborneDeparture;
+                SetState(AircraftState.AirborneDeparture);
                 gameManager.NotifyAircraftHandled(this);
             });
         }
@@ -212,7 +216,119 @@ namespace ATCJourneyJapan.Aircraft
         private void StopAircraft()
         {
             route.Stop();
-            currentState = AircraftState.Waiting;
+            SetState(AircraftState.Waiting);
+        }
+
+        private void SetState(AircraftState state)
+        {
+            currentState = state;
+            SyncFlightData();
+        }
+
+        private void SyncFlightData()
+        {
+            if (flightData == null)
+            {
+                return;
+            }
+
+            flightData.UpdateRuntimeState(GetDataStateLabel(), GetControllerPositionLabel(), GetRecommendedCommandId());
+        }
+
+        private string GetDataStateLabel()
+        {
+            switch (currentState)
+            {
+                case AircraftState.Inbound:
+                    return "着陸許可待ち";
+                case AircraftState.FinalApproach:
+                    return "着陸中";
+                case AircraftState.LandingRoll:
+                    return "着陸滑走中";
+                case AircraftState.VacatingRunway:
+                    return "滑走路離脱中";
+                case AircraftState.TaxiToGate:
+                    return "ゲートへ地上走行中";
+                case AircraftState.AtGate:
+                    return arrivalAircraft ? "ゲート到着" : "出発準備";
+                case AircraftState.Pushbacking:
+                    return "プッシュバック中";
+                case AircraftState.PushbackReady:
+                    return "地上走行待ち";
+                case AircraftState.TaxiToHold:
+                    return "滑走路手前へ地上走行中";
+                case AircraftState.HoldingPoint:
+                    return "滑走路手前到着";
+                case AircraftState.HoldingShort:
+                    return "滑走路手前待機";
+                case AircraftState.LiningUp:
+                    return "滑走路上待機";
+                case AircraftState.TakeoffRoll:
+                    return "離陸中";
+                case AircraftState.AirborneDeparture:
+                    return "離陸済";
+                case AircraftState.Waiting:
+                    return "次の指示待ち";
+                default:
+                    return currentState.ToString();
+            }
+        }
+
+        private string GetControllerPositionLabel()
+        {
+            if (arrivalAircraft)
+            {
+                return "Tower";
+            }
+
+            switch (currentState)
+            {
+                case AircraftState.AtGate:
+                case AircraftState.Pushbacking:
+                case AircraftState.PushbackReady:
+                case AircraftState.TaxiToHold:
+                case AircraftState.HoldingPoint:
+                case AircraftState.HoldingShort:
+                    return "Ground";
+                default:
+                    return "Tower";
+            }
+        }
+
+        private string GetRecommendedCommandId()
+        {
+            var recommended = GetRecommendedCommandForData();
+            if (!recommended.HasValue)
+            {
+                return string.Empty;
+            }
+
+            var phrase = CommandPhraseCatalog.Get(recommended.Value);
+            return phrase != null ? phrase.CommandId : string.Empty;
+        }
+
+        private AircraftCommand? GetRecommendedCommandForData()
+        {
+            var recommendedCommands = new[]
+            {
+                AircraftCommand.Pushback,
+                AircraftCommand.ClearLanding,
+                AircraftCommand.TaxiToGate,
+                AircraftCommand.TaxiToHold,
+                AircraftCommand.HoldShort,
+                AircraftCommand.LineUp,
+                AircraftCommand.ClearTakeoff
+            };
+
+            foreach (var command in recommendedCommands)
+            {
+                if (CanExecute(command))
+                {
+                    return command;
+                }
+            }
+
+            return null;
         }
 
         private void CreateLabel()

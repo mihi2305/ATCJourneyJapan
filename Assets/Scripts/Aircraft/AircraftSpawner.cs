@@ -23,8 +23,12 @@ namespace ATCJourneyJapan.Aircraft
 
         public void SpawnInitialAircraft()
         {
-            SpawnAircraft("AJJ101", true, AircraftState.Inbound, airportManager.ArrivalSpawnPosition, PrimitiveType.Capsule, arrivalMaterial);
-            SpawnAircraft("AJJ202", false, AircraftState.AtGate, airportManager.DepartureSpawnPosition, PrimitiveType.Capsule, departureMaterial);
+            var runway = airportManager.PrimaryRunwayData;
+            var arrivalData = new AircraftData("AJJ101", "B737級", "Arrival", runway.RunwayId, runway.SimpleNameJa, runway.CurrentActiveDesignator, "Gate 1", "宮崎", "那覇");
+            var departureData = new AircraftData("AJJ202", "A320級", "Departure", runway.RunwayId, runway.SimpleNameJa, runway.CurrentActiveDesignator, "Gate 2", "那覇", "東京");
+
+            SpawnAircraft(arrivalData, true, AircraftState.Inbound, airportManager.ArrivalSpawnPosition, PrimitiveType.Capsule, arrivalMaterial);
+            SpawnAircraft(departureData, false, AircraftState.AtGate, airportManager.DepartureSpawnPosition, PrimitiveType.Capsule, departureMaterial);
         }
 
         private void CreateMaterials()
@@ -35,15 +39,15 @@ namespace ATCJourneyJapan.Aircraft
             selectedMaterial = new Material(shader) { name = "Selected Aircraft Orange", color = new Color(1f, 0.55f, 0.18f) };
         }
 
-        private AircraftController SpawnAircraft(string callSign, bool arrival, AircraftState state, Vector3 position, PrimitiveType primitive, Material material)
+        private AircraftController SpawnAircraft(AircraftData flightData, bool arrival, AircraftState state, Vector3 position, PrimitiveType primitive, Material material)
         {
             var aircraftObject = GameObject.CreatePrimitive(primitive);
-            aircraftObject.name = $"{callSign} Aircraft";
+            aircraftObject.name = $"{flightData.FlightId} Aircraft";
             aircraftObject.transform.position = position;
             aircraftObject.transform.localScale = new Vector3(1.2f, 0.5f, 1.2f);
 
             var controller = aircraftObject.AddComponent<AircraftController>();
-            controller.Configure(callSign, arrival, state, airportManager, gameManager, material, selectedMaterial);
+            controller.Configure(flightData, arrival, state, airportManager, gameManager, material, selectedMaterial);
             gameManager.RegisterAircraft(controller);
             return controller;
         }

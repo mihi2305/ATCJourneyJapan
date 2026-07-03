@@ -199,8 +199,8 @@ namespace ATCJourneyJapan.UI
             guidePanel = guideText.transform.parent.gameObject;
             guidePanel.GetComponent<Image>().color = new Color(0.02f, 0.03f, 0.04f, 0.7f);
 
-            selectedPanel = CreatePanel("Selected Aircraft", hudRoot.transform, new Vector2(0f, 0f), new Vector2(330f, 128f), AnchorPreset.BottomLeft, new Vector2(24f, 34f));
-            selectedText = CreateText("Selected Text", selectedPanel.transform, string.Empty, 18, FontStyle.Normal, TextAnchor.UpperLeft, Vector2.zero, new Vector2(286f, 94f));
+            selectedPanel = CreatePanel("Selected Aircraft", hudRoot.transform, new Vector2(0f, 0f), new Vector2(374f, 166f), AnchorPreset.BottomLeft, new Vector2(24f, 34f));
+            selectedText = CreateText("Selected Text", selectedPanel.transform, string.Empty, 15, FontStyle.Normal, TextAnchor.UpperLeft, Vector2.zero, new Vector2(330f, 132f));
 
             var commandPanel = CreatePanel("Command Panel", hudRoot.transform, new Vector2(0f, 0f), new Vector2(300f, 410f), AnchorPreset.MiddleRight, new Vector2(-12f, 0f));
             CreateText("Command Title", commandPanel.transform, "指示", 22, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(0f, 154f), new Vector2(250f, 34f));
@@ -250,7 +250,7 @@ namespace ATCJourneyJapan.UI
 
             if (selected != null)
             {
-                selectedText.text = $"便名: {selected.FlightNumber}\n状態: {GetStateLabel(selected.CurrentState)}\n推奨: {(recommended.HasValue ? GetCommandShortLabel(recommended.Value) : "監視")}";
+                selectedText.text = GetSelectedAircraftText(selected, recommended);
                 helpText.text = recommended.HasValue ? GetCommandDescription(recommended.Value) : commandHelpMessage;
             }
             else
@@ -326,6 +326,23 @@ namespace ATCJourneyJapan.UI
             }
 
             return "現在は監視";
+        }
+
+        private string GetSelectedAircraftText(AircraftController selected, AircraftCommand? recommended)
+        {
+            var data = selected.FlightData;
+            if (data == null)
+            {
+                return $"便名: {selected.FlightNumber}\n状態: {GetStateLabel(selected.CurrentState)}\n推奨: {(recommended.HasValue ? GetCommandShortLabel(recommended.Value) : "監視")}";
+            }
+
+            var recommendedLabel = recommended.HasValue ? GetCommandShortLabel(recommended.Value) : "監視";
+            return $"便名: {data.FlightId}  {GetOperationLabel(data.OperationType)} / {data.AircraftType}\n"
+                + $"区間: {data.Origin} -> {data.Destination}\n"
+                + $"滑走路: {data.RunwayBilingualDisplay}\n"
+                + $"場所: {data.GateOrSpot}\n"
+                + $"状態: {data.CurrentState}\n"
+                + $"担当: {data.ControllerPosition} / 推奨: {recommendedLabel}";
         }
 
         private void AdvanceTutorial()
@@ -987,6 +1004,19 @@ namespace ATCJourneyJapan.UI
                     return "次の指示待ち";
                 default:
                     return state.ToString();
+            }
+        }
+
+        private string GetOperationLabel(string operationType)
+        {
+            switch (operationType)
+            {
+                case "Arrival":
+                    return "到着";
+                case "Departure":
+                    return "出発";
+                default:
+                    return operationType;
             }
         }
 
