@@ -9,7 +9,8 @@ namespace ATCJourneyJapan.Aircraft
             string assignedRunwayId,
             string assignedRunwayDisplayName,
             string activeRunwayDesignator,
-            string gateOrSpot,
+            string spotId,
+            string spotDisplayName,
             string origin,
             string destination)
         {
@@ -19,7 +20,8 @@ namespace ATCJourneyJapan.Aircraft
             AssignedRunwayId = assignedRunwayId;
             AssignedRunwayDisplayName = assignedRunwayDisplayName;
             ActiveRunwayDesignator = activeRunwayDesignator;
-            GateOrSpot = gateOrSpot;
+            SpotId = spotId;
+            SpotDisplayName = spotDisplayName;
             Origin = origin;
             Destination = destination;
         }
@@ -30,19 +32,34 @@ namespace ATCJourneyJapan.Aircraft
         public string AssignedRunwayId { get; private set; }
         public string AssignedRunwayDisplayName { get; private set; }
         public string ActiveRunwayDesignator { get; private set; }
-        public string GateOrSpot { get; private set; }
+        public string SpotId { get; private set; }
+        public string SpotDisplayName { get; private set; }
+        public string GateOrSpot => SpotDisplayName;
         public string CurrentState { get; private set; }
         public string ControllerPosition { get; private set; }
         public string Origin { get; private set; }
         public string Destination { get; private set; }
         public string RecommendedCommandId { get; private set; }
+        public string NextTargetType { get; private set; }
+        public string NextTargetId { get; private set; }
+        public string NextTargetDisplayName { get; private set; }
         public string RunwayBilingualDisplay => $"{AssignedRunwayDisplayName}（RWY {ActiveRunwayDesignator}）";
+        public string RunwayShortDisplay => $"RWY {ActiveRunwayDesignator}";
 
-        public void UpdateRuntimeState(string currentState, string controllerPosition, string recommendedCommandId)
+        public void UpdateRuntimeState(
+            string currentState,
+            string controllerPosition,
+            string recommendedCommandId,
+            string nextTargetType,
+            string nextTargetId,
+            string nextTargetDisplayName)
         {
             CurrentState = currentState;
             ControllerPosition = controllerPosition;
             RecommendedCommandId = recommendedCommandId;
+            NextTargetType = nextTargetType;
+            NextTargetId = nextTargetId;
+            NextTargetDisplayName = nextTargetDisplayName;
         }
     }
 }

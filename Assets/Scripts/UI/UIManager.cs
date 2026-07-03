@@ -337,12 +337,12 @@ namespace ATCJourneyJapan.UI
             }
 
             var recommendedLabel = recommended.HasValue ? GetCommandShortLabel(recommended.Value) : "監視";
+            var nextTargetLabel = string.IsNullOrEmpty(data.NextTargetDisplayName) ? "-" : data.NextTargetDisplayName;
             return $"便名: {data.FlightId}  {GetOperationLabel(data.OperationType)} / {data.AircraftType}\n"
-                + $"区間: {data.Origin} -> {data.Destination}\n"
-                + $"滑走路: {data.RunwayBilingualDisplay}\n"
-                + $"場所: {data.GateOrSpot}\n"
-                + $"状態: {data.CurrentState}\n"
-                + $"担当: {data.ControllerPosition} / 推奨: {recommendedLabel}";
+                + $"滑走路: {data.RunwayShortDisplay}\n"
+                + $"Spot: {data.SpotDisplayName}\n"
+                + $"次: {nextTargetLabel}\n"
+                + $"推奨: {recommendedLabel}";
         }
 
         private void AdvanceTutorial()
@@ -443,11 +443,11 @@ namespace ATCJourneyJapan.UI
                 TutorialStep.Command("滑走路が空いています。\nAJJ101に着陸許可を出しましょう。", AircraftCommand.ClearLanding, TutorialHighlight.ClearLanding),
                 TutorialStep.RunwayExitReady("AJJ101が着陸中です。\n滑走路が使用中になります。", TutorialHighlight.RunwayInUse),
                 TutorialStep.Info("着陸後は、次の飛行機のために\n滑走路を空けます。", TutorialHighlight.RunwayInUse),
-                TutorialStep.Command("AJJ101をGate 1へ\n誘導しましょう。", AircraftCommand.TaxiToGate, TutorialHighlight.TaxiToGate),
-                TutorialStep.ArrivalComplete("AJJ101がGate 1へ移動中です。\n到着完了まで見守ります。", TutorialHighlight.Gate1),
-                TutorialStep.Info("AJJ101がGate 1に到着しました。\n到着機の基本処理は完了です。", TutorialHighlight.Gate1),
+                TutorialStep.Command("AJJ101をSPOT 01へ\n誘導しましょう。", AircraftCommand.TaxiToGate, TutorialHighlight.TaxiToGate),
+                TutorialStep.ArrivalComplete("AJJ101がSPOT 01へ移動中です。\n到着完了まで見守ります。", TutorialHighlight.Gate1),
+                TutorialStep.Info("AJJ101がSPOT 01に到着しました。\n到着機の基本処理は完了です。", TutorialHighlight.Gate1),
                 TutorialStep.Info("出発訓練\nAJJ202を離陸させましょう。"),
-                TutorialStep.Info("まずGate 2から\n出発準備をします。", TutorialHighlight.Gate2),
+                TutorialStep.Info("まずSPOT 02から\n出発準備をします。", TutorialHighlight.Gate2),
                 TutorialStep.Command("AJJ202を選択し、\nプッシュバックします。", AircraftCommand.Pushback, TutorialHighlight.Pushback),
                 TutorialStep.PushbackComplete("AJJ202が後退中です。\n地上走行の準備をします。", TutorialHighlight.Pushback),
                 TutorialStep.Command("滑走路手前まで\n地上走行させましょう。", AircraftCommand.TaxiToHold, TutorialHighlight.TaxiToHold),
@@ -758,13 +758,13 @@ namespace ATCJourneyJapan.UI
             if (arrival != null && arrival.CurrentState == AircraftState.Waiting)
             {
                 return selected == arrival
-                    ? "ゲートへ誘導しましょう。"
-                    : "AJJ101をクリック\nゲートへ誘導します。";
+                    ? "スポットへ誘導しましょう。"
+                    : "AJJ101をクリック\nSPOT 01へ誘導します。";
             }
 
             if (arrival != null && arrival.CurrentState == AircraftState.TaxiToGate)
             {
-                return "AJJ101がゲートへ移動中\n滑走路が空いたら出発機へ。";
+                return "AJJ101がSPOT 01へ移動中\n滑走路が空いたら出発機へ。";
             }
 
             if (departure != null && departure.CurrentState == AircraftState.AtGate)
@@ -828,9 +828,9 @@ namespace ATCJourneyJapan.UI
                 return "滑走路は基本的に1機ずつ使います。";
             }
 
-            if (guide.Contains("Taxi to Gate") || guide.Contains("ゲートへ誘導"))
+            if (guide.Contains("Taxi to Spot") || guide.Contains("スポットへ誘導"))
             {
-                return "着陸後は滑走路を空けましょう。";
+                return "着陸後はスポットへ誘導します。";
             }
 
             if (guide.Contains("AJJ202") || guide.Contains("Taxi to Holding Point"))
@@ -900,7 +900,7 @@ namespace ATCJourneyJapan.UI
                 case AircraftCommand.ClearLanding:
                     return "着陸許可\nClear to Land";
                 case AircraftCommand.TaxiToGate:
-                    return "ゲートへ誘導\nTaxi to Gate";
+                    return "スポットへ誘導\nTaxi to Spot";
                 case AircraftCommand.Pushback:
                     return "プッシュバック\nPushback";
                 case AircraftCommand.TaxiToHold:
@@ -925,7 +925,7 @@ namespace ATCJourneyJapan.UI
                 case AircraftCommand.ClearLanding:
                     return "着陸許可";
                 case AircraftCommand.TaxiToGate:
-                    return "ゲートへ誘導";
+                    return "スポットへ誘導";
                 case AircraftCommand.Pushback:
                     return "プッシュバック";
                 case AircraftCommand.TaxiToHold:
@@ -950,9 +950,9 @@ namespace ATCJourneyJapan.UI
                 case AircraftCommand.ClearLanding:
                     return "滑走路が空いている時だけ出します。";
                 case AircraftCommand.TaxiToGate:
-                    return "着陸後、ゲートへ移動させます。";
+                    return "着陸後、スポットへ移動させます。";
                 case AircraftCommand.Pushback:
-                    return "ゲートから後退し、出発準備をします。";
+                    return "スポットから後退し、出発準備をします。";
                 case AircraftCommand.TaxiToHold:
                     return "Groundの基本。滑走路手前へ進めます。";
                 case AircraftCommand.HoldShort:
@@ -981,9 +981,9 @@ namespace ATCJourneyJapan.UI
                 case AircraftState.VacatingRunway:
                     return "滑走路離脱中";
                 case AircraftState.TaxiToGate:
-                    return "ゲートへ移動中";
+                    return "スポットへ移動中";
                 case AircraftState.AtGate:
-                    return "ゲート待機中";
+                    return "スポット待機中";
                 case AircraftState.Pushbacking:
                     return "プッシュバック中";
                 case AircraftState.PushbackReady:

@@ -19,10 +19,10 @@ namespace ATCJourneyJapan.Radio
                 case AircraftCommand.TaxiToGate:
                     return new CommandPhrase(
                         "taxi_to_gate",
-                        "管制官：AJJ101、Gate 1へ地上走行してください。",
-                        "AJJ101, taxi to Gate 1.",
-                        "Gate 1へ向かいます、AJJ101。",
-                        "Taxi to Gate 1, AJJ101.",
+                        "管制官：AJJ101、SPOT 01へ地上走行してください。",
+                        "AJJ101, taxi to Spot 01.",
+                        "SPOT 01へ向かいます、AJJ101。",
+                        "Taxi to Spot 01, AJJ101.",
                         "ajj101_taxi_to_gate");
                 case AircraftCommand.Pushback:
                     return new CommandPhrase(

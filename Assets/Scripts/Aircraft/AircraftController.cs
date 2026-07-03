@@ -232,7 +232,13 @@ namespace ATCJourneyJapan.Aircraft
                 return;
             }
 
-            flightData.UpdateRuntimeState(GetDataStateLabel(), GetControllerPositionLabel(), GetRecommendedCommandId());
+            flightData.UpdateRuntimeState(
+                GetDataStateLabel(),
+                GetControllerPositionLabel(),
+                GetRecommendedCommandId(),
+                GetNextTargetType(),
+                GetNextTargetId(),
+                GetNextTargetDisplayName());
         }
 
         private string GetDataStateLabel()
@@ -248,9 +254,9 @@ namespace ATCJourneyJapan.Aircraft
                 case AircraftState.VacatingRunway:
                     return "滑走路離脱中";
                 case AircraftState.TaxiToGate:
-                    return "ゲートへ地上走行中";
+                    return "スポットへ地上走行中";
                 case AircraftState.AtGate:
-                    return arrivalAircraft ? "ゲート到着" : "出発準備";
+                    return arrivalAircraft ? "スポット到着" : "出発準備";
                 case AircraftState.Pushbacking:
                     return "プッシュバック中";
                 case AircraftState.PushbackReady:
@@ -331,6 +337,78 @@ namespace ATCJourneyJapan.Aircraft
             return null;
         }
 
+        private string GetNextTargetType()
+        {
+            if (arrivalAircraft)
+            {
+                switch (currentState)
+                {
+                    case AircraftState.Inbound:
+                    case AircraftState.FinalApproach:
+                    case AircraftState.LandingRoll:
+                        return "Runway";
+                    case AircraftState.VacatingRunway:
+                    case AircraftState.Waiting:
+                    case AircraftState.TaxiToGate:
+                    case AircraftState.AtGate:
+                        return "Spot";
+                    default:
+                        return string.Empty;
+                }
+            }
+
+            switch (currentState)
+            {
+                case AircraftState.AtGate:
+                case AircraftState.Pushbacking:
+                    return "Pushback";
+                case AircraftState.PushbackReady:
+                case AircraftState.TaxiToHold:
+                case AircraftState.LiningUp:
+                case AircraftState.TakeoffRoll:
+                    return "Runway";
+                case AircraftState.HoldingPoint:
+                case AircraftState.HoldingShort:
+                    return "HoldingPoint";
+                default:
+                    return string.Empty;
+            }
+        }
+
+        private string GetNextTargetId()
+        {
+            switch (GetNextTargetType())
+            {
+                case "Runway":
+                    return $"RWY_{flightData.ActiveRunwayDesignator}";
+                case "Spot":
+                    return flightData.SpotId;
+                case "HoldingPoint":
+                    return "HOLD_SHORT_A";
+                case "Pushback":
+                    return "PUSHBACK";
+                default:
+                    return string.Empty;
+            }
+        }
+
+        private string GetNextTargetDisplayName()
+        {
+            switch (GetNextTargetType())
+            {
+                case "Runway":
+                    return flightData.RunwayShortDisplay;
+                case "Spot":
+                    return flightData.SpotDisplayName;
+                case "HoldingPoint":
+                    return "HOLD A";
+                case "Pushback":
+                    return "PUSHBACK";
+                default:
+                    return string.Empty;
+            }
+        }
+
         private void CreateLabel()
         {
             var labelObject = new GameObject("Flight Label");
@@ -339,8 +417,8 @@ namespace ATCJourneyJapan.Aircraft
             label = labelObject.AddComponent<TextMesh>();
             label.anchor = TextAnchor.MiddleCenter;
             label.alignment = TextAlignment.Center;
-            label.characterSize = 0.18f;
-            label.fontSize = 32;
+            label.characterSize = 0.16f;
+            label.fontSize = 30;
             label.color = Color.white;
         }
 
@@ -360,7 +438,7 @@ namespace ATCJourneyJapan.Aircraft
             }
 
             label.gameObject.SetActive(gameManager != null && gameManager.IsTrainingStarted);
-            label.text = $"{flightNumber}\n{GetShortStateLabel()}";
+            label.text = GetLabelText();
             var cameraTransform = Camera.main != null ? Camera.main.transform : null;
             if (cameraTransform != null)
             {
@@ -368,36 +446,17 @@ namespace ATCJourneyJapan.Aircraft
             }
         }
 
-        private string GetShortStateLabel()
+        private string GetLabelText()
         {
-            switch (currentState)
+            if (flightData == null)
             {
-                case AircraftState.Inbound:
-                case AircraftState.FinalApproach:
-                    return "到着";
-                case AircraftState.AtGate:
-                    return "ゲート";
-                case AircraftState.Waiting:
-                case AircraftState.HoldingShort:
-                case AircraftState.LiningUp:
-                    return "待機";
-                case AircraftState.Pushbacking:
-                case AircraftState.PushbackReady:
-                    return "出発準備";
-                case AircraftState.HoldingPoint:
-                    return "手前";
-                case AircraftState.LandingRoll:
-                case AircraftState.VacatingRunway:
-                case AircraftState.TaxiToGate:
-                case AircraftState.TaxiToHold:
-                    return "地上走行";
-                case AircraftState.TakeoffRoll:
-                    return "離陸";
-                case AircraftState.AirborneDeparture:
-                    return "離陸済";
-                default:
-                    return currentState.ToString();
+                return flightNumber;
             }
+
+            var target = string.IsNullOrEmpty(flightData.NextTargetDisplayName)
+                ? string.Empty
+                : $"\n{flightData.NextTargetDisplayName}";
+            return $"{flightData.FlightId}\n{flightData.AircraftType}{target}";
         }
     }
 }
