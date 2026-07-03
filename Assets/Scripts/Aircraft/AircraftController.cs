@@ -22,6 +22,8 @@ namespace ATCJourneyJapan.Aircraft
         private Renderer aircraftRenderer;
         private Material normalMaterial;
         private Material selectedMaterial;
+        private bool selected;
+        private bool tutorialHighlighted;
 
         public string FlightNumber => flightNumber;
         public bool IsArrivalAircraft => arrivalAircraft;
@@ -65,10 +67,14 @@ namespace ATCJourneyJapan.Aircraft
 
         public void SetSelected(bool selected)
         {
-            if (aircraftRenderer != null)
-            {
-                aircraftRenderer.sharedMaterial = selected ? selectedMaterial : normalMaterial;
-            }
+            this.selected = selected;
+            ApplyDisplayMaterial();
+        }
+
+        public void SetTutorialHighlighted(bool highlighted)
+        {
+            tutorialHighlighted = highlighted;
+            ApplyDisplayMaterial();
         }
 
         public bool CanExecute(AircraftCommand command)
@@ -206,6 +212,14 @@ namespace ATCJourneyJapan.Aircraft
             label.characterSize = 0.18f;
             label.fontSize = 32;
             label.color = Color.white;
+        }
+
+        private void ApplyDisplayMaterial()
+        {
+            if (aircraftRenderer != null)
+            {
+                aircraftRenderer.sharedMaterial = selected || tutorialHighlighted ? selectedMaterial : normalMaterial;
+            }
         }
 
         private void UpdateLabel()

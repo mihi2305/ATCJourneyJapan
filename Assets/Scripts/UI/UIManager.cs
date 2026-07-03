@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using ATCJourneyJapan.Aircraft;
 using ATCJourneyJapan.Core;
 using ATCJourneyJapan.Scoring;
@@ -18,6 +19,7 @@ namespace ATCJourneyJapan.UI
             AircraftCommand.ClearTakeoff
         };
 
+        private readonly Dictionary<Renderer, Color> highlightedObjectColors = new Dictionary<Renderer, Color>();
         private GameManager gameManager;
         private ScoreManager scoreManager;
         private CommandSystem commandSystem;
@@ -50,13 +52,14 @@ namespace ATCJourneyJapan.UI
         private TutorialStep[] tutorialSteps;
         private int tutorialStepIndex = -1;
         private bool tutorialActive;
+        private TutorialHighlight activeTutorialHighlight = TutorialHighlight.None;
 
         public bool IsTutorialBlockingProgress
         {
             get
             {
                 var step = CurrentTutorialStep;
-                return tutorialActive && step != null && !step.WaitForCommand;
+                return tutorialActive && step != null && step.WaitMode == TutorialWaitMode.Info;
             }
         }
 
@@ -119,6 +122,7 @@ namespace ATCJourneyJapan.UI
         {
             resultVisible = true;
             instructorMessage = "よし、安全に処理できている。";
+            ApplyTutorialHighlight(TutorialHighlight.None);
             Refresh();
         }
 
@@ -139,6 +143,7 @@ namespace ATCJourneyJapan.UI
             EnsureTutorialSteps();
             tutorialActive = true;
             tutorialStepIndex = 0;
+            activeTutorialHighlight = TutorialHighlight.None;
             Refresh();
         }
 
@@ -233,6 +238,7 @@ namespace ATCJourneyJapan.UI
             scoreText.text = $"安全度：  {scoreManager.Safety}\n遅延：    {Mathf.FloorToInt(scoreManager.Delay)}\n処理機数：{scoreManager.HandledAircraftCount}";
             guideText.text = GetCurrentGuide();
             instructorText.text = $"教官コメント\n{GetInstructorHint()}";
+            AdvanceTutorialIfReady();
             UpdateTutorialPanel();
 
             selectedPanel.SetActive(selected != null);
@@ -267,11 +273,13 @@ namespace ATCJourneyJapan.UI
             tutorialPanel.SetActive(step != null);
             if (step == null)
             {
+                ApplyTutorialHighlight(TutorialHighlight.None);
                 return;
             }
 
             tutorialText.text = step.Message;
-            tutorialNextButton.gameObject.SetActive(!step.WaitForCommand);
+            tutorialNextButton.gameObject.SetActive(step.WaitMode == TutorialWaitMode.Info);
+            ApplyTutorialHighlight(step.Highlight);
         }
 
         private string GetCommandStatusText(AircraftController selected, AircraftCommand? recommended)
@@ -302,9 +310,39 @@ namespace ATCJourneyJapan.UI
             {
                 tutorialActive = false;
                 tutorialStepIndex = -1;
+                ApplyTutorialHighlight(TutorialHighlight.None);
             }
 
             Refresh();
+        }
+
+        private void AdvanceTutorialIfReady()
+        {
+            var step = CurrentTutorialStep;
+            if (step == null)
+            {
+                return;
+            }
+
+            if (step.WaitMode == TutorialWaitMode.RunwayExitReady)
+            {
+                var arrival = FindAircraft("AJJ101");
+                if (arrival != null && (arrival.CurrentState == AircraftState.VacatingRunway || arrival.CurrentState == AircraftState.Waiting))
+                {
+                    AdvanceTutorial();
+                }
+
+                return;
+            }
+
+            if (step.WaitMode == TutorialWaitMode.ArrivalComplete)
+            {
+                var arrival = FindAircraft("AJJ101");
+                if (arrival != null && arrival.CurrentState == AircraftState.AtGate)
+                {
+                    AdvanceTutorial();
+                }
+            }
         }
 
         private TutorialStep CurrentTutorialStep
@@ -329,16 +367,103 @@ namespace ATCJourneyJapan.UI
 
             tutorialSteps = new[]
             {
-                TutorialStep.Info("ここはA滑走路です。\n離陸と着陸に使います。"),
-                TutorialStep.Info("安全のため、滑走路は\n基本的に1機だけ使います。"),
-                TutorialStep.Info("A滑走路は空いています。\nAJJ101に着陸許可を出します。"),
-                TutorialStep.Command("AJJ101を選択し、\n着陸許可を出しましょう。", AircraftCommand.ClearLanding),
-                TutorialStep.Info("AJJ101が着陸します。\n滑走路離脱まで見守ります。"),
-                TutorialStep.Command("着陸後、AJJ101を\nゲートへ誘導しましょう。", AircraftCommand.TaxiToGate),
+                TutorialStep.Info("ここはA滑走路です。\n飛行機が着陸・離陸する場所です。", TutorialHighlight.RunwayA),
+                TutorialStep.Info("安全のため、1本の滑走路には\n基本的に1機だけ入れます。", TutorialHighlight.RunwayA),
+                TutorialStep.Info("AJJ101がA滑走路に\n近づいています。", TutorialHighlight.ArrivalAircraft),
+                TutorialStep.Command("滑走路が空いています。\nAJJ101に着陸許可を出しましょう。", AircraftCommand.ClearLanding, TutorialHighlight.ClearLanding),
+                TutorialStep.RunwayExitReady("AJJ101が着陸中です。\n滑走路が使用中になります。", TutorialHighlight.RunwayInUse),
+                TutorialStep.Info("着陸後は、次の飛行機のために\n滑走路を空けます。", TutorialHighlight.RunwayInUse),
+                TutorialStep.Command("AJJ101をGate 1へ\n誘導しましょう。", AircraftCommand.TaxiToGate, TutorialHighlight.TaxiToGate),
+                TutorialStep.ArrivalComplete("AJJ101がGate 1へ移動中です。\n到着完了まで見守ります。", TutorialHighlight.Gate1),
+                TutorialStep.Info("AJJ101がGate 1に到着しました。\n到着機の基本処理は完了です。", TutorialHighlight.Gate1),
                 TutorialStep.Command("AJJ202を選択し、\n滑走路手前へ進めましょう。", AircraftCommand.TaxiToHold),
                 TutorialStep.Command("AJJ202を滑走路上で\n待機させましょう。", AircraftCommand.LineUp),
                 TutorialStep.Command("滑走路が安全なら、\n離陸許可を出しましょう。", AircraftCommand.ClearTakeoff)
             };
+        }
+
+        private void ApplyTutorialHighlight(TutorialHighlight highlight)
+        {
+            if (activeTutorialHighlight == highlight)
+            {
+                return;
+            }
+
+            ResetTutorialHighlights();
+            activeTutorialHighlight = highlight;
+
+            switch (highlight)
+            {
+                case TutorialHighlight.RunwayA:
+                    HighlightObject("Runway A", new Color(0.95f, 0.78f, 0.18f));
+                    break;
+                case TutorialHighlight.RunwayInUse:
+                    HighlightObject("Runway A", new Color(1f, 0.46f, 0.18f));
+                    HighlightAircraft("AJJ101");
+                    break;
+                case TutorialHighlight.ArrivalAircraft:
+                    HighlightAircraft("AJJ101");
+                    break;
+                case TutorialHighlight.ClearLanding:
+                    HighlightObject("Runway A", new Color(0.3f, 0.8f, 0.3f));
+                    HighlightAircraft("AJJ101");
+                    break;
+                case TutorialHighlight.Gate1:
+                    HighlightObject("Gate 1 Stand", new Color(0.15f, 0.75f, 0.65f));
+                    HighlightAircraft("AJJ101");
+                    break;
+                case TutorialHighlight.TaxiToGate:
+                    HighlightObject("Gate 1 Stand", new Color(0.15f, 0.75f, 0.65f));
+                    HighlightAircraft("AJJ101");
+                    break;
+            }
+        }
+
+        private void HighlightObject(string objectName, Color color)
+        {
+            var target = GameObject.Find(objectName);
+            var renderer = target != null ? target.GetComponent<Renderer>() : null;
+            if (renderer == null)
+            {
+                return;
+            }
+
+            if (!highlightedObjectColors.ContainsKey(renderer))
+            {
+                highlightedObjectColors.Add(renderer, renderer.material.color);
+            }
+
+            renderer.material.color = color;
+        }
+
+        private void HighlightAircraft(string flightNumber)
+        {
+            var aircraft = FindAircraft(flightNumber);
+            if (aircraft != null)
+            {
+                aircraft.SetTutorialHighlighted(true);
+            }
+        }
+
+        private void ResetTutorialHighlights()
+        {
+            foreach (var item in highlightedObjectColors)
+            {
+                if (item.Key != null)
+                {
+                    item.Key.material.color = item.Value;
+                }
+            }
+
+            highlightedObjectColors.Clear();
+
+            foreach (var aircraft in gameManager.Aircraft)
+            {
+                if (aircraft != null)
+                {
+                    aircraft.SetTutorialHighlighted(false);
+                }
+            }
         }
 
         private void UpdateResult()
@@ -763,24 +888,71 @@ namespace ATCJourneyJapan.UI
             BottomCenter
         }
 
+        private enum TutorialWaitMode
+        {
+            Info,
+            Command,
+            RunwayExitReady,
+            ArrivalComplete
+        }
+
+        private enum TutorialHighlight
+        {
+            None,
+            RunwayA,
+            RunwayInUse,
+            ArrivalAircraft,
+            ClearLanding,
+            Gate1,
+            TaxiToGate
+        }
+
         private class TutorialStep
         {
             public string Message { get; private set; }
-            public bool WaitForCommand { get; private set; }
+            public TutorialWaitMode WaitMode { get; private set; }
+            public bool WaitForCommand => WaitMode == TutorialWaitMode.Command;
             public AircraftCommand ExpectedCommand { get; private set; }
+            public TutorialHighlight Highlight { get; private set; }
 
-            public static TutorialStep Info(string message)
-            {
-                return new TutorialStep { Message = message };
-            }
-
-            public static TutorialStep Command(string message, AircraftCommand command)
+            public static TutorialStep Info(string message, TutorialHighlight highlight = TutorialHighlight.None)
             {
                 return new TutorialStep
                 {
                     Message = message,
-                    WaitForCommand = true,
-                    ExpectedCommand = command
+                    WaitMode = TutorialWaitMode.Info,
+                    Highlight = highlight
+                };
+            }
+
+            public static TutorialStep Command(string message, AircraftCommand command, TutorialHighlight highlight = TutorialHighlight.None)
+            {
+                return new TutorialStep
+                {
+                    Message = message,
+                    WaitMode = TutorialWaitMode.Command,
+                    ExpectedCommand = command,
+                    Highlight = highlight
+                };
+            }
+
+            public static TutorialStep ArrivalComplete(string message, TutorialHighlight highlight)
+            {
+                return new TutorialStep
+                {
+                    Message = message,
+                    WaitMode = TutorialWaitMode.ArrivalComplete,
+                    Highlight = highlight
+                };
+            }
+
+            public static TutorialStep RunwayExitReady(string message, TutorialHighlight highlight)
+            {
+                return new TutorialStep
+                {
+                    Message = message,
+                    WaitMode = TutorialWaitMode.RunwayExitReady,
+                    Highlight = highlight
                 };
             }
         }
