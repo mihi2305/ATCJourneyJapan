@@ -199,9 +199,10 @@ namespace ATCJourneyJapan.UI
             helpText = CreateText("Command Help", commandPanel.transform, string.Empty, 18, FontStyle.Normal, TextAnchor.UpperLeft, new Vector2(0f, -96f), new Vector2(250f, 94f));
             commandStatusText = CreateText("Command Status", commandPanel.transform, string.Empty, 20, FontStyle.Normal, TextAnchor.MiddleCenter, new Vector2(0f, 28f), new Vector2(250f, 86f));
 
-            tutorialPanel = CreatePanel("Tutorial Panel", hudRoot.transform, new Vector2(0.5f, 0f), new Vector2(840f, 176f), AnchorPreset.BottomCenter, new Vector2(0f, 48f));
-            tutorialText = CreateText("Tutorial Text", tutorialPanel.transform, string.Empty, 27, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-92f, 8f), new Vector2(560f, 112f));
-            tutorialNextButton = CreateButton("Tutorial Next", tutorialPanel.transform, "次へ\nNext", new Vector2(300f, -34f), new Vector2(156f, 64f), 21);
+            tutorialPanel = CreatePanel("Tutorial Panel", hudRoot.transform, new Vector2(0.5f, 0f), new Vector2(880f, 188f), AnchorPreset.BottomCenter, new Vector2(0f, 48f));
+            tutorialPanel.GetComponent<Image>().color = new Color(0.01f, 0.015f, 0.02f, 0.94f);
+            tutorialText = CreateText("Tutorial Text", tutorialPanel.transform, string.Empty, 29, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-96f, 8f), new Vector2(596f, 120f));
+            tutorialNextButton = CreateButton("Tutorial Next", tutorialPanel.transform, "次へ", new Vector2(318f, -36f), new Vector2(156f, 64f), 22);
             tutorialNextButton.onClick.AddListener(AdvanceTutorial);
 
             warningPanel = CreatePanel("Warning", hudRoot.transform, new Vector2(0f, 0f), new Vector2(760f, 44f), AnchorPreset.TopCenter, new Vector2(0f, -22f));

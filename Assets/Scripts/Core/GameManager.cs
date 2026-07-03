@@ -25,7 +25,7 @@ namespace ATCJourneyJapan.Core
         public bool StageClear => stageClear;
         public bool IsTrainingStarted => trainingStarted;
         public bool IsGameplayPaused => uiManager != null && uiManager.IsTutorialBlockingProgress;
-        public bool IsDelayPaused => stageClear || (uiManager != null && uiManager.IsTutorialActive);
+        public bool IsDelayPaused => trainingStarted || stageClear;
 
         public void Initialize()
         {
