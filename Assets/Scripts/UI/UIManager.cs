@@ -367,6 +367,7 @@ namespace ATCJourneyJapan.UI
 
             tutorialSteps = new[]
             {
+                TutorialStep.Info("到着訓練\nAJJ101を着陸させましょう。"),
                 TutorialStep.Info("ここはA滑走路です。\n飛行機が着陸・離陸する場所です。", TutorialHighlight.RunwayA),
                 TutorialStep.Info("安全のため、1本の滑走路には\n基本的に1機だけ入れます。", TutorialHighlight.RunwayA),
                 TutorialStep.Info("AJJ101がA滑走路に\n近づいています。", TutorialHighlight.ArrivalAircraft),
@@ -376,6 +377,7 @@ namespace ATCJourneyJapan.UI
                 TutorialStep.Command("AJJ101をGate 1へ\n誘導しましょう。", AircraftCommand.TaxiToGate, TutorialHighlight.TaxiToGate),
                 TutorialStep.ArrivalComplete("AJJ101がGate 1へ移動中です。\n到着完了まで見守ります。", TutorialHighlight.Gate1),
                 TutorialStep.Info("AJJ101がGate 1に到着しました。\n到着機の基本処理は完了です。", TutorialHighlight.Gate1),
+                TutorialStep.Info("出発訓練\nAJJ202を離陸させましょう。"),
                 TutorialStep.Command("AJJ202を選択し、\n滑走路手前へ進めましょう。", AircraftCommand.TaxiToHold),
                 TutorialStep.Command("AJJ202を滑走路上で\n待機させましょう。", AircraftCommand.LineUp),
                 TutorialStep.Command("滑走路が安全なら、\n離陸許可を出しましょう。", AircraftCommand.ClearTakeoff)

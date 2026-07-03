@@ -8,9 +8,9 @@
 | Phase 0 | 完了 | 動く土台 | A滑走路 / 到着機1機 / 出発機1機 / Stage Clear |
 | Phase 1.1 | ほぼ完了 | UI可読性・基本HUD改善 | 日本語HUD / ボタン整理 / 機体ラベル整理 / 右側指示欄 / チュートリアルUIの基本改善 |
 | Phase 1.15 | 完了 | 基本動作とチュートリアル体験の修正 | 航空機が滑走路・誘導路・ゲート上を自然に動く / 固定waypointで到着機・出発機を自然に移動 / 一時停止型チュートリアル / 1回に1概念だけ説明 / チュートリアル中の下部ガイド重複を削除 / 結果画面の日本語化 / チュートリアル中の遅延評価を緩和 / 下部パネルは将来的に日本語の管制通信ログへ発展 / 英語音声は将来Phaseで扱う |
-| Phase 1.2 | 完了 | Tower到着編チュートリアル | 滑走路1本1機ルール / Clear to Land / 滑走路使用中 / 滑走路を空ける / Taxi to Gate / 到着機AJJ101を中心に、到着処理の意味を段階的に教える / A滑走路・AJJ101・Gate 1・対象指示ボタンを軽くハイライト |
-| Phase 1.3 | 次に実装予定 | Tower出発編チュートリアル | Line Up and Wait / Cleared for Takeoff / 滑走路使用中の理解 / 出発機AJJ202の基本処理 |
-| Phase 1.4 | 未着手 | Ground基礎編 | Pushback / Taxi to Holding Point / Hold Short / Taxi to Gate / 地上移動の基礎理解 |
+| Phase 1.2 | 完了 | 初回訓練 前半: Tower到着編 | 1本の初回訓練内で扱う / 滑走路1本1機ルール / Clear to Land / 滑走路使用中 / 滑走路を空ける / Taxi to Gate / 到着機AJJ101を中心に、到着処理の意味を段階的に教える / A滑走路・AJJ101・Gate 1・対象指示ボタンを軽くハイライト |
+| Phase 1.3 | 完了 | 初回訓練 後半: Tower出発編 | 1本の初回訓練内で扱う / Taxi to Holding Point / Line Up and Wait / Cleared for Takeoff / 離陸 / 出発機AJJ202の基本処理 |
+| Phase 1.4 | 次に実装予定 | Ground基礎編 | Pushback / Taxi to Holding Pointの意味の深掘り / Hold Short / Taxi to Gate / 地上移動の基礎理解 |
 | Phase 1.5 | 未着手 | PC/WebGL・スマホ横画面対応 | 大きめボタン / タップ対応 / 中央を邪魔しないUI / 横画面で破綻しない配置 |
 | Phase 1.6 | 未着手 | 管制手順リサーチDocs化 | 既存航空管制ゲームの分析 / YouTube等の操作フロー分析 / 公式資料を参照した管制手順整理 / 実装前の根拠整理 |
 | Phase 1.7 | 未着手 | 管制文ログ | 下部パネルを通信ログへ発展 / 管制官の指示を日本語表示 / パイロット復唱を日本語表示 / 将来的な英語音声に接続できる構造にする |
@@ -25,7 +25,7 @@
 | Phase 3.0 | 未着手 | 安全管理をゲーム化 | 滑走路占有 / Hold Short違反 / 間隔不足 / 危険操作ペナルティ / Safetyに意味を持たせる |
 | Phase 3.2 | 未着手 | スコア・ランク・制限時間 | Point / Rank / Clear条件 / Time Bonus / 遅延評価 / 効率性評価 / S/A/B/Cランク / 既存ゲームを参考に評価設計を検討 |
 | Phase 3.5 | 未着手 | Contact / Handoff導入 | Contact Ground / Contact Tower / Contact Departure / 管制ポジション引き継ぎ |
-| Phase 4.0 | 未着手 | ステージ制 | Tower -> Ground -> Approach -> Departure の段階解放 / 空港管制官として成長していく構造 |
+| Phase 4.0 | 未着手 | ステージ制 | 必要に応じて到着訓練・出発訓練・Ground訓練を別ステージ化 / Tower -> Ground -> Approach -> Departure の段階解放 / 空港管制官として成長していく構造 |
 | Phase 5.0 | 未着手 | ストーリー導入 | 沖縄出身の新人管制官 / 教官 / 那覇配属 / 訓練イベント / 成長物語 |
 | Phase 6.0以降 | 未着手 | 視覚・没入感強化 | 簡易飛行機モデル / 滑走路・誘導路・ゲート改善 / 那覇らしさ / 海、島、管制塔、A/B滑走路 / 英語音声 / 効果音 / 天候 / 夜間 / 視点切替 |
 
@@ -34,3 +34,4 @@
 - Phaseの追加・変更・延期を行う場合は、必ず `CHANGELOG_ROADMAP.md` に記録する
 - 現在作業するPhaseの詳細は `CURRENT_PHASE.md` に書く
 - 実装中に範囲外の良いアイデアが出た場合は、実装せず後続Phase候補としてDocsに残す
+- Phase 1.2とPhase 1.3は、現時点では別ステージとして分離せず、1本の初回訓練チュートリアルの前半/後半として扱う
