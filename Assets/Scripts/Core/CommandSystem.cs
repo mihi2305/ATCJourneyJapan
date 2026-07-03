@@ -15,7 +15,7 @@ namespace ATCJourneyJapan.Core
 
         public void Execute(AircraftCommand command)
         {
-            if (gameManager != null && !gameManager.IsTrainingStarted)
+            if (gameManager != null && (!gameManager.IsTrainingStarted || !gameManager.CanAcceptCommand(command)))
             {
                 return;
             }

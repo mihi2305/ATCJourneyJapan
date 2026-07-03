@@ -50,7 +50,11 @@ namespace ATCJourneyJapan.Aircraft
 
         private void Update()
         {
-            route.Tick(transform, Time.deltaTime);
+            if (gameManager == null || !gameManager.IsGameplayPaused)
+            {
+                route.Tick(transform, Time.deltaTime);
+            }
+
             UpdateLabel();
         }
 

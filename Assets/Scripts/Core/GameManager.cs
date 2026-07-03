@@ -24,6 +24,7 @@ namespace ATCJourneyJapan.Core
         public IReadOnlyList<AircraftController> Aircraft => aircraft;
         public bool StageClear => stageClear;
         public bool IsTrainingStarted => trainingStarted;
+        public bool IsGameplayPaused => uiManager != null && uiManager.IsTutorialBlockingProgress;
 
         public void Initialize()
         {
@@ -52,8 +53,12 @@ namespace ATCJourneyJapan.Core
                 return;
             }
 
-            scoreManager.Tick(Time.deltaTime, stageClear);
-            RefreshRunwaySafety();
+            if (!IsGameplayPaused)
+            {
+                scoreManager.Tick(Time.deltaTime, stageClear);
+                RefreshRunwaySafety();
+            }
+
             uiManager.Refresh();
 
             if (!stageClear && handledAircraft.Count >= 2)
@@ -83,12 +88,19 @@ namespace ATCJourneyJapan.Core
         {
             trainingStarted = true;
             uiManager.ShowInstructorComment("この訓練では、到着機と出発機の基本的な順番を覚えよう");
+            uiManager.StartTutorial();
         }
 
         public void NotifyCommandExecuted(AircraftController controller, AircraftCommand command)
         {
             uiManager.ShowCommandDescription(command);
             uiManager.ShowInstructorComment(GetInstructorComment(command));
+            uiManager.NotifyCommandExecuted(command);
+        }
+
+        public bool CanAcceptCommand(AircraftCommand command)
+        {
+            return uiManager == null || uiManager.CanAcceptCommand(command);
         }
 
         private string GetInstructorComment(AircraftCommand command)

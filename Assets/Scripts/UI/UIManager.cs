@@ -31,6 +31,7 @@ namespace ATCJourneyJapan.UI
         private GameObject startPanel;
         private GameObject hudRoot;
         private GameObject selectedPanel;
+        private GameObject tutorialPanel;
         private GameObject warningPanel;
         private GameObject resultPanel;
         private Text scoreText;
@@ -39,10 +40,24 @@ namespace ATCJourneyJapan.UI
         private Text selectedText;
         private Text helpText;
         private Text commandStatusText;
+        private Text tutorialText;
         private Text warningText;
         private Text resultText;
         private Button commandButton;
         private Text commandButtonText;
+        private Button tutorialNextButton;
+        private TutorialStep[] tutorialSteps;
+        private int tutorialStepIndex = -1;
+        private bool tutorialActive;
+
+        public bool IsTutorialBlockingProgress
+        {
+            get
+            {
+                var step = CurrentTutorialStep;
+                return tutorialActive && step != null && !step.WaitForCommand;
+            }
+        }
 
         public void Initialize(GameManager manager, ScoreManager scoring)
         {
@@ -116,6 +131,29 @@ namespace ATCJourneyJapan.UI
             Refresh();
         }
 
+        public void StartTutorial()
+        {
+            EnsureTutorialSteps();
+            tutorialActive = true;
+            tutorialStepIndex = 0;
+            Refresh();
+        }
+
+        public bool CanAcceptCommand(AircraftCommand command)
+        {
+            var step = CurrentTutorialStep;
+            return step == null || (step.WaitForCommand && step.ExpectedCommand == command);
+        }
+
+        public void NotifyCommandExecuted(AircraftCommand command)
+        {
+            var step = CurrentTutorialStep;
+            if (step != null && step.WaitForCommand && step.ExpectedCommand == command)
+            {
+                AdvanceTutorial();
+            }
+        }
+
         private void BuildUi()
         {
             var canvasObject = new GameObject("Training HUD Canvas");
@@ -157,6 +195,11 @@ namespace ATCJourneyJapan.UI
             helpText = CreateText("Command Help", commandPanel.transform, string.Empty, 18, FontStyle.Normal, TextAnchor.UpperLeft, new Vector2(0f, -96f), new Vector2(250f, 94f));
             commandStatusText = CreateText("Command Status", commandPanel.transform, string.Empty, 20, FontStyle.Normal, TextAnchor.MiddleCenter, new Vector2(0f, 28f), new Vector2(250f, 86f));
 
+            tutorialPanel = CreatePanel("Tutorial Panel", hudRoot.transform, new Vector2(0.5f, 0f), new Vector2(760f, 150f), AnchorPreset.BottomCenter, new Vector2(0f, 138f));
+            tutorialText = CreateText("Tutorial Text", tutorialPanel.transform, string.Empty, 24, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-80f, 10f), new Vector2(520f, 94f));
+            tutorialNextButton = CreateButton("Tutorial Next", tutorialPanel.transform, "次へ\nNext", new Vector2(270f, -26f), new Vector2(150f, 58f), 20);
+            tutorialNextButton.onClick.AddListener(AdvanceTutorial);
+
             warningPanel = CreatePanel("Warning", hudRoot.transform, new Vector2(0f, 0f), new Vector2(760f, 44f), AnchorPreset.TopCenter, new Vector2(0f, -22f));
             warningText = CreateText("Warning Text", warningPanel.transform, string.Empty, 20, FontStyle.Bold, TextAnchor.MiddleCenter, Vector2.zero, new Vector2(720f, 32f));
             warningText.color = new Color(1f, 0.42f, 0.3f);
@@ -185,6 +228,7 @@ namespace ATCJourneyJapan.UI
             scoreText.text = $"安全度：  {scoreManager.Safety}\n遅延：    {Mathf.FloorToInt(scoreManager.Delay)}\n処理機数：{scoreManager.HandledAircraftCount}";
             guideText.text = GetCurrentGuide();
             instructorText.text = $"教官コメント\n{GetInstructorHint()}";
+            UpdateTutorialPanel();
 
             selectedPanel.SetActive(selected != null);
 
@@ -198,9 +242,10 @@ namespace ATCJourneyJapan.UI
                 helpText.text = "航空機を選択すると、使える指示が表示されます。";
             }
 
-            commandButton.gameObject.SetActive(recommended.HasValue && selected != null && selected.CanExecute(recommended.Value));
+            var commandAllowedByTutorial = recommended.HasValue && CanAcceptCommand(recommended.Value);
+            commandButton.gameObject.SetActive(commandAllowedByTutorial && selected != null && selected.CanExecute(recommended.Value));
             commandStatusText.gameObject.SetActive(!commandButton.gameObject.activeSelf);
-            commandStatusText.text = selected == null ? "航空機を選択" : "現在は監視";
+            commandStatusText.text = GetCommandStatusText(selected, recommended);
             if (commandButton.gameObject.activeSelf)
             {
                 commandButtonText.text = GetCommandLabel(recommended.Value);
@@ -208,6 +253,86 @@ namespace ATCJourneyJapan.UI
 
             warningPanel.SetActive(!string.IsNullOrEmpty(warningMessage));
             warningText.text = warningMessage;
+        }
+
+        private void UpdateTutorialPanel()
+        {
+            var step = CurrentTutorialStep;
+            tutorialPanel.SetActive(step != null);
+            if (step == null)
+            {
+                return;
+            }
+
+            tutorialText.text = step.Message;
+            tutorialNextButton.gameObject.SetActive(!step.WaitForCommand);
+        }
+
+        private string GetCommandStatusText(AircraftController selected, AircraftCommand? recommended)
+        {
+            if (selected == null)
+            {
+                return "航空機を選択";
+            }
+
+            var step = CurrentTutorialStep;
+            if (step != null && step.WaitForCommand && recommended.HasValue && step.ExpectedCommand != recommended.Value)
+            {
+                return "説明に沿って操作";
+            }
+
+            return "現在は監視";
+        }
+
+        private void AdvanceTutorial()
+        {
+            if (!tutorialActive)
+            {
+                return;
+            }
+
+            tutorialStepIndex++;
+            if (tutorialStepIndex >= tutorialSteps.Length)
+            {
+                tutorialActive = false;
+                tutorialStepIndex = -1;
+            }
+
+            Refresh();
+        }
+
+        private TutorialStep CurrentTutorialStep
+        {
+            get
+            {
+                if (!tutorialActive || tutorialSteps == null || tutorialStepIndex < 0 || tutorialStepIndex >= tutorialSteps.Length)
+                {
+                    return null;
+                }
+
+                return tutorialSteps[tutorialStepIndex];
+            }
+        }
+
+        private void EnsureTutorialSteps()
+        {
+            if (tutorialSteps != null)
+            {
+                return;
+            }
+
+            tutorialSteps = new[]
+            {
+                TutorialStep.Info("ここはA滑走路です。\n離陸と着陸に使います。"),
+                TutorialStep.Info("安全のため、滑走路は\n基本的に1機だけ使います。"),
+                TutorialStep.Info("A滑走路は空いています。\nAJJ101に着陸許可を出します。"),
+                TutorialStep.Command("AJJ101を選択して、\n『着陸許可』を押してください。", AircraftCommand.ClearLanding),
+                TutorialStep.Info("AJJ101が着陸します。\n滑走路離脱まで見守ります。"),
+                TutorialStep.Command("AJJ101を選択して、\nゲートへ誘導してください。", AircraftCommand.TaxiToGate),
+                TutorialStep.Command("AJJ202を選択して、\n滑走路手前へ進めます。", AircraftCommand.TaxiToHold),
+                TutorialStep.Command("AJJ202を選択して、\n滑走路上で待機させます。", AircraftCommand.LineUp),
+                TutorialStep.Command("滑走路が安全なら、\n離陸許可を出します。", AircraftCommand.ClearTakeoff)
+            };
         }
 
         private void UpdateResult()
@@ -387,7 +512,7 @@ namespace ATCJourneyJapan.UI
             if (arrival != null && arrival.CurrentState == AircraftState.Inbound)
             {
                 return selected == arrival
-                    ? "着陸許可 / Clear to Land を押してください"
+                    ? "着陸許可を出しましょう。"
                     : "AJJ101をクリック\nまず到着機を選びます。";
             }
 
@@ -404,7 +529,7 @@ namespace ATCJourneyJapan.UI
             if (arrival != null && arrival.CurrentState == AircraftState.Waiting)
             {
                 return selected == arrival
-                    ? "ゲートへ誘導 / Taxi to Gate を押してください"
+                    ? "ゲートへ誘導しましょう。"
                     : "AJJ101をクリック\nゲートへ誘導します。";
             }
 
@@ -416,7 +541,7 @@ namespace ATCJourneyJapan.UI
             if (departure != null && departure.CurrentState == AircraftState.AtGate)
             {
                 return selected == departure
-                    ? "滑走路手前へ誘導 / Taxi to Holding Point を押してください"
+                    ? "滑走路手前へ進めましょう。"
                     : "AJJ202をクリック\n次は出発機を準備します。";
             }
 
@@ -428,14 +553,14 @@ namespace ATCJourneyJapan.UI
             if (departure != null && departure.CurrentState == AircraftState.HoldingShort)
             {
                 return selected == departure
-                    ? "滑走路上で待機 / Line Up and Wait を押してください"
+                    ? "滑走路上で待機させましょう。"
                     : "AJJ202をクリック\n滑走路上で待機させます。";
             }
 
             if (departure != null && departure.CurrentState == AircraftState.LiningUp)
             {
                 return selected == departure
-                    ? "離陸許可 / Cleared for Takeoff を押してください"
+                    ? "離陸許可を出しましょう。"
                     : "AJJ202をクリック\n離陸許可を出します。";
             }
 
@@ -630,6 +755,28 @@ namespace ATCJourneyJapan.UI
             MiddleRight,
             BottomLeft,
             BottomCenter
+        }
+
+        private class TutorialStep
+        {
+            public string Message { get; private set; }
+            public bool WaitForCommand { get; private set; }
+            public AircraftCommand ExpectedCommand { get; private set; }
+
+            public static TutorialStep Info(string message)
+            {
+                return new TutorialStep { Message = message };
+            }
+
+            public static TutorialStep Command(string message, AircraftCommand command)
+            {
+                return new TutorialStep
+                {
+                    Message = message,
+                    WaitForCommand = true,
+                    ExpectedCommand = command
+                };
+            }
         }
     }
 }

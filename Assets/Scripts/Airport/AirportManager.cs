@@ -17,7 +17,7 @@ namespace ATCJourneyJapan.Airport
         private Material groundMaterial;
 
         public IReadOnlyList<RunwayController> Runways => runways;
-        public Vector3 ArrivalSpawnPosition => new Vector3(-28f, 0.6f, 8f);
+        public Vector3 ArrivalSpawnPosition => new Vector3(-26f, 0.6f, 0f);
         public Vector3 DepartureSpawnPosition => gatePositions.Count > 1 ? gatePositions[1] : new Vector3(-10f, 0.6f, -9f);
         public Vector3 HoldShortPosition => new Vector3(-7f, 0.55f, -3f);
 
@@ -31,9 +31,9 @@ namespace ATCJourneyJapan.Airport
         {
             return new[]
             {
-                new Vector3(-18f, 0.6f, 5f),
-                new Vector3(-10f, 0.6f, 2f),
-                new Vector3(-4f, 0.6f, 0f)
+                new Vector3(-18f, 0.6f, 0f),
+                new Vector3(-12f, 0.6f, 0f),
+                new Vector3(-6f, 0.6f, 0f)
             };
         }
 
@@ -41,8 +41,8 @@ namespace ATCJourneyJapan.Airport
         {
             return new[]
             {
-                new Vector3(4f, 0.6f, 0f),
-                new Vector3(12f, 0.6f, 0f)
+                new Vector3(3f, 0.6f, 0f),
+                new Vector3(11.5f, 0.6f, 0f)
             };
         }
 
@@ -50,8 +50,8 @@ namespace ATCJourneyJapan.Airport
         {
             return new[]
             {
-                new Vector3(12f, 0.6f, -3f),
-                new Vector3(7f, 0.6f, -5f)
+                new Vector3(12f, 0.6f, -2.5f),
+                new Vector3(12f, 0.6f, -5f)
             };
         }
 
@@ -59,7 +59,8 @@ namespace ATCJourneyJapan.Airport
         {
             return new[]
             {
-                new Vector3(1f, 0.6f, -5f),
+                new Vector3(7f, 0.6f, -5f),
+                new Vector3(2f, 0.6f, -5f),
                 gatePositions[0]
             };
         }
@@ -68,8 +69,8 @@ namespace ATCJourneyJapan.Airport
         {
             return new[]
             {
-                new Vector3(-10f, 0.6f, -7f),
-                new Vector3(-10f, 0.6f, -5f),
+                new Vector3(-11f, 0.6f, -5f),
+                new Vector3(-7f, 0.6f, -5f),
                 HoldShortPosition
             };
         }
@@ -89,7 +90,7 @@ namespace ATCJourneyJapan.Airport
             {
                 new Vector3(5f, 0.6f, 0f),
                 new Vector3(15f, 0.6f, 0f),
-                new Vector3(26f, 2.5f, 2f)
+                new Vector3(26f, 2.4f, 0f)
             };
         }
 
