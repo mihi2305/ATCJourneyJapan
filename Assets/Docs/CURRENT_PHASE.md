@@ -2,11 +2,33 @@
 
 ## Current Phase
 
-Phase 3.0 QA 準備中
+Phase 3.1 QA 準備中
 
 ## Previous Phase
 
-Phase 3.0 安全管理 / Runway Safety Rules
+Phase 3.1 Hold / Resume Taxi
+
+## Phase 3.1で完了したこと
+
+- Hold Taxi / 停止を、地上走行中の航空機を現在位置で一時停止させるコマンドとして追加した
+- Resume Taxi / 再開を、停止中の航空機の地上走行を再開させるコマンドとして追加した
+- AJJ202を中心に、Taxi to Holding Point中にHold Taxi、停止中にResume Taxiを出せるようにした
+- Hold中は現在のwaypointルートを保持したまま航空機の移動を止め、Resume後は元のwaypoint移動を再開するようにした
+- コマンドポップアップは、地上走行中は停止 / Hold Taxi、停止中は再開 / Resume Taxiを表示するようにした
+- 管制ログに「管制官：AJJ202、現在位置で待機してください。」「管制官：AJJ202、地上走行を再開してください。」を追加した
+- 右下詳細パネルの状態表示に「現在位置で待機中」を反映した
+- AJJ204にも同じHold / Resumeの仕組みは適用可能だが、AJJ204の完全なwaypoint移動は後続Phaseで扱う
+- 今回は本格的な誘導路衝突判定ではなく、時間調整コマンドの基礎として扱う
+
+## Phase 3.1 QAで確認すること
+
+- AJJ202がTaxi to Holding Point中に、停止 / Hold Taxiが表示されるか
+- Hold Taxiを押すと、AJJ202が現在位置で止まり、状態が「現在位置で待機中」になるか
+- 停止中に、再開 / Resume Taxiが表示されるか
+- Resume Taxiを押すと、AJJ202が元のwaypoint移動を再開するか
+- Hold / Resumeの管制ログが日本語で表示されるか
+- 通常のAJJ101 → AJJ202訓練完了フローが壊れていないか
+- RWY 18Lの滑走路占有ルールが壊れていないか
 
 ## Phase 3.0で完了したこと
 
@@ -96,8 +118,8 @@ Phase 3.0 安全管理 / Runway Safety Rules
 
 ## Current Phaseの目的
 
-Phase 2.5 QAでは、右上に追加した簡易レーダー/ミニマップの配置と視認性をUnity Playで確認します。
-Phase 2.5の実装では、複数機の位置関係を把握するための最小限の状況把握UIを追加しました。
+Phase 3.1では、地上走行中の航空機を一時停止・再開できるHold / Resume Taxiを導入します。
+まずはAJJ202を中心に、Taxi to Holding Point中の停止と再開を確認できる状態にします。
 
 ## Phase 2.5で完了したこと
 
@@ -189,5 +211,6 @@ Phase 2.5の実装では、複数機の位置関係を把握するための最�
 
 Phase 2.5のミニマップQAはUnity Play確認でOKになったため、Phase 3.0「安全管理 / Runway Safety Rules」へ進みました。
 Phase 3.0では、まずRWY 18Lの滑走路占有ルールと危険指示のブロックを実装しました。
-ただし、危険指示のブロック、Safety減点、警告表示、ミニマップ上の滑走路強調はUnity Editor上で再確認する必要があるため、次はPhase 3.0 QA準備中とします。
-QAで大きな問題がなければ、次に安全管理の追加ルール、またはPhase 3.2の評価設計へ進むかを判断します。
+Phase 3.1では、地上走行中の航空機を一時停止・再開できるHold / Resume Taxiを追加しました。
+ただし、移動停止・再開、管制ログ、右下詳細、既存チュートリアルとの相性はUnity Editor上で再確認する必要があるため、次はPhase 3.1 QA準備中とします。
+QAで大きな問題がなければ、次に誘導路安全の追加ルール、またはPhase 3.2の評価設計へ進むかを判断します。

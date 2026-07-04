@@ -12,6 +12,7 @@ namespace ATCJourneyJapan.Aircraft
         Pushbacking,
         PushbackReady,
         TaxiToHold,
+        TaxiHeld,
         HoldingPoint,
         HoldingShort,
         LiningUp,

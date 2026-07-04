@@ -86,6 +86,8 @@ ATCJourneyJapanのUI設計原則です。
 - 安全上出せない指示はコマンドポップアップに表示しない、または無効化して理由が分かるようにする
 - Phase 3.0 QAでは、安全警告をPlay確認しやすくするため、危険な指示を赤系ボタンとして表示し、押した時に警告とSafety減点で止める
 - 危険な指示を試した時は、短い警告文で理由を示し、同じ意味の長文説明を複数箇所に出さない
+- Phase 3.1以降、地上走行中は停止 / Hold Taxi、停止中は再開 / Resume Taxiをコンテキストコマンドとして表示する
+- Hold / Resume Taxiは、誘導路安全や時間調整の基礎コマンドとして扱い、経路選択や本格的な誘導路衝突判定とは分ける
 - Phase 2.0以降、初心者向けの基本表記は「A滑走路」を維持しつつ、必要な場所では「A滑走路（RWY 18L）」のように実滑走路番号を併記できるようにする
 - フライトストリップでは、便名、機種、出発地/目的地、滑走路、Spot、状態、担当管制ポジション、推奨コマンドを小さく整理して表示する
 - 実滑走路番号は将来の管制文、英語音声、レーダー/ミニマップで使う情報として扱い、初心者向けUIに一度に出しすぎない
@@ -115,7 +117,6 @@ ATCJourneyJapanのUI設計原則です。
 - 到着便コマンド候補: Approach Contact、Runway Select / ILS Approach、Clear to Land、Go-Around、Hand-off to Ground、Taxi to Spot
 - 共通/緊急コマンド候補: Hold Taxi、Resume Taxi、Go-Around、Hand-off
 - Flight Clearance / 出発承認はPhase 3.4で扱う
-- Hold Taxi / Resume TaxiはPhase 3.0で扱う
 - Go-AroundはPhase 3.0〜3.2の緊急・救済コマンドとして扱う
 - Hand-offはPhase 3.5で扱う
 - Pushback方向選択やTaxiルート選択は、Phase 3.0以降またはステージ制導入後に扱う

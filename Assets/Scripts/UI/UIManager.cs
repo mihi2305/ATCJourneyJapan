@@ -17,6 +17,8 @@ namespace ATCJourneyJapan.UI
             AircraftCommand.TaxiToGate,
             AircraftCommand.Pushback,
             AircraftCommand.TaxiToHold,
+            AircraftCommand.HoldTaxi,
+            AircraftCommand.ResumeTaxi,
             AircraftCommand.HoldShort,
             AircraftCommand.LineUp,
             AircraftCommand.ClearTakeoff
@@ -174,6 +176,11 @@ namespace ATCJourneyJapan.UI
 
         public bool CanAcceptCommand(AircraftController aircraft, AircraftCommand command)
         {
+            if (command == AircraftCommand.HoldTaxi || command == AircraftCommand.ResumeTaxi)
+            {
+                return true;
+            }
+
             var step = CurrentTutorialStep;
             if (step == null)
             {
@@ -326,13 +333,25 @@ namespace ATCJourneyJapan.UI
                 return;
             }
 
-            commandLogEntries.Add(phrase.ControllerJapaneseText);
+            commandLogEntries.Add(GetControllerLogText(aircraft, phrase.ControllerJapaneseText));
             while (commandLogEntries.Count > 2)
             {
                 commandLogEntries.RemoveAt(0);
             }
 
             Refresh();
+        }
+
+        private string GetControllerLogText(AircraftController aircraft, string phraseText)
+        {
+            if (aircraft == null)
+            {
+                return phraseText;
+            }
+
+            return phraseText
+                .Replace("AJJ101", aircraft.FlightNumber)
+                .Replace("AJJ202", aircraft.FlightNumber);
         }
 
         private void UpdateCommandLogPanel()
@@ -1296,6 +1315,8 @@ namespace ATCJourneyJapan.UI
                 AircraftCommand.ClearLanding,
                 AircraftCommand.TaxiToGate,
                 AircraftCommand.TaxiToHold,
+                AircraftCommand.HoldTaxi,
+                AircraftCommand.ResumeTaxi,
                 AircraftCommand.HoldShort,
                 AircraftCommand.LineUp,
                 AircraftCommand.ClearTakeoff
@@ -1342,6 +1363,10 @@ namespace ATCJourneyJapan.UI
                     return "プッシュバック\nPushback";
                 case AircraftCommand.TaxiToHold:
                     return "滑走路手前へ誘導\nTaxi to Holding Point";
+                case AircraftCommand.HoldTaxi:
+                    return "停止\nHold Taxi";
+                case AircraftCommand.ResumeTaxi:
+                    return "再開\nResume Taxi";
                 case AircraftCommand.HoldShort:
                     return "滑走路手前で待機\nHold Short";
                 case AircraftCommand.LineUp:
@@ -1367,6 +1392,10 @@ namespace ATCJourneyJapan.UI
                     return "プッシュバック";
                 case AircraftCommand.TaxiToHold:
                     return "滑走路手前へ誘導";
+                case AircraftCommand.HoldTaxi:
+                    return "停止";
+                case AircraftCommand.ResumeTaxi:
+                    return "再開";
                 case AircraftCommand.HoldShort:
                     return "滑走路手前で待機";
                 case AircraftCommand.LineUp:
@@ -1392,6 +1421,10 @@ namespace ATCJourneyJapan.UI
                     return "スポットから後退し、出発準備をします。";
                 case AircraftCommand.TaxiToHold:
                     return "Groundの基本。滑走路手前へ進めます。";
+                case AircraftCommand.HoldTaxi:
+                    return "地上走行中の航空機を一時停止します。";
+                case AircraftCommand.ResumeTaxi:
+                    return "停止中の航空機の地上走行を再開します。";
                 case AircraftCommand.HoldShort:
                     return "滑走路に入る前に止めます。";
                 case AircraftCommand.LineUp:
@@ -1427,6 +1460,8 @@ namespace ATCJourneyJapan.UI
                     return "地上走行準備完了";
                 case AircraftState.TaxiToHold:
                     return "滑走路手前へ移動中";
+                case AircraftState.TaxiHeld:
+                    return "現在位置で待機中";
                 case AircraftState.HoldingPoint:
                     return "滑走路手前に到着";
                 case AircraftState.HoldingShort:

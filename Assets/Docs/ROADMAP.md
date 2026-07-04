@@ -23,7 +23,8 @@
 | Phase 2.5 | 完了 | 簡易レーダー/ミニマップ | 右上教官コメントを非表示化 / 右上をミニマップ・レーダー専用へ整理 / RWY 18L / 誘導路 / SPOT 01〜04 / 航空機位置を矢印アイコン風に簡易表示 / 航空機データのheadingに合わせて矢印を回転 / QA修正でミニマップ全体と内部要素を拡大 / 選択中航空機を強調 / 見るだけの状況把握UI |
 | Phase 2.6 | 未着手 | 経路プレビュー | 選択中機体の予定ルートを線で表示 / Taxi to GateやLine Up後の動きが予測できるようにする |
 | Phase 2.7 | 未着手 | 空港全体俯瞰ビュー | 上空カメラ / 滑走路 / 誘導路 / ゲート / 航空機ラベル / 空港全体を管制している感覚 |
-| Phase 3.0 | QA準備中 | 安全管理をゲーム化 | RWY 18L滑走路占有 / occupiedByFlightId / occupiedReason / Clear to Land・Line Up and Wait・Cleared for Takeoffの安全チェック / AJJ103・AJJ204を使った安全警告確認 / 危険指示ペナルティ / ミニマップ滑走路強調 / Hold Taxi・Resume Taxi・Go-Aroundは後続Phase |
+| Phase 3.0 | 完了 | 安全管理をゲーム化 | RWY 18L滑走路占有 / occupiedByFlightId / occupiedReason / Clear to Land・Line Up and Wait・Cleared for Takeoffの安全チェック / AJJ103・AJJ204を使った安全警告確認 / 危険指示ペナルティ / ミニマップ滑走路強調 |
+| Phase 3.1 | QA準備中 | Hold / Resume Taxi | 地上走行中の航空機を停止 / Hold Taxi / 停止中の航空機を再開 / Resume Taxi / waypointルートを保持して一時停止・再開 / 誘導路安全と時間調整の基礎 |
 | Phase 3.2 | 未着手 | スコア・ランク・制限時間 | Point / Rank / Clear条件 / Time Bonus / 遅延評価 / 効率性評価 / S/A/B/Cランク / 既存ゲームを参考に評価設計を検討 |
 | Phase 3.4 | 未着手 | Clearance Delivery / 出発承認基礎 | 出発承認 / Departure Clearance / Pushback前の前提承認 / Clearance Delivery・Ground・Towerの役割整理 |
 | Phase 3.5 | 未着手 | Contact / Handoff導入 | Contact Ground / Contact Tower / Contact Departure / 管制ポジション引き継ぎ |
@@ -79,7 +80,9 @@
 - Clear to Land / Line Up and Wait / Cleared for Takeoff は滑走路占有状態を確認し、他機が使用中なら実行せず警告とSafety減点を行う
 - Phase 3.0 QAでは、AJJ103を着陸許可待ち、AJJ204を滑走路手前待機として使い、RWY 18L占有警告をUnity Playで確認できるようにする
 - 追加機AJJ103 / AJJ204は安全警告確認用であり、完全な状態遷移や訓練完了条件への組み込みは後続Phaseで扱う
-- Taxi経路衝突、Hold Taxi / Resume Taxi、Go-Around、本格的な間隔管理は後続Phaseで扱う
+- Phase 3.1では、地上走行中の航空機にHold Taxi、停止中の航空機にResume Taxiを出せるようにし、誘導路安全と時間調整の基礎にする
+- Hold / Resume Taxiは本格的な誘導路衝突判定ではなく、移動制御の入口として扱う
+- Taxi経路衝突、経路選択、Taxiルート選択、Go-Around、本格的な間隔管理は後続Phaseで扱う
 - Phase 2.3 QA以降、ストリップは一覧性を優先し、便名、機種、RWY、SPOT、短い状態/推奨指示だけを表示する
 - Phase 2.3 QA再修正以降、ストリップ表示はさらに絞り、原則として便名 + RWY/SPOTのみを表示する
 - ストリップは横長の細い長方形とし、複数機運用に備えて多数の便を縦に並べられるサイズにする
@@ -94,7 +97,7 @@
 - 将来的な出発便コマンド候補は、Flight Clearance、Pushback、Pushback Direction、Taxi Permit、滑走路/誘導路ルート選択、Line Up and Wait、Cleared for Takeoff、Hand-off to Departureとする
 - 将来的な到着便コマンド候補は、Approach Contact、Runway Select / ILS Approach、Clear to Land、Go-Around、Hand-off to Ground、Taxi to Spotとする
 - 将来的な共通/緊急コマンド候補は、Hold Taxi、Resume Taxi、Go-Around、Hand-offとする
-- Flight Clearance / 出発承認はPhase 3.4、Hold Taxi / Resume TaxiはPhase 3.0、Go-AroundはPhase 3.0〜3.2、Hand-offはPhase 3.5で扱う
+- Flight Clearance / 出発承認はPhase 3.4、Go-AroundはPhase 3.0〜3.2、Hand-offはPhase 3.5で扱う
 - Pushback方向選択やTaxiルート選択は、Phase 3.0以降またはステージ制導入後に扱う
 - Phase 2.xでは、見た目の完成度よりも操作構造を優先する
 - フォント、色、枠、ボタン質感、航空管制ゲームらしいHUD表現は、Phase 6.1 UI Visual Polishで扱う

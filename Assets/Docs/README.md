@@ -36,6 +36,7 @@
 - Phase 3.4: Pushback前に出発承認 / Departure Clearanceを受ける流れを検討する
 - Phase 2.5: 接近中の到着機を把握するための簡易レーダー画面を追加する
 - Phase 3.0: RWY 18Lの滑走路占有ルールを追加し、危険な滑走路指示を警告とSafety減点で防ぐ
+- Phase 3.1: Hold / Resume Taxiを導入し、地上走行中の航空機を一時停止・再開できるようにする
 - Phase 3.2: 既存の航空管制ゲームも参考にしながら、効率性評価と総合ランクを設計する
 - 将来的には、日本語表示、英語表示、日英併記表示を設定で切り替えられるようにする
 
@@ -102,7 +103,29 @@ Phase 3.0では、航空管制ゲームとしての緊張感を作るため、RW
 - 正しい順序で操作した場合は、Safety 100のまま訓練完了できるようにする
 - Phase 3.0 QAでは、AJJ103を着陸許可待ち、AJJ204を滑走路手前待機として使い、RWY 18L占有警告をPlay確認しやすくする
 - AJJ103 / AJJ204は安全警告確認用であり、完全な状態遷移や訓練完了条件への組み込みは後続Phaseで扱う
-- Taxi経路衝突、Hold Taxi / Resume Taxi、Go-Around、本格的な間隔管理は後続Phaseで扱う
+- Taxi経路衝突、経路選択、Taxiルート選択、Go-Around、本格的な間隔管理は後続Phaseで扱う
+
+## Phase 3.1 Hold / Resume Taxi方針
+
+Phase 3.1では、地上走行中の航空機を一時停止・再開できるようにします。
+
+- Hold Taxiは、地上走行中の航空機を現在位置で一時停止させるコマンド
+- Resume Taxiは、停止中の航空機の地上走行を再開させるコマンド
+- Hold中は現在のwaypointルートを保持し、Resume後に元のルートを再開する
+- コマンドポップアップは、地上走行中は停止 / Hold Taxi、停止中は再開 / Resume Taxiを表示する
+- 管制ログは日本語の管制官指示として記録する
+- 今回は本格的な誘導路衝突判定ではなく、誘導路安全と時間調整の基礎として扱う
+- 誘導路衝突判定、経路選択、Taxiルート選択は後続Phaseで扱う
+
+### Phase 3.1 Hold / Resume確認手順
+
+1. Start Training
+2. AJJ202をPushbackまで進める
+3. Taxi to Holding Pointを出す
+4. AJJ202が地上走行中に、停止 / Hold Taxiを押す
+5. AJJ202が現在位置で止まり、右下詳細が「現在位置で待機中」になることを確認する
+6. 再開 / Resume Taxiを押す
+7. AJJ202が元のwaypoint移動を再開し、滑走路手前まで進むことを確認する
 
 ### Phase 3.0 安全警告確認手順
 
@@ -175,7 +198,6 @@ Phase 3.0では、航空管制ゲームとしての緊張感を作るため、RW
 - 到着便: Approach Contact、Runway Select / ILS Approach、Clear to Land、Go-Around、Hand-off to Ground、Taxi to Spot
 - 共通/緊急: Hold Taxi、Resume Taxi、Go-Around、Hand-off
 - Flight Clearance / 出発承認はPhase 3.4で扱う
-- Hold Taxi / Resume TaxiはPhase 3.0で扱う
 - Go-AroundはPhase 3.0〜3.2の緊急・救済コマンドとして扱う
 - Hand-offはPhase 3.5で扱う
 - Pushback方向選択やTaxiルート選択は、Phase 3.0以降またはステージ制導入後に扱う

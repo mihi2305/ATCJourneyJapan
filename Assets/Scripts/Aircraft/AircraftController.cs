@@ -29,6 +29,7 @@ namespace ATCJourneyJapan.Aircraft
         private bool selected;
         private bool tutorialHighlighted;
         private Vector2 facingDirection = Vector2.up;
+        private AircraftState heldTaxiState = AircraftState.Waiting;
 
         public string FlightNumber => flightNumber;
         public AircraftData FlightData => flightData;
@@ -100,6 +101,10 @@ namespace ATCJourneyJapan.Aircraft
                     return !arrivalAircraft && currentState == AircraftState.AtGate;
                 case AircraftCommand.TaxiToHold:
                     return !arrivalAircraft && currentState == AircraftState.PushbackReady;
+                case AircraftCommand.HoldTaxi:
+                    return IsGroundTaxiState(currentState) && route.IsMoving;
+                case AircraftCommand.ResumeTaxi:
+                    return currentState == AircraftState.TaxiHeld;
                 case AircraftCommand.HoldShort:
                     return !arrivalAircraft && currentState == AircraftState.HoldingPoint;
                 case AircraftCommand.LineUp:
@@ -133,6 +138,12 @@ namespace ATCJourneyJapan.Aircraft
                     break;
                 case AircraftCommand.TaxiToHold:
                     TaxiToHold();
+                    break;
+                case AircraftCommand.HoldTaxi:
+                    HoldTaxi();
+                    break;
+                case AircraftCommand.ResumeTaxi:
+                    ResumeTaxi();
                     break;
                 case AircraftCommand.HoldShort:
                     HoldShort();
@@ -196,6 +207,21 @@ namespace ATCJourneyJapan.Aircraft
             {
                 SetState(AircraftState.HoldingPoint);
             });
+        }
+
+        private void HoldTaxi()
+        {
+            heldTaxiState = currentState;
+            route.Pause();
+            SetState(AircraftState.TaxiHeld);
+        }
+
+        private void ResumeTaxi()
+        {
+            var resumeState = heldTaxiState == AircraftState.Waiting ? AircraftState.TaxiToHold : heldTaxiState;
+            SetState(resumeState);
+            route.Resume();
+            heldTaxiState = AircraftState.Waiting;
         }
 
         private void HoldShort()
@@ -310,6 +336,7 @@ namespace ATCJourneyJapan.Aircraft
                     break;
                 case AircraftState.PushbackReady:
                 case AircraftState.TaxiToHold:
+                case AircraftState.TaxiHeld:
                     SetHeadingFromWorldDirection(Vector3.right);
                     break;
                 case AircraftState.HoldingPoint:
@@ -369,6 +396,8 @@ namespace ATCJourneyJapan.Aircraft
                     return "地上走行待ち";
                 case AircraftState.TaxiToHold:
                     return "滑走路手前へ地上走行中";
+                case AircraftState.TaxiHeld:
+                    return "現在位置で待機中";
                 case AircraftState.HoldingPoint:
                     return "滑走路手前到着";
                 case AircraftState.HoldingShort:
@@ -399,6 +428,7 @@ namespace ATCJourneyJapan.Aircraft
                 case AircraftState.Pushbacking:
                 case AircraftState.PushbackReady:
                 case AircraftState.TaxiToHold:
+                case AircraftState.TaxiHeld:
                 case AircraftState.HoldingPoint:
                 case AircraftState.HoldingShort:
                     return "Ground";
@@ -427,6 +457,8 @@ namespace ATCJourneyJapan.Aircraft
                 AircraftCommand.ClearLanding,
                 AircraftCommand.TaxiToGate,
                 AircraftCommand.TaxiToHold,
+                AircraftCommand.HoldTaxi,
+                AircraftCommand.ResumeTaxi,
                 AircraftCommand.HoldShort,
                 AircraftCommand.LineUp,
                 AircraftCommand.ClearTakeoff
@@ -445,9 +477,10 @@ namespace ATCJourneyJapan.Aircraft
 
         private string GetNextTargetType()
         {
+            var targetState = currentState == AircraftState.TaxiHeld ? heldTaxiState : currentState;
             if (arrivalAircraft)
             {
-                switch (currentState)
+                switch (targetState)
                 {
                     case AircraftState.Inbound:
                     case AircraftState.FinalApproach:
@@ -463,7 +496,7 @@ namespace ATCJourneyJapan.Aircraft
                 }
             }
 
-            switch (currentState)
+            switch (targetState)
             {
                 case AircraftState.AtGate:
                 case AircraftState.Pushbacking:
@@ -479,6 +512,13 @@ namespace ATCJourneyJapan.Aircraft
                 default:
                     return string.Empty;
             }
+        }
+
+        private bool IsGroundTaxiState(AircraftState state)
+        {
+            return state == AircraftState.Pushbacking
+                || state == AircraftState.TaxiToHold
+                || state == AircraftState.TaxiToGate;
         }
 
         private string GetNextTargetId()

@@ -157,6 +157,10 @@ namespace ATCJourneyJapan.Core
                     return "スポットから後退させて、地上走行の準備をしよう";
                 case AircraftCommand.TaxiToHold:
                     return "Groundでは滑走路手前まで安全に進める";
+                case AircraftCommand.HoldTaxi:
+                    return "必要な時は地上走行中の機体を現在位置で止められる";
+                case AircraftCommand.ResumeTaxi:
+                    return "安全を確認したら地上走行を再開しよう";
                 case AircraftCommand.LineUp:
                     return "滑走路上に入れる前に、他の機体がいないことを確認しよう";
                 case AircraftCommand.ClearTakeoff:

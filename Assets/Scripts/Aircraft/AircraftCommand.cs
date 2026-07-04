@@ -6,6 +6,8 @@ namespace ATCJourneyJapan.Aircraft
         TaxiToGate,
         Pushback,
         TaxiToHold,
+        HoldTaxi,
+        ResumeTaxi,
         HoldShort,
         LineUp,
         ClearTakeoff,

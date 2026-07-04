@@ -13,6 +13,40 @@
 - 今回実装すること
 - 今回は実装せず後続Phaseに回すこと
 
+## 2026-07-04 Phase 3.1 Hold / Resume Taxi
+
+- 変更したPhase: Phase 3.1
+- 理由: Phase 3.0で滑走路占有による安全管理が入ったため、次の安全管理基礎として地上走行中の航空機を一時停止・再開できるようにするため
+- 変更内容:
+  - Hold Taxi / 停止を、地上走行中の航空機を現在位置で一時停止させるコマンドとして追加
+  - Resume Taxi / 再開を、停止中の航空機の地上走行を再開させるコマンドとして追加
+  - SimpleRouteにPause / Resumeを追加し、waypointキューを保持したまま移動停止・再開できるようにした
+  - AJJ202を中心に、Taxi to Holding Point中にHold Taxi、停止中にResume Taxiを出せるようにした
+  - 管制ログに「現在位置で待機してください」「地上走行を再開してください」を追加
+  - 右下詳細パネルに「現在位置で待機中」を表示するようにした
+  - Docsに、Hold / Resume Taxiは誘導路安全と時間調整の基礎であることを追記
+- 今回実装すること:
+  - AircraftCommand / AircraftStateへのHold / Resume追加
+  - waypoint移動の一時停止・再開
+  - コマンドポップアップ、管制ログ、右下詳細への反映
+  - DocsへのPhase 3.1方針の追記
+- 今回は実装せず後続Phaseに回すこと:
+  - 本格的な誘導路衝突判定
+  - SPOT付近の衝突判定
+  - 経路選択
+  - Taxiルート選択
+  - 出発承認 / Departure Clearance
+  - Go-Around
+  - Hand-off
+  - スコアランク制
+  - 遅延評価の本格実装
+  - B滑走路
+  - 本格3D化
+  - 英語音声
+- 次Phase判断:
+  - 次はPhase 3.1 QA準備中とする
+  - 理由: Hold / Resumeの移動停止・再開、ログ表示、右下詳細、既存チュートリアルへの影響はUnity Editor上で確認する必要があるため
+
 ## 2026-07-04 Phase 3.0 QA追加修正 安全警告確認シナリオ
 
 - 変更したPhase: Phase 3.0

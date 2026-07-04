@@ -37,6 +37,16 @@ namespace ATCJourneyJapan.Aircraft
             IsMoving = false;
         }
 
+        public void Pause()
+        {
+            IsMoving = false;
+        }
+
+        public void Resume()
+        {
+            IsMoving = waypoints.Count > 0;
+        }
+
         public void Tick(Transform target, float deltaTime)
         {
             if (!IsMoving || waypoints.Count == 0)

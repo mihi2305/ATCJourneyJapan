@@ -40,6 +40,22 @@ namespace ATCJourneyJapan.Radio
                         "A滑走路手前まで進みます、AJJ202。",
                         "Taxi to holding point Runway A, AJJ202.",
                         "ajj202_taxi_to_holding_point");
+                case AircraftCommand.HoldTaxi:
+                    return new CommandPhrase(
+                        "hold_taxi",
+                        "管制官：AJJ202、現在位置で待機してください。",
+                        "AJJ202, hold position.",
+                        "現在位置で待機します、AJJ202。",
+                        "Holding position, AJJ202.",
+                        "ajj202_hold_taxi");
+                case AircraftCommand.ResumeTaxi:
+                    return new CommandPhrase(
+                        "resume_taxi",
+                        "管制官：AJJ202、地上走行を再開してください。",
+                        "AJJ202, resume taxi.",
+                        "地上走行を再開します、AJJ202。",
+                        "Resume taxi, AJJ202.",
+                        "ajj202_resume_taxi");
                 case AircraftCommand.HoldShort:
                     return new CommandPhrase(
                         "hold_short",
