@@ -45,6 +45,7 @@ namespace ATCJourneyJapan.UI
         private GameObject flightStripPanel;
         private GameObject stripCommandPopup;
         private GameObject commandPanel;
+        private GameObject instructorPanel;
         private GameObject minimapPanel;
         private RectTransform minimapContent;
         private GameObject selectedPanel;
@@ -220,6 +221,8 @@ namespace ATCJourneyJapan.UI
             hudRoot = CreateRoot("HUD Root", canvasObject.transform);
             scoreText = CreatePanelText("Score", hudRoot.transform, new Vector2(24f, -22f), new Vector2(320f, 126f), AnchorPreset.TopLeft, string.Empty, 24, TextAnchor.UpperLeft);
             instructorText = CreatePanelText("Instructor", hudRoot.transform, new Vector2(-24f, -22f), new Vector2(430f, 112f), AnchorPreset.TopRight, "教官コメント", 19, TextAnchor.UpperLeft);
+            instructorPanel = instructorText.transform.parent.gameObject;
+            instructorPanel.SetActive(false);
             BuildMiniMapPanel();
             BuildFlightStripPanel();
             guideText = CreatePanelText("Command Log", hudRoot.transform, new Vector2(0f, 12f), new Vector2(780f, 84f), AnchorPreset.BottomCenter, string.Empty, 16, TextAnchor.UpperLeft);
@@ -270,6 +273,7 @@ namespace ATCJourneyJapan.UI
 
             scoreText.text = $"安全度：  {scoreManager.Safety}\n遅延：    {Mathf.FloorToInt(scoreManager.Delay)}\n処理機数：{scoreManager.HandledAircraftCount}";
             instructorText.text = $"教官コメント\n{GetInstructorHint()}";
+            instructorPanel.SetActive(false);
             AdvanceTutorialIfReady();
             UpdateTutorialPanel();
             UpdateCommandLogPanel();
@@ -374,7 +378,7 @@ namespace ATCJourneyJapan.UI
 
         private void BuildMiniMapPanel()
         {
-            minimapPanel = CreatePanel("Mini Map Panel", hudRoot.transform, new Vector2(1f, 1f), new Vector2(420f, 280f), AnchorPreset.TopRight, new Vector2(-24f, -148f));
+            minimapPanel = CreatePanel("Mini Map Panel", hudRoot.transform, new Vector2(1f, 1f), new Vector2(420f, 280f), AnchorPreset.TopRight, new Vector2(-24f, -22f));
             minimapPanel.GetComponent<Image>().color = new Color(0.015f, 0.025f, 0.032f, 0.82f);
             minimapPanel.GetComponent<Image>().raycastTarget = false;
             CreateText("Mini Map Title", minimapPanel.transform, "AIRPORT MAP", 20, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-114f, 116f), new Vector2(170f, 30f));
