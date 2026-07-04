@@ -13,6 +13,10 @@
 - 今回実装すること
 - 今回は実装せず後続Phaseに回すこと
 
+## 2026-07-04 Phase 3.7-2 Camera Preset System / カメラ視点プリセット設計
+
+- カメラ設定をCameraPresetとして整理し、VキーでTop View、Oblique View、Wide Viewを順番に切り替えられるようにした
+
 ## 2026-07-04 Phase 3.7 QA Oblique View中心合わせ
 
 - Oblique Viewで空港中心をcamera targetとしてLookAtし、滑走路、誘導路、SPOT、航空機が中央付近に収まるよう調整

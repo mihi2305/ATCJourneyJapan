@@ -85,3 +85,10 @@ Phase 3.5では、本格的な3D空港化の前に、現在の2D風俯瞰プロ�
 - 現在は滑走路、誘導路、SPOT全体が収まる暫定中心点を `AirportViewCenter` として `GameManager` に保持する
 - Top Viewは従来の見やすい俯瞰表示として維持し、Oblique Viewは3D感確認用の切り替えビューとして扱う
 - 将来的に空港レイアウトをStageData化する場合、camera targetも空港データ側から取得できるようにする
+
+## 11. Phase 3.7-2で整理したCameraPreset方針
+
+- カメラ設定は `CameraPreset` として、見る中心点、位置offset、LookAtの有無、Orthographic/Perspective、引き具合を分けて管理する
+- VキーではTop View、Oblique View、Wide Viewを順番に切り替える
+- Top Viewは従来の俯瞰確認、Oblique Viewは通常プレイ寄りの3D感確認、Wide Viewは空港全体の位置関係確認に使う
+- Tower View、Runway View、Follow Aircraft Viewは後続PhaseでCameraPresetを追加する形で検討する

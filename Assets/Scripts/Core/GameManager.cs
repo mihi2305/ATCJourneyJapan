@@ -10,16 +10,39 @@ namespace ATCJourneyJapan.Core
     // Coordinates prototype managers and owns stage completion/safety status.
     public class GameManager : MonoBehaviour
     {
-        private enum CameraViewMode
+        private struct CameraPreset
         {
-            Top,
-            Oblique
+            public readonly string PresetName;
+            public readonly Vector3 TargetCenter;
+            public readonly Vector3 PositionOffset;
+            public readonly Quaternion FixedRotation;
+            public readonly bool UseLookAt;
+            public readonly bool IsOrthographic;
+            public readonly float OrthographicSize;
+            public readonly float FieldOfView;
+
+            public CameraPreset(
+                string presetName,
+                Vector3 targetCenter,
+                Vector3 positionOffset,
+                Quaternion fixedRotation,
+                bool useLookAt,
+                bool isOrthographic,
+                float orthographicSize,
+                float fieldOfView)
+            {
+                PresetName = presetName;
+                TargetCenter = targetCenter;
+                PositionOffset = positionOffset;
+                FixedRotation = fixedRotation;
+                UseLookAt = useLookAt;
+                IsOrthographic = isOrthographic;
+                OrthographicSize = orthographicSize;
+                FieldOfView = fieldOfView;
+            }
         }
 
-        private static readonly Vector3 TopViewPosition = new Vector3(0f, 24f, -18f);
-        private static readonly Quaternion TopViewRotation = Quaternion.Euler(58f, 0f, 0f);
         private static readonly Vector3 AirportViewCenter = new Vector3(1f, 0.2f, -4f);
-        private static readonly Vector3 ObliqueViewOffset = new Vector3(0f, 15.5f, -22f);
 
         private readonly List<AircraftController> aircraft = new List<AircraftController>();
         private readonly HashSet<AircraftController> handledAircraft = new HashSet<AircraftController>();
@@ -29,7 +52,8 @@ namespace ATCJourneyJapan.Core
         private ScoreManager scoreManager;
         private UIManager uiManager;
         private Camera mainCamera;
-        private CameraViewMode cameraViewMode = CameraViewMode.Top;
+        private CameraPreset[] cameraPresets;
+        private int currentCameraPresetIndex;
         private bool runwayConflictActive;
         private bool stageClear;
         private bool trainingStarted;
@@ -242,42 +266,75 @@ namespace ATCJourneyJapan.Core
                 cameraObject.AddComponent<AudioListener>();
             }
 
-            ApplyCameraView(CameraViewMode.Top);
+            InitializeCameraPresets();
+            ApplyCameraPreset(0);
             mainCamera.backgroundColor = new Color(0.08f, 0.12f, 0.16f);
+        }
+
+        private void InitializeCameraPresets()
+        {
+            cameraPresets = new[]
+            {
+                new CameraPreset(
+                    "Top View",
+                    AirportViewCenter,
+                    new Vector3(-1f, 23.8f, -14f),
+                    Quaternion.Euler(58f, 0f, 0f),
+                    false,
+                    true,
+                    15f,
+                    48f),
+                new CameraPreset(
+                    "Oblique View",
+                    AirportViewCenter,
+                    new Vector3(0f, 15.5f, -22f),
+                    Quaternion.identity,
+                    true,
+                    false,
+                    15f,
+                    48f),
+                new CameraPreset(
+                    "Wide View",
+                    AirportViewCenter,
+                    new Vector3(0f, 20f, -34f),
+                    Quaternion.identity,
+                    true,
+                    false,
+                    15f,
+                    55f)
+            };
         }
 
         private void HandleCameraViewInput()
         {
             if (Input.GetKeyDown(KeyCode.V))
             {
-                var nextView = cameraViewMode == CameraViewMode.Top
-                    ? CameraViewMode.Oblique
-                    : CameraViewMode.Top;
-                ApplyCameraView(nextView);
+                ApplyCameraPreset(currentCameraPresetIndex + 1);
             }
         }
 
-        private void ApplyCameraView(CameraViewMode viewMode)
+        private void ApplyCameraPreset(int presetIndex)
         {
-            if (mainCamera == null)
+            if (mainCamera == null || cameraPresets == null || cameraPresets.Length == 0)
             {
                 return;
             }
 
-            cameraViewMode = viewMode;
-            if (cameraViewMode == CameraViewMode.Top)
+            currentCameraPresetIndex = presetIndex % cameraPresets.Length;
+            var preset = cameraPresets[currentCameraPresetIndex];
+            mainCamera.transform.position = preset.TargetCenter + preset.PositionOffset;
+            if (preset.UseLookAt)
             {
-                mainCamera.transform.position = TopViewPosition;
-                mainCamera.transform.rotation = TopViewRotation;
-                mainCamera.orthographic = true;
-                mainCamera.orthographicSize = 15f;
-                return;
+                mainCamera.transform.LookAt(preset.TargetCenter);
+            }
+            else
+            {
+                mainCamera.transform.rotation = preset.FixedRotation;
             }
 
-            mainCamera.transform.position = AirportViewCenter + ObliqueViewOffset;
-            mainCamera.transform.LookAt(AirportViewCenter);
-            mainCamera.orthographic = false;
-            mainCamera.fieldOfView = 48f;
+            mainCamera.orthographic = preset.IsOrthographic;
+            mainCamera.orthographicSize = preset.OrthographicSize;
+            mainCamera.fieldOfView = preset.FieldOfView;
         }
 
         private void SetupLight()

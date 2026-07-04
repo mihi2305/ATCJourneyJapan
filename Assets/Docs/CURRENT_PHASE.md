@@ -2,11 +2,20 @@
 
 ## Current Phase
 
-Phase 3.7-1 Camera / View Direction Test / カメラ・視点テスト
+Phase 3.7-2 Camera Preset System / カメラ視点プリセット設計
 
 ## Previous Phase
 
-Phase 3.6-2 Simple 3D Airport Parts Prototype / 空港パーツの簡易3D化
+Phase 3.7-1 Camera / View Direction Test / カメラ・視点テスト
+
+## Phase 3.7-2で行うこと
+
+- カメラ視点を `CameraPreset` として管理し、今後の視点追加に備える
+- Top View、Oblique View、Wide Viewの3種類を用意する
+- Vキーで Top View → Oblique View → Wide View → Top View の順に切り替えられるようにする
+- 各プリセットは、見る中心点、カメラ位置offset、LookAtの有無、Orthographic/Perspective、引き具合を分けて管理する
+- UI、ストリップ、コマンドポップアップ、管制ログ、右下詳細、ミニマップは既存のScreen Space Overlay表示として維持する
+- 本格的な管制塔視点、Runway View、Follow Aircraft View、自由カメラ、ズームUIは今回行わない
 
 ## Phase 3.7-1で行うこと
 
@@ -172,8 +181,8 @@ Phase 3.6は、Simple 3D Airport View Prototype / 簡易3D空港ビュー試作�
 
 ## Current Phaseの目的
 
-Phase 3.7-1では、既存UIと操作を維持したまま、Top ViewとOblique Viewをキー操作で切り替えられるようにします。
-本格的な管制塔視点ではなく、航空機と空港パーツの簡易3D化が画面上でどう見えるかを確認するための小さな視点テストです。
+Phase 3.7-2では、今後の視点追加に備えて、Top View / Oblique View / Wide ViewをCameraPresetとして管理します。
+本格的な管制塔視点ではなく、まずはVキーで複数の固定視点を安全に切り替えられる最小構造を作ります。
 
 ## Phase 2.5で完了したこと
 
@@ -271,4 +280,5 @@ Phase 3.5では、3D化へ進む前に構造監査を行い、`3D_ARCHITECTURE_P
 Phase 3.6-1では、まず航空機Objectだけを簡易3D化し、親Objectに移動・クリック・状態管理を残したまま、子Objectを見た目専用にしました。
 Phase 3.6-2では、滑走路、誘導路、SPOTの見た目を簡易3Dパーツとして整理し、既存waypointと安全管理ロジックは維持しました。
 Phase 3.7-1では、VキーでTop View / Oblique Viewを切り替え、既存UIを維持したまま3D感を確認できるようにしました。
-次は、3D表示QA、空港パーツのPrefab化、または本格的なカメラ設計へ進みます。
+Phase 3.7-2では、カメラ設定をCameraPresetとして整理し、Top / Oblique / Wideを順番に切り替えられる土台を作りました。
+次は、3D表示QA、空港パーツのPrefab化、Tower Viewなどの追加視点検討へ進みます。
