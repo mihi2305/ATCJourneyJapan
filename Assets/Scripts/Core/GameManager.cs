@@ -10,6 +10,12 @@ namespace ATCJourneyJapan.Core
     // Coordinates prototype managers and owns stage completion/safety status.
     public class GameManager : MonoBehaviour
     {
+        private enum CameraViewMode
+        {
+            Top,
+            Oblique
+        }
+
         private readonly List<AircraftController> aircraft = new List<AircraftController>();
         private readonly HashSet<AircraftController> handledAircraft = new HashSet<AircraftController>();
 
@@ -17,6 +23,8 @@ namespace ATCJourneyJapan.Core
         private AircraftSpawner aircraftSpawner;
         private ScoreManager scoreManager;
         private UIManager uiManager;
+        private Camera mainCamera;
+        private CameraViewMode cameraViewMode = CameraViewMode.Top;
         private bool runwayConflictActive;
         private bool stageClear;
         private bool trainingStarted;
@@ -51,6 +59,8 @@ namespace ATCJourneyJapan.Core
 
         private void Update()
         {
+            HandleCameraViewInput();
+
             if (!trainingStarted)
             {
                 uiManager.Refresh();
@@ -218,20 +228,51 @@ namespace ATCJourneyJapan.Core
 
         private void SetupCamera()
         {
-            var camera = Camera.main;
-            if (camera == null)
+            mainCamera = Camera.main;
+            if (mainCamera == null)
             {
                 var cameraObject = new GameObject("Main Camera");
                 cameraObject.tag = "MainCamera";
-                camera = cameraObject.AddComponent<Camera>();
+                mainCamera = cameraObject.AddComponent<Camera>();
                 cameraObject.AddComponent<AudioListener>();
             }
 
-            camera.transform.position = new Vector3(0f, 24f, -18f);
-            camera.transform.rotation = Quaternion.Euler(58f, 0f, 0f);
-            camera.orthographic = true;
-            camera.orthographicSize = 15f;
-            camera.backgroundColor = new Color(0.08f, 0.12f, 0.16f);
+            ApplyCameraView(CameraViewMode.Top);
+            mainCamera.backgroundColor = new Color(0.08f, 0.12f, 0.16f);
+        }
+
+        private void HandleCameraViewInput()
+        {
+            if (Input.GetKeyDown(KeyCode.V))
+            {
+                var nextView = cameraViewMode == CameraViewMode.Top
+                    ? CameraViewMode.Oblique
+                    : CameraViewMode.Top;
+                ApplyCameraView(nextView);
+            }
+        }
+
+        private void ApplyCameraView(CameraViewMode viewMode)
+        {
+            if (mainCamera == null)
+            {
+                return;
+            }
+
+            cameraViewMode = viewMode;
+            if (cameraViewMode == CameraViewMode.Top)
+            {
+                mainCamera.transform.position = new Vector3(0f, 24f, -18f);
+                mainCamera.transform.rotation = Quaternion.Euler(58f, 0f, 0f);
+                mainCamera.orthographic = true;
+                mainCamera.orthographicSize = 15f;
+                return;
+            }
+
+            mainCamera.transform.position = new Vector3(0f, 13.5f, -24f);
+            mainCamera.transform.rotation = Quaternion.Euler(45f, 0f, 0f);
+            mainCamera.orthographic = false;
+            mainCamera.fieldOfView = 43f;
         }
 
         private void SetupLight()

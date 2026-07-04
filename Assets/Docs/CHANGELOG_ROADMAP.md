@@ -13,6 +13,10 @@
 - 今回実装すること
 - 今回は実装せず後続Phaseに回すこと
 
+## 2026-07-04 Phase 3.7-1 Camera / View Direction Test / カメラ・視点テスト
+
+- Vキーで既存Top Viewと3D感確認用Oblique Viewを切り替えられるようにし、UIとミニマップは既存表示を維持
+
 ## 2026-07-04 Phase 3.6 QA heading保持修正
 
 - Taxi中のHold / Stopで航空機が逆向きに回転しないよう、停止中は最後の有効headingを保持し、Resume時に次waypoint方向へ向き直るようにした

@@ -2,11 +2,20 @@
 
 ## Current Phase
 
-Phase 3.6-2 Simple 3D Airport Parts Prototype / 空港パーツの簡易3D化
+Phase 3.7-1 Camera / View Direction Test / カメラ・視点テスト
 
 ## Previous Phase
 
-Phase 3.6-1 Simple 3D Aircraft Visual Prototype / 航空機Objectの簡易3D化
+Phase 3.6-2 Simple 3D Airport Parts Prototype / 空港パーツの簡易3D化
+
+## Phase 3.7-1で行うこと
+
+- 既存の見やすいTop Viewを維持する
+- 追加で、3D感を確認するための軽いOblique Viewを用意する
+- Play中にVキーでTop View / Oblique Viewを切り替えられるようにする
+- Oblique Viewでは、航空機、滑走路、誘導路、SPOTの立体感を確認できるようにする
+- UI、ストリップ、コマンドポップアップ、管制ログ、右下詳細、ミニマップは既存のScreen Space Overlay表示として維持する
+- 本格的な管制塔視点、自由カメラ、ズームUI、カメラ操作UIは今回行わない
 
 ## Phase 3.6-2で行うこと
 
@@ -156,8 +165,8 @@ Phase 3.6は、Simple 3D Airport View Prototype / 簡易3D空港ビュー試作�
 
 ## Current Phaseの目的
 
-Phase 3.6-2では、既存ロジックを維持したまま、滑走路、誘導路、SPOTの見た目だけを簡易3D化します。
-本格的な那覇空港再現やカメラ変更は行わず、空港パーツを将来Prefabや3Dモデルへ差し替えやすい構造にします。
+Phase 3.7-1では、既存UIと操作を維持したまま、Top ViewとOblique Viewをキー操作で切り替えられるようにします。
+本格的な管制塔視点ではなく、航空機と空港パーツの簡易3D化が画面上でどう見えるかを確認するための小さな視点テストです。
 
 ## Phase 2.5で完了したこと
 
@@ -254,4 +263,5 @@ Phase 3.1では、地上走行中の航空機を一時停止・再開できるHo
 Phase 3.5では、3D化へ進む前に構造監査を行い、`3D_ARCHITECTURE_PLAN.md` に設計方針を整理しました。
 Phase 3.6-1では、まず航空機Objectだけを簡易3D化し、親Objectに移動・クリック・状態管理を残したまま、子Objectを見た目専用にしました。
 Phase 3.6-2では、滑走路、誘導路、SPOTの見た目を簡易3Dパーツとして整理し、既存waypointと安全管理ロジックは維持しました。
-次は、空港パーツのPrefab化、斜め俯瞰カメラの小さな試作、または3D表示QAへ進みます。
+Phase 3.7-1では、VキーでTop View / Oblique Viewを切り替え、既存UIを維持したまま3D感を確認できるようにしました。
+次は、3D表示QA、空港パーツのPrefab化、または本格的なカメラ設計へ進みます。
