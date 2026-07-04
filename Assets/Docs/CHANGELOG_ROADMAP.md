@@ -13,6 +13,10 @@
 - 今回実装すること
 - 今回は実装せず後続Phaseに回すこと
 
+## 2026-07-04 Phase 3.6-1 Simple 3D Aircraft Visual Prototype / 航空機Objectの簡易3D化
+
+- Capsule単体の航空機表示を、親Object + 子Primitiveの簡易飛行機風3D表示へ置き換え、既存の移動・heading・クリック選択を維持
+
 ## 2026-07-04 Phase 3.5 3D Architecture Audit / 3D化準備
 
 - 3D化前の構造監査として `3D_ARCHITECTURE_PLAN.md` を追加し、ゲームロジックと見た目を分離する方針を整理

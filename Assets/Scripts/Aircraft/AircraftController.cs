@@ -22,7 +22,7 @@ namespace ATCJourneyJapan.Aircraft
         private AirportManager airportManager;
         private GameManager gameManager;
         private TextMesh label;
-        private Renderer aircraftRenderer;
+        private Renderer[] aircraftRenderers;
         private Material normalMaterial;
         private Material selectedMaterial;
         private AircraftData flightData;
@@ -53,7 +53,7 @@ namespace ATCJourneyJapan.Aircraft
             normalMaterial = normal;
             selectedMaterial = selected;
 
-            aircraftRenderer = GetComponentInChildren<Renderer>();
+            aircraftRenderers = GetComponentsInChildren<Renderer>();
             SetState(startingState);
             SetSelected(false);
             CreateLabel();
@@ -570,9 +570,18 @@ namespace ATCJourneyJapan.Aircraft
 
         private void ApplyDisplayMaterial()
         {
-            if (aircraftRenderer != null)
+            if (aircraftRenderers == null)
             {
-                aircraftRenderer.sharedMaterial = selected || tutorialHighlighted ? selectedMaterial : normalMaterial;
+                return;
+            }
+
+            var displayMaterial = selected || tutorialHighlighted ? selectedMaterial : normalMaterial;
+            foreach (var renderer in aircraftRenderers)
+            {
+                if (renderer != null)
+                {
+                    renderer.sharedMaterial = displayMaterial;
+                }
             }
         }
 

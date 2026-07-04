@@ -46,3 +46,11 @@ Phase 3.5では、本格的な3D空港化の前に、現在の2D風俯瞰プロ�
 - カメラを斜め俯瞰へ切り替える小さな試作を行い、ストリップ、ミニマップ、右下詳細、下部ログと干渉しないか確認する
 - `AirportManager` に散らばる固定座標と、`UIManager` のミニマップ座標範囲の重複を減らす設計を検討する
 - 本格的な那覇空港再現、B滑走路、ターミナル、管制塔、海、空の作り込みは後続Phaseで扱う
+
+## 6. Phase 3.6-1で実施した航空機表示の簡易3D化
+
+- 航空機の親Objectは移動、クリック判定、状態管理、heading更新のために維持する
+- 見た目は親Objectの子Objectとして、胴体、機首、主翼、尾翼をUnity標準Primitiveで構成する
+- 胴体、主翼、尾翼はCube、機首はSphereで表現する
+- 親ObjectのTransform rotationが既存のheadingに追従するため、子Objectの飛行機形状も同じ向きへ回転する
+- 将来的には子Object群を本物の3D航空機Prefabへ差し替え、`AircraftController` のロジックは維持する

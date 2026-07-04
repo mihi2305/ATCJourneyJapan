@@ -2,11 +2,19 @@
 
 ## Current Phase
 
-Phase 3.5 3D Architecture Audit / 3D化準備
+Phase 3.6-1 Simple 3D Aircraft Visual Prototype / 航空機Objectの簡易3D化
 
 ## Previous Phase
 
-Phase 3.1 Hold / Resume Taxi
+Phase 3.5 3D Architecture Audit / 3D化準備
+
+## Phase 3.6-1で行うこと
+
+- 既存のCapsule単体の航空機表示を、Unity標準Primitiveを組み合わせた飛行機風の簡易3D Objectへ置き換える
+- 親Objectは移動、クリック判定、状態管理に使い、子Objectを見た目専用にする
+- 胴体、機首、主翼、尾翼を子Objectとして作成し、機首方向が分かる形にする
+- 既存のheading、Transform rotation、waypoint移動、ミニマップ矢印、ストリップ選択、コマンド処理は維持する
+- 本格的な3Dモデル、空港3D化、カメラ変更は今回行わない
 
 ## Phase 3.5で行うこと
 
@@ -132,8 +140,8 @@ Phase 3.6は、Simple 3D Airport View Prototype / 簡易3D空港ビュー試作�
 
 ## Current Phaseの目的
 
-Phase 3.5では、今後リアル感のある3D空港ビューへ移行する前に、現在の2D風俯瞰プロトタイプの構造を監査します。
-本格的な3D実装は行わず、ゲームロジックと見た目を分離できているかを確認し、Phase 3.6の簡易3D空港ビュー試作へつなげます。
+Phase 3.6-1では、既存ロジックを維持したまま、航空機の見た目だけを簡易3D化します。
+本格的な3D空港化やカメラ変更は行わず、航空機Objectを将来3Dモデルへ差し替えやすい構造にします。
 
 ## Phase 2.5で完了したこと
 
@@ -228,4 +236,5 @@ Phase 3.0では、まずRWY 18Lの滑走路占有ルールと危険指示のブ�
 Phase 3.1では、地上走行中の航空機を一時停止・再開できるHold / Resume Taxiを追加しました。
 ただし、移動停止・再開、管制ログ、右下詳細、既存チュートリアルとの相性はUnity Editor上で再確認する必要があるため、次はPhase 3.1 QA準備中とします。
 Phase 3.5では、3D化へ進む前に構造監査を行い、`3D_ARCHITECTURE_PLAN.md` に設計方針を整理しました。
-次はPhase 3.6「Simple 3D Airport View Prototype / 簡易3D空港ビュー試作」とし、現在のゲームロジックを維持したまま見た目の3D化を小さく試します。
+Phase 3.6-1では、まず航空機Objectだけを簡易3D化し、親Objectに移動・クリック・状態管理を残したまま、子Objectを見た目専用にしました。
+次は、滑走路、誘導路、SPOTの簡易3Dパーツ化、または斜め俯瞰カメラの小さな試作へ進みます。
