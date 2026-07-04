@@ -2,11 +2,20 @@
 
 ## Current Phase
 
-Phase 3.6-1 Simple 3D Aircraft Visual Prototype / 航空機Objectの簡易3D化
+Phase 3.6-2 Simple 3D Airport Parts Prototype / 空港パーツの簡易3D化
 
 ## Previous Phase
 
-Phase 3.5 3D Architecture Audit / 3D化準備
+Phase 3.6-1 Simple 3D Aircraft Visual Prototype / 航空機Objectの簡易3D化
+
+## Phase 3.6-2で行うこと
+
+- 既存の滑走路、誘導路、SPOTを、Unity標準Primitiveによる簡易3D空港パーツとして整理する
+- 滑走路は薄い板状パーツにし、縁線、閾値、センターラインを追加する
+- 誘導路は滑走路より細い板状パーツにし、黄色のセンターラインを追加する
+- SPOT 01〜04は駐機区画として見えるように、区画線と停止位置を追加する
+- waypoint、航空機移動、滑走路占有、安全管理、ミニマップ、チュートリアルの既存ロジックは維持する
+- 本格的な那覇空港再現、B滑走路、カメラ変更、外部3Dモデル追加は今回行わない
 
 ## Phase 3.6-1で行うこと
 
@@ -140,8 +149,8 @@ Phase 3.6は、Simple 3D Airport View Prototype / 簡易3D空港ビュー試作�
 
 ## Current Phaseの目的
 
-Phase 3.6-1では、既存ロジックを維持したまま、航空機の見た目だけを簡易3D化します。
-本格的な3D空港化やカメラ変更は行わず、航空機Objectを将来3Dモデルへ差し替えやすい構造にします。
+Phase 3.6-2では、既存ロジックを維持したまま、滑走路、誘導路、SPOTの見た目だけを簡易3D化します。
+本格的な那覇空港再現やカメラ変更は行わず、空港パーツを将来Prefabや3Dモデルへ差し替えやすい構造にします。
 
 ## Phase 2.5で完了したこと
 
@@ -237,4 +246,5 @@ Phase 3.1では、地上走行中の航空機を一時停止・再開できるHo
 ただし、移動停止・再開、管制ログ、右下詳細、既存チュートリアルとの相性はUnity Editor上で再確認する必要があるため、次はPhase 3.1 QA準備中とします。
 Phase 3.5では、3D化へ進む前に構造監査を行い、`3D_ARCHITECTURE_PLAN.md` に設計方針を整理しました。
 Phase 3.6-1では、まず航空機Objectだけを簡易3D化し、親Objectに移動・クリック・状態管理を残したまま、子Objectを見た目専用にしました。
-次は、滑走路、誘導路、SPOTの簡易3Dパーツ化、または斜め俯瞰カメラの小さな試作へ進みます。
+Phase 3.6-2では、滑走路、誘導路、SPOTの見た目を簡易3Dパーツとして整理し、既存waypointと安全管理ロジックは維持しました。
+次は、空港パーツのPrefab化、斜め俯瞰カメラの小さな試作、または3D表示QAへ進みます。

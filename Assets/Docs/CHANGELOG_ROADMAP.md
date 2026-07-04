@@ -13,6 +13,10 @@
 - 今回実装すること
 - 今回は実装せず後続Phaseに回すこと
 
+## 2026-07-04 Phase 3.6-2 Simple 3D Airport Parts Prototype / 空港パーツの簡易3D化
+
+- 滑走路、誘導路、SPOTを簡易3Dパーツとして整理し、既存waypoint、航空機移動、安全管理、ミニマップは維持
+
 ## 2026-07-04 Phase 3.6-1 Simple 3D Aircraft Visual Prototype / 航空機Objectの簡易3D化
 
 - Capsule単体の航空機表示を、親Object + 子Primitiveの簡易飛行機風3D表示へ置き換え、既存の移動・heading・クリック選択を維持
