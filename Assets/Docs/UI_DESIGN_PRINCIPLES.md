@@ -52,7 +52,10 @@ ATCJourneyJapanのUI設計原則です。
 - 航空機Objectクリックは当面維持するが、将来的には補助操作にする
 - 右側固定の指示欄は暫定UIであり、将来的には選択中ストリップ内またはストリップ横に指示ボタンを統合する
 - 操作対象と指示ボタンを近づけ、どの便へ指示を出しているか分かりやすくする
-- Phase 2.4では、選択中ストリップの右側にその航空機へ現在出せる指示ボタンを表示する
+- Phase 2.4では、選択中ストリップの右側にその航空機へ現在出せる指示を独立したコマンドポップアップとして表示する
+- コマンドポップアップはストリップ領域から右にはみ出してもよく、ストリップ本体へボタンを押し込まない
+- コマンドポップアップ内のボタンは、日本語/英語2行が潰れない幅、高さ、余白、文字サイズを確保する
+- 将来的に最大4個程度のコマンドボタンを縦に並べられるレイアウトを想定する
 - ストリップ連動コマンドボタンはストリップ下に置かず、到着/出発リストの縦方向の一覧性を維持する
 - ストリップ本体は便名 + RWY/SPOTの一覧表示に絞り、指示ボタンは選択中ストリップにだけ付ける
 - 1機に対して常に全ボタンを表示せず、現在状態で出せる指示だけを1〜2個表示する
@@ -79,7 +82,7 @@ ATCJourneyJapanのUI設計原則です。
 ## 将来コマンド設計方針
 
 - 出発便コマンド候補: Flight Clearance、Pushback、Pushback Direction、Taxi Permit、滑走路/誘導路ルート選択、Line Up and Wait、Cleared for Takeoff、Hand-off to Departure
-- 到着便コマンド候補: Approach Contact、Runway Select / ILS Approach、Clear to Land、Hand-off to Ground、Taxi to Spot
+- 到着便コマンド候補: Approach Contact、Runway Select / ILS Approach、Clear to Land、Go-Around、Hand-off to Ground、Taxi to Spot
 - 共通/緊急コマンド候補: Hold Taxi、Resume Taxi、Go-Around、Hand-off
 - Flight Clearance / 出発承認はPhase 3.4で扱う
 - Hold Taxi / Resume TaxiはPhase 3.0で扱う

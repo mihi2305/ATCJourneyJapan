@@ -30,7 +30,7 @@
 - Phase 1.7: ボタン押下後に、実際の管制文を短く表示してから機体が動く演出を追加する
 - Phase 2.0: 航空機データと滑走路データを拡張し、フライトストリップ、レーダー、複数機運用に備える
 - Phase 2.3: 飛行機を直接クリックする方式から、到着機・出発機のフライトストリップをクリックして選択する方式へ移行する
-- Phase 2.4: 選択中ストリップの右側に、出せる指示ボタンを表示する
+- Phase 2.4: 選択中ストリップの右側に、出せる指示をコマンドポップアップで表示する
 - Phase 6.1: フォント、色、ボタン質感、HUD表現などのUI Visual Polishを扱う
 - Phase 3.4: Pushback前に出発承認 / Departure Clearanceを受ける流れを検討する
 - Phase 2.5: 接近中の到着機を把握するための簡易レーダー画面を追加する
@@ -105,7 +105,9 @@ Phase 3.2では、既存航空管制ゲームも参考にしながら、効率�
 - 機種、状態、推奨指示、出発地、到着地、時刻は右下詳細パネルへ移す
 - 時刻、出発地、到着地、詳細ルートは、将来的な右下詳細パネルへ分離する
 - 右側固定の指示欄は暫定UIであり、Phase 2.4以降は選択したストリップの中または近くに、その機体へ出せる指示ボタンを表示する
-- Phase 2.4では、選択中ストリップの右側に現在出せる指示ボタンを表示し、右側固定指示欄と同じ既存コマンド処理を呼び出す
+- Phase 2.4では、選択中ストリップの右側に現在出せる指示を独立したコマンドポップアップで表示し、右側固定指示欄と同じ既存コマンド処理を呼び出す
+- コマンドポップアップはストリップ領域から右にはみ出してもよく、ボタン内の日本語/英語2行が潰れない幅と高さを確保する
+- 将来的に最大4個程度のボタンを縦に並べられる構造を想定する
 - ストリップ下に指示ボタンを置かず、到着/出発リストの縦方向の一覧性を維持する
 - 1機に対して常に全ボタンを表示せず、現在状態で出せる指示だけを1〜2個表示する
 - 右側固定指示欄は当面維持し、将来的に縮小または廃止してストリップ側へ統合する
@@ -117,7 +119,7 @@ Phase 3.2では、既存航空管制ゲームも参考にしながら、効率�
 ## 将来コマンド設計メモ
 
 - 出発便: Flight Clearance、Pushback、Pushback Direction、Taxi Permit、滑走路/誘導路ルート選択、Line Up and Wait、Cleared for Takeoff、Hand-off to Departure
-- 到着便: Approach Contact、Runway Select / ILS Approach、Clear to Land、Hand-off to Ground、Taxi to Spot
+- 到着便: Approach Contact、Runway Select / ILS Approach、Clear to Land、Go-Around、Hand-off to Ground、Taxi to Spot
 - 共通/緊急: Hold Taxi、Resume Taxi、Go-Around、Hand-off
 - Flight Clearance / 出発承認はPhase 3.4で扱う
 - Hold Taxi / Resume TaxiはPhase 3.0で扱う

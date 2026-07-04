@@ -18,7 +18,7 @@
 | Phase 2.0 | 完了 | 航空機データ拡張 | 便名 / 機種 / 運航種別 / 使用滑走路 / Spot / 状態 / 担当管制ポジション / 出発地/目的地 / nextTarget / 推奨コマンドID / A滑走路をRWY_A・18L/36Rとして扱う土台 / B滑走路は将来拡張用データのみ |
 | Phase 2.2 | 次に実装予定 | 複数機運用 | 到着2機 / 出発2機 / 時間差出現 / マルチタスク発生 |
 | Phase 2.3 | 完了 | フライトストリップ方式 | 左側に到着 ARRIVAL / 出発 DEPARTURE リスト / 便名帯で航空機を選択 / 推奨指示待ちストリップをハイライト / 機体クリック依存から脱却する土台 |
-| Phase 2.4 | 完了 | ストリップ連動コマンド | 選択ストリップ右側に指示ボタンを表示 / 右側固定指示欄を暫定維持 / ストリップ側ボタンから既存コマンドを実行 |
+| Phase 2.4 | 完了 | ストリップ連動コマンド | 選択ストリップ右側に独立したコマンドポップアップを表示 / 右側固定指示欄を暫定維持 / ストリップ側ボタンから既存コマンドを実行 |
 | Phase 2.5 | 未着手 | 簡易レーダー/ミニマップ | 右上に空港/接近機/滑走路/誘導路/位置表示 / 接近機の距離・方位・進入経路を表示 |
 | Phase 2.6 | 未着手 | 経路プレビュー | 選択中機体の予定ルートを線で表示 / Taxi to GateやLine Up後の動きが予測できるようにする |
 | Phase 2.7 | 未着手 | 空港全体俯瞰ビュー | 上空カメラ / 滑走路 / 誘導路 / ゲート / 航空機ラベル / 空港全体を管制している感覚 |
@@ -48,7 +48,9 @@
 - Phase 2.3以降、航空機Objectクリックに加えてフライトストリップクリックでも航空機を選択できるようにする
 - 将来的には航空機Objectクリックを補助操作とし、フライトストリップを主操作にする
 - 右側固定の指示欄は暫定UIであり、Phase 2.4で選択中ストリップ内またはストリップ横の指示UIへ段階的に統合する
-- Phase 2.4では、選択中ストリップの右側に現在出せる指示ボタンを表示し、右側固定指示欄と同じ既存コマンド処理を呼び出す
+- Phase 2.4では、選択中ストリップの右側に独立したコマンドポップアップを表示し、右側固定指示欄と同じ既存コマンド処理を呼び出す
+- コマンドポップアップはストリップ領域から右にはみ出してもよく、ボタン内の日本語/英語2行が潰れない幅と高さを確保する
+- 将来的に最大4個程度のコマンドボタンを縦に並べられる構造を想定する
 - ストリップ連動コマンドボタンはストリップ下に置かず、縦リストの一覧性を維持する
 - 1機に対して常に全ボタンを表示せず、現在状態で出せる指示だけを1〜2個表示する
 - プレイヤーにボタン探しをさせるのではなく、どの機体にいつ指示を出すかに集中させる
@@ -66,7 +68,7 @@
 - Phase 3.4では、Pushback前に「出発承認 / Departure Clearance」を受ける流れを追加し、Clearance Delivery、Ground、Towerの違いを教える入口にする
 - Phase 3.4ではDeparture ClearanceボタンやClearance Delivery管制ポジションを検討するが、Phase 2.4 QAでは実装しない
 - 将来的な出発便コマンド候補は、Flight Clearance、Pushback、Pushback Direction、Taxi Permit、滑走路/誘導路ルート選択、Line Up and Wait、Cleared for Takeoff、Hand-off to Departureとする
-- 将来的な到着便コマンド候補は、Approach Contact、Runway Select / ILS Approach、Clear to Land、Hand-off to Ground、Taxi to Spotとする
+- 将来的な到着便コマンド候補は、Approach Contact、Runway Select / ILS Approach、Clear to Land、Go-Around、Hand-off to Ground、Taxi to Spotとする
 - 将来的な共通/緊急コマンド候補は、Hold Taxi、Resume Taxi、Go-Around、Hand-offとする
 - Flight Clearance / 出発承認はPhase 3.4、Hold Taxi / Resume TaxiはPhase 3.0、Go-AroundはPhase 3.0〜3.2、Hand-offはPhase 3.5で扱う
 - Pushback方向選択やTaxiルート選択は、Phase 3.0以降またはステージ制導入後に扱う

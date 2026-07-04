@@ -40,6 +40,7 @@ namespace ATCJourneyJapan.UI
         private GameObject startPanel;
         private GameObject hudRoot;
         private GameObject flightStripPanel;
+        private GameObject stripCommandPopup;
         private GameObject selectedPanel;
         private GameObject guidePanel;
         private GameObject tutorialPanel;
@@ -346,10 +347,12 @@ namespace ATCJourneyJapan.UI
             CreateFlightStripButton("AJJ101", new Vector2(0f, 54f));
             CreateFlightStripButton("AJJ202", new Vector2(0f, -108f));
 
-            stripCommandButton = CreateButton("Strip Command", flightStripPanel.transform, string.Empty, new Vector2(0f, 0f), new Vector2(208f, 58f), 13);
+            stripCommandPopup = CreatePanel("Strip Command Popup", flightStripPanel.transform, new Vector2(0.5f, 0.5f), new Vector2(292f, 96f));
+            stripCommandPopup.GetComponent<Image>().color = new Color(0.015f, 0.025f, 0.032f, 0.94f);
+            stripCommandButton = CreateButton("Strip Command", stripCommandPopup.transform, string.Empty, Vector2.zero, new Vector2(260f, 72f), 16);
             stripCommandButtonText = stripCommandButton.GetComponentInChildren<Text>();
             stripCommandButton.onClick.AddListener(ExecuteStripCommand);
-            stripCommandButton.gameObject.SetActive(false);
+            stripCommandPopup.SetActive(false);
         }
 
         private void CreateFlightStripButton(string flightNumber, Vector2 anchoredPosition)
@@ -451,7 +454,7 @@ namespace ATCJourneyJapan.UI
 
         private void UpdateStripCommandButton(AircraftController selected, AircraftCommand? recommended, Vector2 selectedStripPosition, bool hasSelectedStrip)
         {
-            if (stripCommandButton == null)
+            if (stripCommandPopup == null || stripCommandButton == null)
             {
                 return;
             }
@@ -462,14 +465,22 @@ namespace ATCJourneyJapan.UI
                 && CanAcceptCommand(recommended.Value)
                 && selected.CanExecute(recommended.Value);
 
-            stripCommandButton.gameObject.SetActive(canShow);
+            stripCommandPopup.SetActive(canShow);
             if (!canShow)
             {
                 return;
             }
 
-            stripCommandButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(selectedStripPosition.x + 260f, selectedStripPosition.y);
+            var popupTransform = stripCommandPopup.GetComponent<RectTransform>();
+            popupTransform.sizeDelta = GetStripCommandPopupSize(1);
+            popupTransform.anchoredPosition = new Vector2(selectedStripPosition.x + 306f, selectedStripPosition.y);
             stripCommandButtonText.text = GetCommandLabel(recommended.Value);
+        }
+
+        private Vector2 GetStripCommandPopupSize(int commandCount)
+        {
+            var safeCommandCount = Mathf.Clamp(commandCount, 1, 4);
+            return new Vector2(292f, 24f + safeCommandCount * 72f + (safeCommandCount - 1) * 10f);
         }
 
         private string GetStripTargetLabel(AircraftData data)
