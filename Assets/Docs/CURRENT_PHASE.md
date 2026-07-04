@@ -2,11 +2,31 @@
 
 ## Current Phase
 
-Phase 3.8-3 Sky / Lighting / Atmosphere Blockout
+Phase 3.9-1 Naha Layout Alignment
 
 ## Previous Phase
 
-Phase 3.8-2 Naha-style 3D Airport Blockout QA / 那覇空港風ブロックアウト位置調整
+Phase 3.8-3 Sky / Lighting / Atmosphere Blockout
+
+## Phase 3.9-1で行うこと
+
+- Aerodrome Chart 1 `JP-AD-2.24.1-ROAH-en-JP.pdf` を参考に、那覇空港風ブロックアウトの配置を実際の空港に少し寄せる
+- ターミナル側のRWY 18L / 36RをA滑走路として維持し、主運用滑走路として扱う
+- 海側のRWY 18R / 36LをB滑走路として、A滑走路より短く幅広い将来解放予定滑走路として表示する
+- EAST CHINA SEAがA/B滑走路の間と海側に広がる構造を強める
+- DOM TERMINAL、INTL TERMINAL、TWR、WEST APRON、NR APRON、INTL APRONを簡略ブロックで配置する
+- Taxiway E/W/T/C/D系の流れを完全再現せず、エプロンから主滑走路へ向かう主要導線として簡略化する
+- 既存waypoint、航空機移動、滑走路占有、安全管理、ミニマップ、チュートリアルは維持する
+
+## PDFから読み取った配置ポイント
+
+- RWY 18L / 36Rはターミナル側の3000m x 45m滑走路として下側に配置されている
+- RWY 18R / 36Lは海側の2700m x 60m滑走路として上側に並行配置されている
+- EAST CHINA SEAはA/B滑走路間とB滑走路外側に広く接している
+- DOM TERMINAL / INTL TERMINALはA滑走路の南東側にあり、エプロン群がその前面に広がる
+- TWRはターミナル・エプロンと滑走路の間寄りに位置する
+- WEST APRON、NR系APRON、INTL APRONがターミナル前に分かれて配置されている
+- Taxiway E系はA/B滑走路間、W/T/C/D系はエプロンから主滑走路へ向かう導線として読める
 
 ## Phase 3.8-3で行うこと
 
@@ -217,8 +237,8 @@ Phase 3.6は、Simple 3D Airport View Prototype / 簡易3D空港ビュー試作�
 
 ## Current Phaseの目的
 
-Phase 3.8-3では、Phase 3.8-1 / 3.8-2で作った那覇空港風ブロックアウトに、空、光、海、地面の最低限の雰囲気を加えます。
-本格的なビジュアル制作ではなく、Primitiveベースのまま明るい昼間の空港ビューとして見やすくする小さな調整です。
+Phase 3.9-1では、添付Aerodrome Chart 1を参考に、現在のPrimitiveベースのブロックアウトを実際の那覇空港らしい位置関係へ少し近づけます。
+PDF画像や外部素材は使わず、A/B滑走路、海、ターミナル、管制塔、エプロン、主要誘導路の大まかな配置だけをゲーム用に簡略化して反映します。
 
 ## Phase 2.5で完了したこと
 
@@ -320,4 +340,5 @@ Phase 3.7-2では、カメラ設定をCameraPresetとして整理し、Top / Obl
 Phase 3.8-1では、海、将来B滑走路、A/B連絡誘導路、ターミナル、管制塔を仮配置し、那覇空港風の空間ブロックアウトを追加しました。
 Phase 3.8-2では、A滑走路を主滑走路として少し長く、B滑走路を将来解放予定として短く控えめにし、海とターミナル周辺の見え方を調整しました。
 Phase 3.8-3では、青空背景、昼間寄りの光、海と地面の視認性、ターミナルと管制塔の明るさを調整しました。
-次は、Phase 3.9-1 Naha Layout Alignment、3D表示QA、空港パーツのPrefab化、Tower Viewなどの追加視点検討へ進みます。
+Phase 3.9-1では、Aerodrome Chart 1を参考に、A/B滑走路の並行配置、海、DOM/INTL Terminal、TWR、WEST/NR/INTL Apron、主要Taxiway導線を簡略反映しました。
+次は、3D表示QA、空港パーツのPrefab化、Tower Viewなどの追加視点検討へ進みます。

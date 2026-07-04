@@ -20,6 +20,7 @@ namespace ATCJourneyJapan.Airport
         private Material taxiwayMarkingMaterial;
         private Material gateMaterial;
         private Material apronMaterial;
+        private Material secondaryApronMaterial;
         private Material spotMarkingMaterial;
         private Material groundMaterial;
         private Material seaMaterial;
@@ -144,6 +145,7 @@ namespace ATCJourneyJapan.Airport
             taxiwayMarkingMaterial = CreateMaterial("Taxiway Centerline Paint", new Color(1f, 0.76f, 0.22f));
             gateMaterial = CreateMaterial("Spot Apron Concrete", new Color(0.22f, 0.44f, 0.42f));
             apronMaterial = CreateMaterial("Terminal Apron Concrete", new Color(0.29f, 0.37f, 0.36f));
+            secondaryApronMaterial = CreateMaterial("Secondary Apron Concrete", new Color(0.25f, 0.34f, 0.34f));
             spotMarkingMaterial = CreateMaterial("Spot Marking Paint", new Color(0.95f, 0.96f, 0.84f));
             groundMaterial = CreateMaterial("Ground Green", new Color(0.24f, 0.42f, 0.29f));
             seaMaterial = CreateMaterial("Naha Sea Blockout", new Color(0.03f, 0.48f, 0.72f));
@@ -176,15 +178,15 @@ namespace ATCJourneyJapan.Airport
             var root = new GameObject($"{airportDisplayName} Layout");
             root.transform.SetParent(transform);
 
-            CreateBox("Airport Island Ground", new Vector3(0f, -0.1f, -1f), new Vector3(62f, 0.1f, 32f), groundMaterial, root.transform);
+            CreateBox("Airport Island Ground", new Vector3(0f, -0.1f, -0.6f), new Vector3(66f, 0.1f, 34f), groundMaterial, root.transform);
             CreateNahaStyleBlockout(root.transform);
             CreateRunway(root.transform);
             CreateTaxiways(root.transform);
 
-            gatePositions.Add(new Vector3(2f, 0.6f, -9f));
-            gatePositions.Add(new Vector3(-11f, 0.6f, -9f));
-            gatePositions.Add(new Vector3(7f, 0.6f, -11.6f));
-            gatePositions.Add(new Vector3(-16f, 0.6f, -11.6f));
+            gatePositions.Add(new Vector3(7.5f, 0.6f, -9.2f));
+            gatePositions.Add(new Vector3(-5.5f, 0.6f, -9.2f));
+            gatePositions.Add(new Vector3(13.5f, 0.6f, -11.8f));
+            gatePositions.Add(new Vector3(-14.5f, 0.6f, -11.8f));
             CreateSpotStand("Gate 1 Stand", "SPOT 01", gatePositions[0], root.transform);
             CreateSpotStand("Gate 2 Stand", "SPOT 02", gatePositions[1], root.transform);
             CreateSpotStand("Gate 3 Stand", "SPOT 03", gatePositions[2], root.transform);
@@ -202,31 +204,33 @@ namespace ATCJourneyJapan.Airport
 
         private void CreateNahaStyleBlockout(Transform parent)
         {
-            CreateBox("Sea Between A and B Runways", new Vector3(3f, -0.035f, 4.5f), new Vector3(62f, 0.04f, 3.2f), seaMaterial, parent);
-            CreateBox("Sea East of Future B Runway", new Vector3(3f, -0.035f, 15.4f), new Vector3(68f, 0.04f, 10.2f), seaMaterial, parent);
-            CreateBox("Shoreline Between A and B Runways", new Vector3(3f, 0.005f, 2.86f), new Vector3(62f, 0.025f, 0.12f), shorelineMaterial, parent);
-            CreateBox("Shoreline West of Future B Runway", new Vector3(3f, 0.005f, 6.12f), new Vector3(62f, 0.025f, 0.12f), shorelineMaterial, parent);
-            CreateBox("Shoreline East of Future B Runway", new Vector3(3f, 0.005f, 10.26f), new Vector3(68f, 0.025f, 0.12f), shorelineMaterial, parent);
+            CreateBox("East China Sea Between Parallel Runways", new Vector3(3f, -0.035f, 5.2f), new Vector3(66f, 0.04f, 4f), seaMaterial, parent);
+            CreateBox("East China Sea Offshore", new Vector3(3f, -0.035f, 17.2f), new Vector3(72f, 0.04f, 11.5f), seaMaterial, parent);
+            CreateBox("Shoreline Terminal Side", new Vector3(3f, 0.005f, 3.12f), new Vector3(66f, 0.025f, 0.12f), shorelineMaterial, parent);
+            CreateBox("Shoreline Future Runway Side", new Vector3(3f, 0.005f, 7.28f), new Vector3(66f, 0.025f, 0.12f), shorelineMaterial, parent);
+            CreateBox("Shoreline Offshore", new Vector3(3f, 0.005f, 11.72f), new Vector3(72f, 0.025f, 0.12f), shorelineMaterial, parent);
 
-            CreateBox("Future Runway B 18R 36L", new Vector3(3f, -0.02f, 9.2f), new Vector3(26.5f, 0.12f, 1.8f), futureRunwayMaterial, parent);
-            CreateBox("Future Runway B Centerline", new Vector3(3f, 0.065f, 9.2f), new Vector3(22f, 0.035f, 0.06f), runwayEdgeMaterial, parent);
-            CreateBox("Future Runway B Edge North", new Vector3(3f, 0.06f, 9.95f), new Vector3(25.4f, 0.035f, 0.055f), runwayEdgeMaterial, parent);
-            CreateBox("Future Runway B Edge South", new Vector3(3f, 0.06f, 8.45f), new Vector3(25.4f, 0.035f, 0.055f), runwayEdgeMaterial, parent);
+            CreateBox("Future Runway B 18R 36L", new Vector3(3f, -0.02f, 10.2f), new Vector3(29.2f, 0.12f, 2.8f), futureRunwayMaterial, parent);
+            CreateBox("Future Runway B Centerline", new Vector3(3f, 0.065f, 10.2f), new Vector3(24.2f, 0.035f, 0.06f), runwayEdgeMaterial, parent);
+            CreateBox("Future Runway B Edge North", new Vector3(3f, 0.06f, 11.45f), new Vector3(28.1f, 0.035f, 0.055f), runwayEdgeMaterial, parent);
+            CreateBox("Future Runway B Edge South", new Vector3(3f, 0.06f, 8.95f), new Vector3(28.1f, 0.035f, 0.055f), runwayEdgeMaterial, parent);
 
-            CreateBox("A B Connector Taxiway West", new Vector3(-7f, 0.025f, 4.6f), new Vector3(1.05f, 0.13f, 9.2f), taxiwayMaterial, parent);
-            CreateBox("A B Connector Taxiway East", new Vector3(12f, 0.025f, 4.6f), new Vector3(1.05f, 0.13f, 9.2f), taxiwayMaterial, parent);
-            CreateBox("A B Connector West Centerline", new Vector3(-7f, 0.12f, 4.6f), new Vector3(0.055f, 0.035f, 8.5f), taxiwayMarkingMaterial, parent);
-            CreateBox("A B Connector East Centerline", new Vector3(12f, 0.12f, 4.6f), new Vector3(0.055f, 0.035f, 8.5f), taxiwayMarkingMaterial, parent);
+            CreateBox("Taxiway E West Link", new Vector3(-7f, 0.025f, 5.1f), new Vector3(1.05f, 0.13f, 10.2f), taxiwayMaterial, parent);
+            CreateBox("Taxiway E East Link", new Vector3(12f, 0.025f, 5.1f), new Vector3(1.05f, 0.13f, 10.2f), taxiwayMaterial, parent);
+            CreateBox("Taxiway E West Centerline", new Vector3(-7f, 0.12f, 5.1f), new Vector3(0.055f, 0.035f, 9.4f), taxiwayMarkingMaterial, parent);
+            CreateBox("Taxiway E East Centerline", new Vector3(12f, 0.12f, 5.1f), new Vector3(0.055f, 0.035f, 9.4f), taxiwayMarkingMaterial, parent);
         }
 
         private void CreateTerminalBlockout(Transform parent)
         {
-            CreateBox("Terminal Apron Blockout", new Vector3(-2.5f, -0.02f, -10.6f), new Vector3(36f, 0.12f, 6.8f), apronMaterial, parent);
-            CreateBox("DOM TERMINAL Blockout", new Vector3(-6f, 0.85f, -14.8f), new Vector3(19f, 1.7f, 2.3f), terminalMaterial, parent);
-            CreateBox("INTL TERMINAL Blockout", new Vector3(11f, 0.75f, -14.9f), new Vector3(11.5f, 1.5f, 2.2f), terminalMaterial, parent);
+            CreateBox("WEST APRON Blockout", new Vector3(-13f, -0.02f, -9.8f), new Vector3(12f, 0.12f, 5.8f), secondaryApronMaterial, parent);
+            CreateBox("NR APRON Blockout", new Vector3(4f, -0.015f, -9.6f), new Vector3(19f, 0.12f, 6.4f), apronMaterial, parent);
+            CreateBox("INTL APRON Blockout", new Vector3(15f, -0.01f, -10.9f), new Vector3(10f, 0.12f, 6.2f), secondaryApronMaterial, parent);
+            CreateBox("DOM TERMINAL Blockout", new Vector3(4f, 0.85f, -15.2f), new Vector3(18f, 1.7f, 2.3f), terminalMaterial, parent);
+            CreateBox("INTL TERMINAL Blockout", new Vector3(17f, 0.75f, -15.3f), new Vector3(9f, 1.5f, 2.2f), terminalMaterial, parent);
 
-            CreateBox("TWR Shaft Blockout", new Vector3(18f, 1.65f, -12.1f), new Vector3(0.85f, 3.3f, 0.85f), towerMaterial, parent);
-            CreateBox("TWR Cab Blockout", new Vector3(18f, 3.55f, -12.1f), new Vector3(2f, 0.85f, 2f), towerMaterial, parent);
+            CreateBox("TWR Shaft Blockout", new Vector3(8f, 1.65f, -7.1f), new Vector3(0.85f, 3.3f, 0.85f), towerMaterial, parent);
+            CreateBox("TWR Cab Blockout", new Vector3(8f, 3.55f, -7.1f), new Vector3(2f, 0.85f, 2f), towerMaterial, parent);
         }
 
         private void CreateRunway(Transform parent)
@@ -249,9 +253,17 @@ namespace ATCJourneyJapan.Airport
             CreateBox("Taxiway Main", new Vector3(0f, 0.02f, -5f), new Vector3(26f, 0.14f, 1.24f), taxiwayMaterial, parent);
             CreateBox("Taxiway Runway Link West", new Vector3(-7f, 0.03f, -2.5f), new Vector3(1.12f, 0.14f, 5f), taxiwayMaterial, parent);
             CreateBox("Taxiway Runway Link East", new Vector3(12f, 0.03f, -2.5f), new Vector3(1.12f, 0.14f, 5f), taxiwayMaterial, parent);
+            CreateBox("Taxiway W Apron Spur", new Vector3(-11f, 0.025f, -7.1f), new Vector3(1f, 0.13f, 4.2f), taxiwayMaterial, parent);
+            CreateBox("Taxiway T Terminal Spur", new Vector3(5.5f, 0.025f, -7.1f), new Vector3(1f, 0.13f, 4.2f), taxiwayMaterial, parent);
+            CreateBox("Taxiway D Intl Spur", new Vector3(15f, 0.025f, -7.2f), new Vector3(1f, 0.13f, 4.4f), taxiwayMaterial, parent);
+            CreateBox("Taxiway C Diagonal Connector", new Vector3(2.5f, 0.028f, -2.5f), new Vector3(1.05f, 0.13f, 6f), taxiwayMaterial, Quaternion.Euler(0f, 28f, 0f), parent);
             CreateBox("Taxiway Main Centerline", new Vector3(0f, 0.12f, -5f), new Vector3(25.2f, 0.035f, 0.055f), taxiwayMarkingMaterial, parent);
             CreateBox("Taxiway West Centerline", new Vector3(-7f, 0.13f, -2.5f), new Vector3(0.055f, 0.035f, 4.7f), taxiwayMarkingMaterial, parent);
             CreateBox("Taxiway East Centerline", new Vector3(12f, 0.13f, -2.5f), new Vector3(0.055f, 0.035f, 4.7f), taxiwayMarkingMaterial, parent);
+            CreateBox("Taxiway W Spur Centerline", new Vector3(-11f, 0.12f, -7.1f), new Vector3(0.055f, 0.035f, 3.8f), taxiwayMarkingMaterial, parent);
+            CreateBox("Taxiway T Spur Centerline", new Vector3(5.5f, 0.12f, -7.1f), new Vector3(0.055f, 0.035f, 3.8f), taxiwayMarkingMaterial, parent);
+            CreateBox("Taxiway D Spur Centerline", new Vector3(15f, 0.12f, -7.2f), new Vector3(0.055f, 0.035f, 4f), taxiwayMarkingMaterial, parent);
+            CreateBox("Taxiway C Diagonal Centerline", new Vector3(2.5f, 0.12f, -2.5f), new Vector3(0.055f, 0.035f, 5.6f), taxiwayMarkingMaterial, Quaternion.Euler(0f, 28f, 0f), parent);
         }
 
         private void CreateSpotStand(string standName, string spotLabel, Vector3 spotPosition, Transform parent)
@@ -267,10 +279,16 @@ namespace ATCJourneyJapan.Airport
 
         private GameObject CreateBox(string objectName, Vector3 position, Vector3 scale, Material material, Transform parent)
         {
+            return CreateBox(objectName, position, scale, material, Quaternion.identity, parent);
+        }
+
+        private GameObject CreateBox(string objectName, Vector3 position, Vector3 scale, Material material, Quaternion rotation, Transform parent)
+        {
             var box = GameObject.CreatePrimitive(PrimitiveType.Cube);
             box.name = objectName;
             box.transform.SetParent(parent);
             box.transform.position = position;
+            box.transform.rotation = rotation;
             box.transform.localScale = scale;
             box.GetComponent<Renderer>().sharedMaterial = material;
             return box;

@@ -13,6 +13,10 @@
 - 今回実装すること
 - 今回は実装せず後続Phaseに回すこと
 
+## 2026-07-04 Phase 3.9-1 Naha Layout Alignment
+
+- Aerodrome Chart 1を参考に、A/B滑走路、EAST CHINA SEA、DOM/INTL Terminal、TWR、WEST/NR/INTL Apron、主要Taxiway導線の簡略配置を調整
+
 ## 2026-07-04 Phase 3.8-3 Sky / Lighting / Atmosphere Blockout
 
 - 青空背景、昼間寄りLighting、海/地面/滑走路/誘導路/SPOTの視認性を調整し、次Phase候補をPhase 3.9-1 Naha Layout Alignmentとした
