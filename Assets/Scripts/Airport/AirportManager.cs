@@ -209,13 +209,33 @@ namespace ATCJourneyJapan.Airport
             CreateBox("East China Sea Inner Water East", new Vector3(25f, -0.035f, 5.4f), new Vector3(16f, 0.04f, 7.2f), seaMaterial, parent);
             CreateBox("East China Sea Offshore", new Vector3(3f, -0.035f, 17.2f), new Vector3(76f, 0.04f, 12.8f), seaMaterial, parent);
 
-            CreateBox("Central Facility Island Belt", new Vector3(5.5f, -0.035f, 4.75f), new Vector3(19.5f, 0.12f, 3.4f), groundMaterial, parent);
-            CreateBox("Right Runway Connector Island", new Vector3(16.5f, -0.03f, 5.1f), new Vector3(5.6f, 0.12f, 10.6f), groundMaterial, parent);
+            CreateFlatPolygon(
+                "Central Facility Wedge Shoreline",
+                0.006f,
+                shorelineMaterial,
+                parent,
+                new Vector2(-5.5f, 1.28f),
+                new Vector2(12.6f, 1.28f),
+                new Vector2(14.4f, 3.2f),
+                new Vector2(11.5f, 6.9f),
+                new Vector2(4.4f, 7.35f),
+                new Vector2(-1.7f, 3.6f));
+            CreateFlatPolygon(
+                "Central Facility Wedge Island",
+                0.035f,
+                groundMaterial,
+                parent,
+                new Vector2(-4.6f, 1.5f),
+                new Vector2(11.4f, 1.5f),
+                new Vector2(13.2f, 3.2f),
+                new Vector2(10.5f, 6.25f),
+                new Vector2(4.6f, 6.75f),
+                new Vector2(-0.8f, 3.35f));
+            CreateBox("Right Runway Connector Island", new Vector3(17.1f, -0.03f, 5.1f), new Vector3(4.6f, 0.12f, 10.6f), groundMaterial, parent);
             CreateBox("Future Runway B Island", new Vector3(3f, -0.03f, 10.2f), new Vector3(36.5f, 0.12f, 5.4f), groundMaterial, parent);
-            CreateBox("Left Service Causeway", new Vector3(-12.5f, -0.025f, 4.6f), new Vector3(1.1f, 0.08f, 5.4f), shorelineMaterial, parent);
+            CreateBox("Left Service Causeway", new Vector3(-12.5f, -0.025f, 4.6f), new Vector3(0.65f, 0.08f, 5.4f), shorelineMaterial, parent);
 
             CreateBox("Shoreline Main Island North", new Vector3(3f, 0.005f, 1.35f), new Vector3(68f, 0.025f, 0.12f), shorelineMaterial, parent);
-            CreateBox("Shoreline Central Belt North", new Vector3(5.5f, 0.005f, 6.45f), new Vector3(20f, 0.025f, 0.12f), shorelineMaterial, parent);
             CreateBox("Shoreline Future Runway Island South", new Vector3(3f, 0.005f, 7.5f), new Vector3(36f, 0.025f, 0.12f), shorelineMaterial, parent);
             CreateBox("Shoreline Future Runway Island North", new Vector3(3f, 0.005f, 12.9f), new Vector3(36f, 0.025f, 0.12f), shorelineMaterial, parent);
             CreateBox("Shoreline Offshore", new Vector3(3f, 0.005f, 23.55f), new Vector3(76f, 0.025f, 0.12f), shorelineMaterial, parent);
@@ -225,9 +245,9 @@ namespace ATCJourneyJapan.Airport
             CreateBox("Future Runway B Edge North", new Vector3(3f, 0.06f, 11.45f), new Vector3(28.1f, 0.035f, 0.055f), runwayEdgeMaterial, parent);
             CreateBox("Future Runway B Edge South", new Vector3(3f, 0.06f, 8.95f), new Vector3(28.1f, 0.035f, 0.055f), runwayEdgeMaterial, parent);
 
-            CreateBox("Taxiway E Right Primary Link", new Vector3(16.5f, 0.025f, 5.1f), new Vector3(1.25f, 0.13f, 10.2f), taxiwayMaterial, parent);
-            CreateBox("Taxiway E Right Centerline", new Vector3(16.5f, 0.12f, 5.1f), new Vector3(0.055f, 0.035f, 9.4f), taxiwayMarkingMaterial, parent);
-            CreateBox("Left Service Track", new Vector3(-12.5f, 0.01f, 4.6f), new Vector3(0.34f, 0.08f, 4.6f), secondaryApronMaterial, parent);
+            CreateBox("Taxiway E Right Primary Link", new Vector3(17.1f, 0.025f, 5.1f), new Vector3(1.25f, 0.13f, 10.2f), taxiwayMaterial, parent);
+            CreateBox("Taxiway E Right Centerline", new Vector3(17.1f, 0.12f, 5.1f), new Vector3(0.055f, 0.035f, 9.4f), taxiwayMarkingMaterial, parent);
+            CreateBox("Left Service Track", new Vector3(-12.5f, 0.01f, 4.6f), new Vector3(0.18f, 0.08f, 4.6f), secondaryApronMaterial, parent);
         }
 
         private void CreateTerminalBlockout(Transform parent)
@@ -238,8 +258,8 @@ namespace ATCJourneyJapan.Airport
             CreateBox("DOM TERMINAL Blockout", new Vector3(4f, 0.85f, -15.2f), new Vector3(18f, 1.7f, 2.3f), terminalMaterial, parent);
             CreateBox("INTL TERMINAL Blockout", new Vector3(17f, 0.75f, -15.3f), new Vector3(9f, 1.5f, 2.2f), terminalMaterial, parent);
 
-            CreateBox("TWR Shaft Blockout", new Vector3(8f, 1.65f, 4.65f), new Vector3(0.85f, 3.3f, 0.85f), towerMaterial, parent);
-            CreateBox("TWR Cab Blockout", new Vector3(8f, 3.55f, 4.65f), new Vector3(2f, 0.85f, 2f), towerMaterial, parent);
+            CreateBox("TWR Shaft Blockout", new Vector3(8.4f, 1.65f, 4.95f), new Vector3(0.85f, 3.3f, 0.85f), towerMaterial, parent);
+            CreateBox("TWR Cab Blockout", new Vector3(8.4f, 3.55f, 4.95f), new Vector3(2f, 0.85f, 2f), towerMaterial, parent);
         }
 
         private void CreateRunway(Transform parent)
@@ -301,6 +321,40 @@ namespace ATCJourneyJapan.Airport
             box.transform.localScale = scale;
             box.GetComponent<Renderer>().sharedMaterial = material;
             return box;
+        }
+
+        private GameObject CreateFlatPolygon(string objectName, float y, Material material, Transform parent, params Vector2[] points)
+        {
+            var polygon = new GameObject(objectName);
+            polygon.transform.SetParent(parent);
+
+            var vertices = new Vector3[points.Length];
+            for (var index = 0; index < points.Length; index++)
+            {
+                vertices[index] = new Vector3(points[index].x, y, points[index].y);
+            }
+
+            var triangles = new int[(points.Length - 2) * 3];
+            var triangleIndex = 0;
+            for (var index = 1; index < points.Length - 1; index++)
+            {
+                triangles[triangleIndex++] = 0;
+                triangles[triangleIndex++] = index + 1;
+                triangles[triangleIndex++] = index;
+            }
+
+            var mesh = new Mesh
+            {
+                name = objectName,
+                vertices = vertices,
+                triangles = triangles
+            };
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+
+            polygon.AddComponent<MeshFilter>().sharedMesh = mesh;
+            polygon.AddComponent<MeshRenderer>().sharedMaterial = material;
+            return polygon;
         }
 
         private Transform CreateMarker(string markerName, Vector3 position, Transform parent)

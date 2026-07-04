@@ -13,6 +13,10 @@
 - 今回実装すること
 - 今回は実装せず後続Phaseに回すこと
 
+## 2026-07-05 Phase 3.9-2A QA central land-water shape
+
+- A/B滑走路間の中央陸地を横長矩形からくさび形へ変更し、右側接続導線との間に水域余白を残すよう調整
+
 ## 2026-07-04 Phase 3.9-2A Naha land-water structure revision
 
 - AIP Aerodrome Chartと航空写真を参考に、B滑走路島、本体空港島、A/B間の水域・中央施設帯、右側接続導線、中央寄りTWRのブロックアウト配置を調整
