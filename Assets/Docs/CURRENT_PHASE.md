@@ -17,6 +17,13 @@ Phase 3.6-2 Simple 3D Airport Parts Prototype / 空港パーツの簡易3D化
 - UI、ストリップ、コマンドポップアップ、管制ログ、右下詳細、ミニマップは既存のScreen Space Overlay表示として維持する
 - 本格的な管制塔視点、自由カメラ、ズームUI、カメラ操作UIは今回行わない
 
+## Phase 3.7 QAで修正したこと
+
+- Oblique Viewのカメラが固定角度だけで空港中心を見ておらず、滑走路や航空機が画面中央からズレて見えていた
+- 空港全体の中心を `AirportViewCenter` として定義し、Oblique Viewではその中心点を `LookAt` するようにした
+- Oblique Viewの視野角を少し広げ、滑走路、誘導路、SPOT、航空機が画面中央付近に収まるようにした
+- Top Viewの位置、角度、Orthographic表示は従来通り維持した
+
 ## Phase 3.6-2で行うこと
 
 - 既存の滑走路、誘導路、SPOTを、Unity標準Primitiveによる簡易3D空港パーツとして整理する

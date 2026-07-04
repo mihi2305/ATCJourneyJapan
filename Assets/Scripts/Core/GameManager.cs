@@ -16,6 +16,11 @@ namespace ATCJourneyJapan.Core
             Oblique
         }
 
+        private static readonly Vector3 TopViewPosition = new Vector3(0f, 24f, -18f);
+        private static readonly Quaternion TopViewRotation = Quaternion.Euler(58f, 0f, 0f);
+        private static readonly Vector3 AirportViewCenter = new Vector3(1f, 0.2f, -4f);
+        private static readonly Vector3 ObliqueViewOffset = new Vector3(0f, 15.5f, -22f);
+
         private readonly List<AircraftController> aircraft = new List<AircraftController>();
         private readonly HashSet<AircraftController> handledAircraft = new HashSet<AircraftController>();
 
@@ -262,17 +267,17 @@ namespace ATCJourneyJapan.Core
             cameraViewMode = viewMode;
             if (cameraViewMode == CameraViewMode.Top)
             {
-                mainCamera.transform.position = new Vector3(0f, 24f, -18f);
-                mainCamera.transform.rotation = Quaternion.Euler(58f, 0f, 0f);
+                mainCamera.transform.position = TopViewPosition;
+                mainCamera.transform.rotation = TopViewRotation;
                 mainCamera.orthographic = true;
                 mainCamera.orthographicSize = 15f;
                 return;
             }
 
-            mainCamera.transform.position = new Vector3(0f, 13.5f, -24f);
-            mainCamera.transform.rotation = Quaternion.Euler(45f, 0f, 0f);
+            mainCamera.transform.position = AirportViewCenter + ObliqueViewOffset;
+            mainCamera.transform.LookAt(AirportViewCenter);
             mainCamera.orthographic = false;
-            mainCamera.fieldOfView = 43f;
+            mainCamera.fieldOfView = 48f;
         }
 
         private void SetupLight()

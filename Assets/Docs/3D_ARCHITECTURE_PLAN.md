@@ -78,3 +78,10 @@ Phase 3.5では、本格的な3D空港化の前に、現在の2D風俯瞰プロ�
 - Oblique Viewは航空機、滑走路、誘導路、SPOTの立体感を確認するための暫定ビューであり、本格的な管制塔視点ではない
 - UI Canvas、フライトストリップ、コマンドポップアップ、管制ログ、右下詳細、ミニマップはカメラ切り替えに依存しないScreen Space Overlayとして維持する
 - ミニマップは引き続きゲーム空間座標を2D表示へ投影する状況把握UIとして扱う
+
+## 10. Phase 3.7 QAで整理したOblique View中心合わせ
+
+- Oblique Viewでは固定角度だけでカメラを置かず、空港全体の中心をcamera targetとして見る
+- 現在は滑走路、誘導路、SPOT全体が収まる暫定中心点を `AirportViewCenter` として `GameManager` に保持する
+- Top Viewは従来の見やすい俯瞰表示として維持し、Oblique Viewは3D感確認用の切り替えビューとして扱う
+- 将来的に空港レイアウトをStageData化する場合、camera targetも空港データ側から取得できるようにする

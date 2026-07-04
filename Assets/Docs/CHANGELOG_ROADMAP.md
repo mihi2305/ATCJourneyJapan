@@ -13,6 +13,10 @@
 - 今回実装すること
 - 今回は実装せず後続Phaseに回すこと
 
+## 2026-07-04 Phase 3.7 QA Oblique View中心合わせ
+
+- Oblique Viewで空港中心をcamera targetとしてLookAtし、滑走路、誘導路、SPOT、航空機が中央付近に収まるよう調整
+
 ## 2026-07-04 Phase 3.7-1 Camera / View Direction Test / カメラ・視点テスト
 
 - Vキーで既存Top Viewと3D感確認用Oblique Viewを切り替えられるようにし、UIとミニマップは既存表示を維持
