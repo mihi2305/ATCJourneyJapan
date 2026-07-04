@@ -13,6 +13,36 @@
 - 今回実装すること
 - 今回は実装せず後続Phaseに回すこと
 
+## 2026-07-04 Phase 2.5 QA追加修正 heading連動
+
+- 変更したPhase: Phase 2.5
+- 理由: Unity Play確認で、ミニマップ上の航空機矢印がwaypoint上のターンや滑走路方向への向き変更に追従していなかったため
+- 変更内容:
+  - 航空機データに現在向いている方向として headingDegrees / facingDirection を追加
+  - waypointルート開始時は次のwaypoint方向、移動中は実際の移動差分からheadingを更新
+  - 停止中は最後に向いていた方向、または状態に応じた自然な向きを保持
+  - ミニマップ上の航空機矢印は、UI側の位置差分推測ではなく航空機データのheadingDegreesに基づいて回転
+  - Docsに「航空機データとしてheading / facingDirectionを持つ」方針を追記
+- 今回実装すること:
+  - 航空機headingデータの追加
+  - waypoint移動に合わせたheading更新
+  - ミニマップ矢印のheading連動
+  - DocsへのPhase 2.5 QA追加修正内容の追記
+- 今回は実装せず後続Phaseに回すこと:
+  - ミニマップ上のクリック操作
+  - ミニマップからの航空機選択
+  - 経路プレビュー
+  - Approach / Departureの本格レーダー
+  - 方位・速度・高度の本格表示
+  - B滑走路の表示・運用
+  - 本格的な3D空港化
+  - 本格的な衝突判定
+  - スコア/遅延評価
+  - 新しい管制コマンド追加
+- 次Phase判断:
+  - 次はPhase 2.5 QA継続中とする
+  - 理由: heading連動は実装したが、Unity Editor上でターン時の見え方と既存UIとの重なりを確認する必要があるため
+
 ## 2026-07-04 Phase 2.5 QA追加修正
 
 - 変更したPhase: Phase 2.5

@@ -30,7 +30,6 @@ namespace ATCJourneyJapan.UI
         private readonly Dictionary<string, Text> minimapAircraftArrows = new Dictionary<string, Text>();
         private readonly Dictionary<string, Outline> minimapAircraftOutlines = new Dictionary<string, Outline>();
         private readonly Dictionary<string, Text> minimapAircraftLabels = new Dictionary<string, Text>();
-        private readonly Dictionary<string, Vector2> minimapAircraftPreviousPositions = new Dictionary<string, Vector2>();
         private readonly List<string> commandLogEntries = new List<string>();
         private GameManager gameManager;
         private ScoreManager scoreManager;
@@ -464,7 +463,7 @@ namespace ATCJourneyJapan.UI
                 arrow.color = GetMiniMapAircraftColor(aircraft, isSelected);
                 arrow.fontSize = isSelected ? 31 : 23;
                 arrow.GetComponent<RectTransform>().sizeDelta = dotTransform.sizeDelta;
-                arrow.GetComponent<RectTransform>().localRotation = Quaternion.Euler(0f, 0f, GetMiniMapAircraftRotation(aircraft, flightNumber, minimapPosition));
+                arrow.GetComponent<RectTransform>().localRotation = Quaternion.Euler(0f, 0f, aircraft.FlightData.HeadingDegrees);
 
                 var outline = minimapAircraftOutlines[flightNumber];
                 outline.enabled = isSelected;
@@ -477,7 +476,6 @@ namespace ATCJourneyJapan.UI
                 var labelTransform = label.GetComponent<RectTransform>();
                 labelTransform.anchoredPosition = dotTransform.anchoredPosition.x > 118f ? new Vector2(-86f, 0f) : new Vector2(22f, 0f);
                 label.alignment = dotTransform.anchoredPosition.x > 118f ? TextAnchor.MiddleRight : TextAnchor.MiddleLeft;
-                minimapAircraftPreviousPositions[flightNumber] = minimapPosition;
             }
         }
 
@@ -512,50 +510,6 @@ namespace ATCJourneyJapan.UI
             return aircraft.IsArrivalAircraft
                 ? new Color(0.36f, 0.86f, 1f, 0.95f)
                 : new Color(1f, 0.58f, 0.22f, 0.95f);
-        }
-
-        private float GetMiniMapAircraftRotation(AircraftController aircraft, string flightNumber, Vector2 minimapPosition)
-        {
-            var direction = GetMiniMapFallbackDirection(aircraft);
-            if (minimapAircraftPreviousPositions.TryGetValue(flightNumber, out var previousPosition))
-            {
-                var movement = minimapPosition - previousPosition;
-                if (movement.sqrMagnitude > 0.1f)
-                {
-                    direction = movement.normalized;
-                }
-            }
-
-            return -Mathf.Atan2(direction.x, direction.y) * Mathf.Rad2Deg;
-        }
-
-        private Vector2 GetMiniMapFallbackDirection(AircraftController aircraft)
-        {
-            switch (aircraft.CurrentState)
-            {
-                case AircraftState.Inbound:
-                case AircraftState.FinalApproach:
-                case AircraftState.LandingRoll:
-                case AircraftState.TakeoffRoll:
-                case AircraftState.AirborneDeparture:
-                    return Vector2.right;
-                case AircraftState.VacatingRunway:
-                case AircraftState.TaxiToGate:
-                case AircraftState.AtGate:
-                    return aircraft.IsArrivalAircraft ? Vector2.down : Vector2.up;
-                case AircraftState.Pushbacking:
-                    return Vector2.down;
-                case AircraftState.PushbackReady:
-                case AircraftState.TaxiToHold:
-                    return Vector2.right;
-                case AircraftState.HoldingPoint:
-                case AircraftState.HoldingShort:
-                    return Vector2.up;
-                case AircraftState.LiningUp:
-                    return Vector2.right;
-                default:
-                    return aircraft.IsArrivalAircraft ? Vector2.right : Vector2.up;
-            }
         }
 
         private Vector2 WorldToMiniMap(Vector3 worldPosition)

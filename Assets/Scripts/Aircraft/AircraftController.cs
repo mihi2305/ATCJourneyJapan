@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using ATCJourneyJapan.Airport;
 using ATCJourneyJapan.Core;
@@ -15,6 +16,7 @@ namespace ATCJourneyJapan.Aircraft
         [SerializeField] private AircraftState currentState = AircraftState.Waiting;
         [SerializeField] private float airborneSpeed = 8f;
         [SerializeField] private float groundSpeed = 4f;
+        [SerializeField] private float headingDegrees;
 
         private readonly SimpleRoute route = new SimpleRoute();
         private AirportManager airportManager;
@@ -26,11 +28,14 @@ namespace ATCJourneyJapan.Aircraft
         private AircraftData flightData;
         private bool selected;
         private bool tutorialHighlighted;
+        private Vector2 facingDirection = Vector2.up;
 
         public string FlightNumber => flightNumber;
         public AircraftData FlightData => flightData;
         public bool IsArrivalAircraft => arrivalAircraft;
         public AircraftState CurrentState => currentState;
+        public float HeadingDegrees => headingDegrees;
+        public Vector2 FacingDirection => facingDirection;
         public bool IsComplete => arrivalAircraft ? currentState == AircraftState.AtGate : currentState == AircraftState.AirborneDeparture;
         public bool IsOnRunway => currentState == AircraftState.FinalApproach
                                   || currentState == AircraftState.LandingRoll
@@ -58,7 +63,9 @@ namespace ATCJourneyJapan.Aircraft
         {
             if (gameManager == null || !gameManager.IsGameplayPaused)
             {
+                var previousPosition = transform.position;
                 route.Tick(transform, Time.deltaTime);
+                UpdateHeadingFromMovement(transform.position - previousPosition);
             }
 
             UpdateLabel();
@@ -145,13 +152,13 @@ namespace ATCJourneyJapan.Aircraft
         private void ClearLanding()
         {
             SetState(AircraftState.FinalApproach);
-            route.StartRoute(airportManager.GetArrivalFinalRoute(), airborneSpeed, () =>
+            StartRouteWithHeading(airportManager.GetArrivalFinalRoute(), airborneSpeed, () =>
             {
                 SetState(AircraftState.LandingRoll);
-                route.StartRoute(airportManager.GetLandingRollRoute(), groundSpeed + 1f, () =>
+                StartRouteWithHeading(airportManager.GetLandingRollRoute(), groundSpeed + 1f, () =>
                 {
                     SetState(AircraftState.VacatingRunway);
-                    route.StartRoute(airportManager.GetVacateRunwayRoute(), groundSpeed, () =>
+                    StartRouteWithHeading(airportManager.GetVacateRunwayRoute(), groundSpeed, () =>
                     {
                         SetState(AircraftState.Waiting);
                     });
@@ -162,7 +169,7 @@ namespace ATCJourneyJapan.Aircraft
         private void TaxiToGate()
         {
             SetState(AircraftState.TaxiToGate);
-            route.StartRoute(airportManager.GetTaxiToAvailableGateRoute(), groundSpeed, () =>
+            StartRouteWithHeading(airportManager.GetTaxiToAvailableGateRoute(), groundSpeed, () =>
             {
                 SetState(AircraftState.AtGate);
                 gameManager.NotifyAircraftHandled(this);
@@ -172,7 +179,7 @@ namespace ATCJourneyJapan.Aircraft
         private void Pushback()
         {
             SetState(AircraftState.Pushbacking);
-            route.StartRoute(airportManager.GetPushbackRoute(), groundSpeed * 0.65f, () =>
+            StartRouteWithHeading(airportManager.GetPushbackRoute(), groundSpeed * 0.65f, () =>
             {
                 SetState(AircraftState.PushbackReady);
             });
@@ -181,7 +188,7 @@ namespace ATCJourneyJapan.Aircraft
         private void TaxiToHold()
         {
             SetState(AircraftState.TaxiToHold);
-            route.StartRoute(airportManager.GetTaxiToHoldRoute(), groundSpeed, () =>
+            StartRouteWithHeading(airportManager.GetTaxiToHoldRoute(), groundSpeed, () =>
             {
                 SetState(AircraftState.HoldingPoint);
             });
@@ -192,12 +199,13 @@ namespace ATCJourneyJapan.Aircraft
             route.Stop();
             SetState(AircraftState.HoldingShort);
             transform.position = airportManager.HoldShortPosition;
+            SetHeadingFromWorldDirection(Vector3.forward);
         }
 
         private void LineUp()
         {
             SetState(AircraftState.LiningUp);
-            route.StartRoute(airportManager.GetLineUpRoute(), groundSpeed, () =>
+            StartRouteWithHeading(airportManager.GetLineUpRoute(), groundSpeed, () =>
             {
                 SetState(AircraftState.LiningUp);
             });
@@ -206,7 +214,7 @@ namespace ATCJourneyJapan.Aircraft
         private void ClearTakeoff()
         {
             SetState(AircraftState.TakeoffRoll);
-            route.StartRoute(airportManager.GetTakeoffRoute(), airborneSpeed, () =>
+            StartRouteWithHeading(airportManager.GetTakeoffRoute(), airborneSpeed, () =>
             {
                 SetState(AircraftState.AirborneDeparture);
                 gameManager.NotifyAircraftHandled(this);
@@ -222,7 +230,86 @@ namespace ATCJourneyJapan.Aircraft
         private void SetState(AircraftState state)
         {
             currentState = state;
+            ApplyDefaultHeadingForState(state);
             SyncFlightData();
+        }
+
+        private void StartRouteWithHeading(IEnumerable<Vector3> routePoints, float speed, Action completed = null)
+        {
+            var points = new List<Vector3>();
+            foreach (var point in routePoints)
+            {
+                points.Add(point);
+            }
+
+            if (points.Count > 0)
+            {
+                SetHeadingToward(points[0]);
+            }
+
+            route.StartRoute(points, speed, completed);
+        }
+
+        private void UpdateHeadingFromMovement(Vector3 movement)
+        {
+            movement.y = 0f;
+            if (movement.sqrMagnitude <= 0.0001f)
+            {
+                return;
+            }
+
+            SetHeadingFromWorldDirection(movement);
+        }
+
+        private void SetHeadingToward(Vector3 targetPosition)
+        {
+            SetHeadingFromWorldDirection(targetPosition - transform.position);
+        }
+
+        private void SetHeadingFromWorldDirection(Vector3 worldDirection)
+        {
+            worldDirection.y = 0f;
+            if (worldDirection.sqrMagnitude <= 0.0001f)
+            {
+                return;
+            }
+
+            var normalized = worldDirection.normalized;
+            facingDirection = new Vector2(normalized.x, normalized.z);
+            headingDegrees = -Mathf.Atan2(facingDirection.x, facingDirection.y) * Mathf.Rad2Deg;
+            transform.rotation = Quaternion.LookRotation(normalized, Vector3.up);
+            SyncFlightData();
+        }
+
+        private void ApplyDefaultHeadingForState(AircraftState state)
+        {
+            switch (state)
+            {
+                case AircraftState.Inbound:
+                case AircraftState.FinalApproach:
+                case AircraftState.LandingRoll:
+                case AircraftState.LiningUp:
+                case AircraftState.TakeoffRoll:
+                case AircraftState.AirborneDeparture:
+                    SetHeadingFromWorldDirection(Vector3.right);
+                    break;
+                case AircraftState.VacatingRunway:
+                case AircraftState.TaxiToGate:
+                case AircraftState.Pushbacking:
+                    SetHeadingFromWorldDirection(Vector3.back);
+                    break;
+                case AircraftState.AtGate:
+                    SetHeadingFromWorldDirection(arrivalAircraft ? Vector3.back : Vector3.forward);
+                    break;
+                case AircraftState.PushbackReady:
+                case AircraftState.TaxiToHold:
+                    SetHeadingFromWorldDirection(Vector3.right);
+                    break;
+                case AircraftState.HoldingPoint:
+                case AircraftState.HoldingShort:
+                    SetHeadingFromWorldDirection(Vector3.forward);
+                    break;
+            }
         }
 
         private void SyncFlightData()
@@ -238,7 +325,19 @@ namespace ATCJourneyJapan.Aircraft
                 GetRecommendedCommandId(),
                 GetNextTargetType(),
                 GetNextTargetId(),
-                GetNextTargetDisplayName());
+                GetNextTargetDisplayName(),
+                headingDegrees,
+                GetFacingDirectionLabel());
+        }
+
+        private string GetFacingDirectionLabel()
+        {
+            if (Mathf.Abs(facingDirection.x) >= Mathf.Abs(facingDirection.y))
+            {
+                return facingDirection.x >= 0f ? "East" : "West";
+            }
+
+            return facingDirection.y >= 0f ? "North" : "South";
         }
 
         private string GetDataStateLabel()

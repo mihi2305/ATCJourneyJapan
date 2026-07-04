@@ -60,6 +60,8 @@ namespace ATCJourneyJapan.Aircraft
         public string EstimatedArrivalTime { get; private set; }
         public string ActualArrivalTime { get; private set; }
         public int DelayMinutes { get; private set; }
+        public float HeadingDegrees { get; private set; }
+        public string FacingDirection { get; private set; }
         public string RecommendedCommandId { get; private set; }
         public string NextTargetType { get; private set; }
         public string NextTargetId { get; private set; }
@@ -73,7 +75,9 @@ namespace ATCJourneyJapan.Aircraft
             string recommendedCommandId,
             string nextTargetType,
             string nextTargetId,
-            string nextTargetDisplayName)
+            string nextTargetDisplayName,
+            float headingDegrees,
+            string facingDirection)
         {
             CurrentState = currentState;
             ControllerPosition = controllerPosition;
@@ -81,6 +85,8 @@ namespace ATCJourneyJapan.Aircraft
             NextTargetType = nextTargetType;
             NextTargetId = nextTargetId;
             NextTargetDisplayName = nextTargetDisplayName;
+            HeadingDegrees = headingDegrees;
+            FacingDirection = facingDirection;
         }
     }
 }
