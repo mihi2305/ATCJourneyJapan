@@ -11,6 +11,8 @@ namespace ATCJourneyJapan.Aircraft
     [RequireComponent(typeof(Collider))]
     public class AircraftController : MonoBehaviour
     {
+        private const float MinHeadingMovementSqrMagnitude = 0.0001f;
+
         [SerializeField] private string flightNumber = "ATC001";
         [SerializeField] private bool arrivalAircraft;
         [SerializeField] private AircraftState currentState = AircraftState.Waiting;
@@ -213,15 +215,17 @@ namespace ATCJourneyJapan.Aircraft
         {
             heldTaxiState = currentState;
             route.Pause();
-            SetState(AircraftState.TaxiHeld);
+            SetState(AircraftState.TaxiHeld, false);
         }
 
         private void ResumeTaxi()
         {
             var resumeState = heldTaxiState == AircraftState.Waiting ? AircraftState.TaxiToHold : heldTaxiState;
-            SetState(resumeState);
+            SetState(resumeState, false);
+            SetHeadingTowardNextRouteWaypoint();
             route.Resume();
             heldTaxiState = AircraftState.Waiting;
+            SyncFlightData();
         }
 
         private void HoldShort()
@@ -257,13 +261,16 @@ namespace ATCJourneyJapan.Aircraft
         private void StopAircraft()
         {
             route.Stop();
-            SetState(AircraftState.Waiting);
+            SetState(AircraftState.Waiting, false);
         }
 
-        private void SetState(AircraftState state)
+        private void SetState(AircraftState state, bool applyDefaultHeading = true)
         {
             currentState = state;
-            ApplyDefaultHeadingForState(state);
+            if (applyDefaultHeading)
+            {
+                ApplyDefaultHeadingForState(state);
+            }
             SyncFlightData();
         }
 
@@ -286,12 +293,20 @@ namespace ATCJourneyJapan.Aircraft
         private void UpdateHeadingFromMovement(Vector3 movement)
         {
             movement.y = 0f;
-            if (movement.sqrMagnitude <= 0.0001f)
+            if (movement.sqrMagnitude <= MinHeadingMovementSqrMagnitude)
             {
                 return;
             }
 
             SetHeadingFromWorldDirection(movement);
+        }
+
+        private void SetHeadingTowardNextRouteWaypoint()
+        {
+            if (route.TryPeekNextWaypoint(out var nextWaypoint))
+            {
+                SetHeadingToward(nextWaypoint);
+            }
         }
 
         private void SetHeadingToward(Vector3 targetPosition)

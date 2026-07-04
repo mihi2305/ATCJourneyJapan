@@ -47,6 +47,18 @@ namespace ATCJourneyJapan.Aircraft
             IsMoving = waypoints.Count > 0;
         }
 
+        public bool TryPeekNextWaypoint(out Vector3 waypoint)
+        {
+            if (waypoints.Count > 0)
+            {
+                waypoint = waypoints.Peek();
+                return true;
+            }
+
+            waypoint = Vector3.zero;
+            return false;
+        }
+
         public void Tick(Transform target, float deltaTime)
         {
             if (!IsMoving || waypoints.Count == 0)

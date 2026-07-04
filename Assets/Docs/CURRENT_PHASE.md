@@ -17,6 +17,13 @@ Phase 3.6-1 Simple 3D Aircraft Visual Prototype / 航空機Objectの簡易3D化
 - waypoint、航空機移動、滑走路占有、安全管理、ミニマップ、チュートリアルの既存ロジックは維持する
 - 本格的な那覇空港再現、B滑走路、カメラ変更、外部3Dモデル追加は今回行わない
 
+## Phase 3.6 QAで修正したこと
+
+- Taxi中に停止 / Hold Taxiを押した時、状態変更でデフォルト方位へ戻さず、最後の有効headingを保持するようにした
+- 移動差分がほぼ0の時はheadingを再計算しない方針を維持した
+- Resume Taxi時は、保持している次waypoint方向へ向き直ってから移動を再開するようにした
+- ミニマップ矢印は航空機データのheadingを使うため、停止中も最後の自然な向きを維持する
+
 ## Phase 3.6-1で行うこと
 
 - 既存のCapsule単体の航空機表示を、Unity標準Primitiveを組み合わせた飛行機風の簡易3D Objectへ置き換える
