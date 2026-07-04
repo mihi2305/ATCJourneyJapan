@@ -13,6 +13,10 @@
 - 今回実装すること
 - 今回は実装せず後続Phaseに回すこと
 
+## 2026-07-04 Phase 3.9-2A Naha land-water structure revision
+
+- AIP Aerodrome Chartと航空写真を参考に、B滑走路島、本体空港島、A/B間の水域・中央施設帯、右側接続導線、中央寄りTWRのブロックアウト配置を調整
+
 ## 2026-07-04 Phase 3.9-1 Naha Layout Alignment
 
 - Aerodrome Chart 1を参考に、A/B滑走路、EAST CHINA SEA、DOM/INTL Terminal、TWR、WEST/NR/INTL Apron、主要Taxiway導線の簡略配置を調整
