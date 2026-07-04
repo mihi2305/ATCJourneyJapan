@@ -2,11 +2,25 @@
 
 ## Current Phase
 
-Phase 3.1 QA 準備中
+Phase 3.5 3D Architecture Audit / 3D化準備
 
 ## Previous Phase
 
 Phase 3.1 Hold / Resume Taxi
+
+## Phase 3.5で行うこと
+
+- 現在の空港表示が2D風に見えている理由を、Scene構成、Camera設定、Object構成の観点から確認する
+- 航空機、滑走路、誘導路、SPOT、waypointが、将来3D化しても使えるゲーム空間データとして扱われているか確認する
+- UI座標とゲーム空間座標を混ぜない方針を明確にする
+- `AircraftController` などの航空機ロジックが、見た目の簡易Objectに依存しすぎない方針を明確にする
+- ミニマップを、ゲーム空間上の位置を2D表示へ投影するUIとして維持する方針を確認する
+- 詳細な設計方針は `3D_ARCHITECTURE_PLAN.md` にまとめる
+
+## Phase 3.6で次に進むこと
+
+Phase 3.6は、Simple 3D Airport View Prototype / 簡易3D空港ビュー試作とします。
+本格的な那覇空港再現ではなく、現在のゲームロジックを維持したまま、簡易3D航空機、滑走路、誘導路、SPOT、斜め俯瞰カメラの小さな試作を行います。
 
 ## Phase 3.1で完了したこと
 
@@ -118,8 +132,8 @@ Phase 3.1 Hold / Resume Taxi
 
 ## Current Phaseの目的
 
-Phase 3.1では、地上走行中の航空機を一時停止・再開できるHold / Resume Taxiを導入します。
-まずはAJJ202を中心に、Taxi to Holding Point中の停止と再開を確認できる状態にします。
+Phase 3.5では、今後リアル感のある3D空港ビューへ移行する前に、現在の2D風俯瞰プロトタイプの構造を監査します。
+本格的な3D実装は行わず、ゲームロジックと見た目を分離できているかを確認し、Phase 3.6の簡易3D空港ビュー試作へつなげます。
 
 ## Phase 2.5で完了したこと
 
@@ -213,4 +227,5 @@ Phase 2.5のミニマップQAはUnity Play確認でOKになったため、Phase 
 Phase 3.0では、まずRWY 18Lの滑走路占有ルールと危険指示のブロックを実装しました。
 Phase 3.1では、地上走行中の航空機を一時停止・再開できるHold / Resume Taxiを追加しました。
 ただし、移動停止・再開、管制ログ、右下詳細、既存チュートリアルとの相性はUnity Editor上で再確認する必要があるため、次はPhase 3.1 QA準備中とします。
-QAで大きな問題がなければ、次に誘導路安全の追加ルール、またはPhase 3.2の評価設計へ進むかを判断します。
+Phase 3.5では、3D化へ進む前に構造監査を行い、`3D_ARCHITECTURE_PLAN.md` に設計方針を整理しました。
+次はPhase 3.6「Simple 3D Airport View Prototype / 簡易3D空港ビュー試作」とし、現在のゲームロジックを維持したまま見た目の3D化を小さく試します。

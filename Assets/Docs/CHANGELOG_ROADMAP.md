@@ -13,6 +13,11 @@
 - 今回実装すること
 - 今回は実装せず後続Phaseに回すこと
 
+## 2026-07-04 Phase 3.5 3D Architecture Audit / 3D化準備
+
+- 3D化前の構造監査として `3D_ARCHITECTURE_PLAN.md` を追加し、ゲームロジックと見た目を分離する方針を整理
+- `CURRENT_PHASE.md` をPhase 3.5へ更新し、次をPhase 3.6「Simple 3D Airport View Prototype / 簡易3D空港ビュー試作」とした
+
 ## 2026-07-04 Phase 3.1 Hold / Resume Taxi
 
 - 変更したPhase: Phase 3.1
