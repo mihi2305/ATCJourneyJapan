@@ -152,14 +152,18 @@ namespace ATCJourneyJapan.Aircraft
         private void ClearLanding()
         {
             SetState(AircraftState.FinalApproach);
+            gameManager.OccupyPrimaryRunway(this, "着陸中");
             StartRouteWithHeading(airportManager.GetArrivalFinalRoute(), airborneSpeed, () =>
             {
                 SetState(AircraftState.LandingRoll);
+                gameManager.OccupyPrimaryRunway(this, "着陸滑走中");
                 StartRouteWithHeading(airportManager.GetLandingRollRoute(), groundSpeed + 1f, () =>
                 {
                     SetState(AircraftState.VacatingRunway);
+                    gameManager.OccupyPrimaryRunway(this, "滑走路離脱中");
                     StartRouteWithHeading(airportManager.GetVacateRunwayRoute(), groundSpeed, () =>
                     {
+                        gameManager.ReleasePrimaryRunway(this);
                         SetState(AircraftState.Waiting);
                     });
                 });
@@ -205,6 +209,7 @@ namespace ATCJourneyJapan.Aircraft
         private void LineUp()
         {
             SetState(AircraftState.LiningUp);
+            gameManager.OccupyPrimaryRunway(this, "滑走路上待機");
             StartRouteWithHeading(airportManager.GetLineUpRoute(), groundSpeed, () =>
             {
                 SetState(AircraftState.LiningUp);
@@ -214,8 +219,10 @@ namespace ATCJourneyJapan.Aircraft
         private void ClearTakeoff()
         {
             SetState(AircraftState.TakeoffRoll);
+            gameManager.OccupyPrimaryRunway(this, "離陸滑走中");
             StartRouteWithHeading(airportManager.GetTakeoffRoute(), airborneSpeed, () =>
             {
+                gameManager.ReleasePrimaryRunway(this);
                 SetState(AircraftState.AirborneDeparture);
                 gameManager.NotifyAircraftHandled(this);
             });

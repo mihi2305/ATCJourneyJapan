@@ -26,6 +26,9 @@ namespace ATCJourneyJapan.Core
         public bool IsTrainingStarted => trainingStarted;
         public bool IsGameplayPaused => uiManager != null && uiManager.IsTutorialBlockingProgress;
         public bool IsDelayPaused => trainingStarted || stageClear;
+        public bool IsPrimaryRunwayOccupied => GetPrimaryRunwayController()?.RunwayOccupied ?? false;
+        public string PrimaryRunwayOccupiedByFlightId => GetPrimaryRunwayController()?.OccupiedByFlightId ?? string.Empty;
+        public string PrimaryRunwayOccupiedReason => GetPrimaryRunwayController()?.OccupiedReason ?? string.Empty;
 
         public void Initialize()
         {
@@ -110,6 +113,38 @@ namespace ATCJourneyJapan.Core
             return uiManager == null || uiManager.CanAcceptCommand(controller, command);
         }
 
+        public bool CanExecuteRunwaySafetyCommand(AircraftController controller, AircraftCommand command)
+        {
+            if (!RequiresRunwaySafetyCheck(command))
+            {
+                return true;
+            }
+
+            var runway = GetPrimaryRunwayController();
+            return runway == null || !runway.IsOccupiedByOther(controller);
+        }
+
+        public void RejectUnsafeRunwayCommand(AircraftController controller, AircraftCommand command)
+        {
+            scoreManager.ApplySafetyPenalty(10);
+
+            var runway = GetPrimaryRunwayController();
+            var occupiedBy = runway != null && !string.IsNullOrEmpty(runway.OccupiedByFlightId)
+                ? runway.OccupiedByFlightId
+                : "他機";
+            uiManager.ShowWarning($"RWY 18Lは使用中です。{occupiedBy}が滑走路を使用中です。");
+        }
+
+        public void OccupyPrimaryRunway(AircraftController controller, string reason)
+        {
+            GetPrimaryRunwayController()?.Occupy(controller, reason);
+        }
+
+        public void ReleasePrimaryRunway(AircraftController controller)
+        {
+            GetPrimaryRunwayController()?.Release(controller);
+        }
+
         private string GetInstructorComment(AircraftCommand command)
         {
             switch (command)
@@ -158,8 +193,23 @@ namespace ATCJourneyJapan.Core
             else if (!anyConflict)
             {
                 runwayConflictActive = false;
-                uiManager.ClearWarning();
+                if (!IsPrimaryRunwayOccupied)
+                {
+                    uiManager.ClearWarning();
+                }
             }
+        }
+
+        private RunwayController GetPrimaryRunwayController()
+        {
+            return airportManager != null && airportManager.Runways.Count > 0 ? airportManager.Runways[0] : null;
+        }
+
+        private bool RequiresRunwaySafetyCheck(AircraftCommand command)
+        {
+            return command == AircraftCommand.ClearLanding
+                || command == AircraftCommand.LineUp
+                || command == AircraftCommand.ClearTakeoff;
         }
 
         private void SetupCamera()

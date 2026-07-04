@@ -20,10 +20,10 @@
 | Phase 2.3 | 完了 | フライトストリップ方式 | 左側に到着 ARRIVAL / 出発 DEPARTURE リスト / 便名帯で航空機を選択 / 推奨指示待ちストリップをハイライト / 機体クリック依存から脱却する土台 |
 | Phase 2.4 | 完了 | ストリップ連動コマンド | 選択ストリップ右側に独立したコマンドポップアップを表示 / 右側固定指示欄を暫定維持 / ストリップ側ボタンから既存コマンドを実行 |
 | Phase 2.4.5 | 完了 | 右側固定指示UIの段階的廃止 | 右側固定指示ボタンを通常操作では非表示 / 選択ストリップ右側のコマンドポップアップを主操作に統一 / 航空機Objectクリックは補助操作として維持 / 右側エリアを将来のレーダー・詳細表示へ整理 |
-| Phase 2.5 | QA継続中 | 簡易レーダー/ミニマップ | 右上教官コメントを非表示化 / 右上をミニマップ・レーダー専用へ整理 / RWY 18L / 誘導路 / SPOT 01〜04 / 航空機位置を矢印アイコン風に簡易表示 / 航空機データのheadingに合わせて矢印を回転 / QA修正でミニマップ全体と内部要素を拡大 / 選択中航空機を強調 / 見るだけの状況把握UI |
+| Phase 2.5 | 完了 | 簡易レーダー/ミニマップ | 右上教官コメントを非表示化 / 右上をミニマップ・レーダー専用へ整理 / RWY 18L / 誘導路 / SPOT 01〜04 / 航空機位置を矢印アイコン風に簡易表示 / 航空機データのheadingに合わせて矢印を回転 / QA修正でミニマップ全体と内部要素を拡大 / 選択中航空機を強調 / 見るだけの状況把握UI |
 | Phase 2.6 | 未着手 | 経路プレビュー | 選択中機体の予定ルートを線で表示 / Taxi to GateやLine Up後の動きが予測できるようにする |
 | Phase 2.7 | 未着手 | 空港全体俯瞰ビュー | 上空カメラ / 滑走路 / 誘導路 / ゲート / 航空機ラベル / 空港全体を管制している感覚 |
-| Phase 3.0 | 未着手 | 安全管理をゲーム化 | 滑走路占有 / Hold Short違反 / 間隔不足 / 危険操作ペナルティ / Hold Taxi / Resume Taxi / Go-Around / Safetyに意味を持たせる |
+| Phase 3.0 | QA準備中 | 安全管理をゲーム化 | RWY 18L滑走路占有 / occupiedByFlightId / occupiedReason / Clear to Land・Line Up and Wait・Cleared for Takeoffの安全チェック / 危険指示ペナルティ / ミニマップ滑走路強調 / Hold Taxi・Resume Taxi・Go-Aroundは後続Phase |
 | Phase 3.2 | 未着手 | スコア・ランク・制限時間 | Point / Rank / Clear条件 / Time Bonus / 遅延評価 / 効率性評価 / S/A/B/Cランク / 既存ゲームを参考に評価設計を検討 |
 | Phase 3.4 | 未着手 | Clearance Delivery / 出発承認基礎 | 出発承認 / Departure Clearance / Pushback前の前提承認 / Clearance Delivery・Ground・Towerの役割整理 |
 | Phase 3.5 | 未着手 | Contact / Handoff導入 | Contact Ground / Contact Tower / Contact Departure / 管制ポジション引き継ぎ |
@@ -75,6 +75,9 @@
 - 複数機運用は今後のマルチタスク性と難易度設計の基盤である
 - 追加機の完全な状態遷移、時間差スポーン、衝突判定、滑走路占有の厳密判定、Taxi経路衝突判定は後続Phaseで扱う
 - 衝突判定や安全管理はPhase 3.0、遅延・効率性・スコア評価はPhase 3.2で扱う
+- Phase 3.0では、まずRWY 18Lの滑走路占有ルールを実装し、滑走路は原則1機ずつ使うことをゲーム上の安全ルールにする
+- Clear to Land / Line Up and Wait / Cleared for Takeoff は滑走路占有状態を確認し、他機が使用中なら実行せず警告とSafety減点を行う
+- Taxi経路衝突、Hold Taxi / Resume Taxi、Go-Around、本格的な間隔管理は後続Phaseで扱う
 - Phase 2.3 QA以降、ストリップは一覧性を優先し、便名、機種、RWY、SPOT、短い状態/推奨指示だけを表示する
 - Phase 2.3 QA再修正以降、ストリップ表示はさらに絞り、原則として便名 + RWY/SPOTのみを表示する
 - ストリップは横長の細い長方形とし、複数機運用に備えて多数の便を縦に並べられるサイズにする

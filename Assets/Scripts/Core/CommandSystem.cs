@@ -26,6 +26,12 @@ namespace ATCJourneyJapan.Core
                 return;
             }
 
+            if (gameManager != null && !gameManager.CanExecuteRunwaySafetyCommand(selected, command))
+            {
+                gameManager.RejectUnsafeRunwayCommand(selected, command);
+                return;
+            }
+
             selected.Execute(command);
             gameManager?.NotifyCommandExecuted(selected, command);
         }

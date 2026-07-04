@@ -49,6 +49,7 @@ namespace ATCJourneyJapan.UI
         private GameObject instructorPanel;
         private GameObject minimapPanel;
         private RectTransform minimapContent;
+        private Image minimapRunwayImage;
         private GameObject selectedPanel;
         private GameObject guidePanel;
         private GameObject tutorialPanel;
@@ -393,7 +394,7 @@ namespace ATCJourneyJapan.UI
             minimapContent.anchoredPosition = new Vector2(0f, -22f);
 
             CreateMiniMapBlock("Mini Map Ground", Vector2.zero, new Vector2(376f, 206f), new Color(0.04f, 0.07f, 0.055f, 0.68f));
-            CreateMiniMapBlock("Mini Map Runway A", WorldToMiniMap(new Vector3(3f, 0f, 0f)), WorldSizeToMiniMap(new Vector2(30f, 2.8f)), new Color(0.38f, 0.4f, 0.42f, 0.98f));
+            minimapRunwayImage = CreateMiniMapBlock("Mini Map Runway A", WorldToMiniMap(new Vector3(3f, 0f, 0f)), WorldSizeToMiniMap(new Vector2(30f, 2.8f)), new Color(0.38f, 0.4f, 0.42f, 0.98f));
             CreateMiniMapBlock("Mini Map Taxiway Main", WorldToMiniMap(new Vector3(0f, 0f, -5f)), WorldSizeToMiniMap(new Vector2(26f, 1.8f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
             CreateMiniMapBlock("Mini Map Taxiway West", WorldToMiniMap(new Vector3(-7f, 0f, -2.5f)), WorldSizeToMiniMap(new Vector2(1.7f, 5f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
             CreateMiniMapBlock("Mini Map Taxiway East", WorldToMiniMap(new Vector3(12f, 0f, -2.5f)), WorldSizeToMiniMap(new Vector2(1.7f, 5f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
@@ -476,6 +477,13 @@ namespace ATCJourneyJapan.UI
                 var labelTransform = label.GetComponent<RectTransform>();
                 labelTransform.anchoredPosition = dotTransform.anchoredPosition.x > 118f ? new Vector2(-86f, 0f) : new Vector2(22f, 0f);
                 label.alignment = dotTransform.anchoredPosition.x > 118f ? TextAnchor.MiddleRight : TextAnchor.MiddleLeft;
+            }
+
+            if (minimapRunwayImage != null)
+            {
+                minimapRunwayImage.color = gameManager.IsPrimaryRunwayOccupied
+                    ? new Color(0.86f, 0.48f, 0.18f, 0.98f)
+                    : new Color(0.38f, 0.4f, 0.42f, 0.98f);
             }
         }
 
@@ -634,6 +642,7 @@ namespace ATCJourneyJapan.UI
                 && selected != null
                 && recommended.HasValue
                 && CanAcceptCommand(selected, recommended.Value)
+                && gameManager.CanExecuteRunwaySafetyCommand(selected, recommended.Value)
                 && selected.CanExecute(recommended.Value);
 
             stripCommandPopup.SetActive(canShow);
@@ -974,7 +983,9 @@ namespace ATCJourneyJapan.UI
         {
             var selected = GetSelectedAircraft();
             var recommended = selected != null ? GetRecommendedCommand(selected) : null;
-            if (recommended.HasValue && selected.CanExecute(recommended.Value))
+            if (recommended.HasValue
+                && selected.CanExecute(recommended.Value)
+                && gameManager.CanExecuteRunwaySafetyCommand(selected, recommended.Value))
             {
                 commandSystem.Execute(recommended.Value);
             }
@@ -1274,7 +1285,7 @@ namespace ATCJourneyJapan.UI
 
             foreach (var command in recommendedCommands)
             {
-                if (aircraft.CanExecute(command))
+                if (aircraft.CanExecute(command) && gameManager.CanExecuteRunwaySafetyCommand(aircraft, command))
                 {
                     return command;
                 }

@@ -13,6 +13,43 @@
 - 今回実装すること
 - 今回は実装せず後続Phaseに回すこと
 
+## 2026-07-04 Phase 3.0 Runway Safety Rules
+
+- 変更したPhase: Phase 3.0
+- 理由: Phase 2.5のミニマップQAが完了し、航空管制ゲームとして滑走路を1機ずつ使う緊張感を作る段階に進むため
+- 変更内容:
+  - RWY 18Lに runwayOccupied / occupiedByFlightId / occupiedReason 相当の占有状態を追加
+  - AJJ101の着陸中、着陸滑走中、滑走路離脱中はRWY 18Lを占有
+  - AJJ202のLine Up and Wait中、離陸滑走中はRWY 18Lを占有
+  - AJJ101が滑走路を離脱した時、AJJ202が離陸完了した時に占有解除
+  - Clear to Land / Line Up and Wait / Cleared for Takeoff は、他機がRWY 18Lを使用中なら実行しない安全チェックを追加
+  - 危険な指示を試した場合は、コマンドを実行せず、Safetyを10下げ、短い警告を表示
+  - 安全上出せない指示は、ストリップ右側のコマンドポップアップに表示しない方針にした
+  - RWY 18L使用中はミニマップ上の滑走路を暖色で強調
+- 今回実装すること:
+  - RWY 18L滑走路占有状態の管理
+  - 危険な滑走路指示の実行前チェック
+  - Safetyペナルティと警告表示
+  - ミニマップ上の滑走路占有強調
+  - DocsへのPhase 3.0方針の追記
+- 今回は実装せず後続Phaseに回すこと:
+  - 本格的な衝突判定
+  - Taxi経路の衝突判定
+  - Hold Taxi / Resume Taxi
+  - Go-Around
+  - 出発承認 / Departure Clearance
+  - Pushback方向選択
+  - Taxiルート選択
+  - Hand-off
+  - スコアランク制
+  - 遅延評価の本格実装
+  - B滑走路
+  - 本格3D化
+  - 英語音声
+- 次Phase判断:
+  - 次はPhase 3.0 QA準備中とする
+  - 理由: 滑走路占有ルールは実装したが、危険指示のブロック、Safety減点、警告表示、ミニマップ強調をUnity Editor上で確認する必要があるため
+
 ## 2026-07-04 Phase 2.5 QA追加修正 heading連動
 
 - 変更したPhase: Phase 2.5
