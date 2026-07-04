@@ -24,8 +24,8 @@ namespace ATCJourneyJapan.Aircraft
         public void SpawnInitialAircraft()
         {
             var runway = airportManager.PrimaryRunwayData;
-            var arrivalData = new AircraftData("AJJ101", "B737", "Arrival", runway.RunwayId, runway.SimpleNameJa, runway.CurrentActiveDesignator, "SPOT_01", "SPOT 01", "宮崎", "那覇", scheduledArrivalTime: "08:05", estimatedArrivalTime: "08:05");
-            var departureData = new AircraftData("AJJ202", "A320", "Departure", runway.RunwayId, runway.SimpleNameJa, runway.CurrentActiveDesignator, "SPOT_02", "SPOT 02", "那覇", "東京", scheduledDepartureTime: "08:10", estimatedDepartureTime: "08:10");
+            var arrivalData = new AircraftData("AJJ101", "B737", "Arrival", runway.RunwayId, runway.SimpleNameJa, runway.CurrentActiveDesignator, "SPOT_01", "SPOT 01", "Miyazaki", "Naha", scheduledArrivalTime: "08:05", estimatedArrivalTime: "08:05");
+            var departureData = new AircraftData("AJJ202", "A320", "Departure", runway.RunwayId, runway.SimpleNameJa, runway.CurrentActiveDesignator, "SPOT_02", "SPOT 02", "Naha", "Tokyo", scheduledDepartureTime: "08:10", estimatedDepartureTime: "08:10");
 
             SpawnAircraft(arrivalData, true, AircraftState.Inbound, airportManager.ArrivalSpawnPosition, PrimitiveType.Capsule, arrivalMaterial);
             SpawnAircraft(departureData, false, AircraftState.AtGate, airportManager.DepartureSpawnPosition, PrimitiveType.Capsule, departureMaterial);

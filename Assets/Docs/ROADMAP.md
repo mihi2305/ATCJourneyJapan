@@ -49,6 +49,10 @@
 - 右側固定の指示欄は暫定UIであり、Phase 2.4で選択中ストリップ内またはストリップ横の指示UIへ段階的に統合する
 - 複数機運用を増やす前に、ストリップ方式とストリップ連動コマンドUIを整える
 - Phase 2.3 QA以降、ストリップは一覧性を優先し、便名、機種、RWY、SPOT、短い状態/推奨指示だけを表示する
+- Phase 2.3 QA再修正以降、ストリップ表示はさらに絞り、原則として便名 + RWY/SPOTのみを表示する
+- ストリップは横長の細い長方形とし、複数機運用に備えて多数の便を縦に並べられるサイズにする
+- ストリップでは便名を大きく、RWY/SPOTを小さく表示する
+- 機種、状態、推奨指示、出発地、到着地、時刻は右下詳細パネルへ移す
 - 時刻、出発地、到着地、詳細ルートは将来的な右下詳細パネルへ分離する
 - 航空機データには将来的に scheduledDepartureTime / estimatedDepartureTime / actualDepartureTime / scheduledArrivalTime / estimatedArrivalTime / actualArrivalTime / delayMinutes を持たせる
 - 左側ストリップには必要になった場合のみ `DEP 08:10` / `ARR 08:25` のように短く時刻を表示し、詳細な時刻比較や遅延分は右下詳細で扱う
