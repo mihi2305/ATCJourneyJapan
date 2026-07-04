@@ -26,6 +26,9 @@ namespace ATCJourneyJapan.UI
         private readonly Dictionary<string, Button> flightStripButtons = new Dictionary<string, Button>();
         private readonly Dictionary<string, Text> flightStripTexts = new Dictionary<string, Text>();
         private readonly Dictionary<string, Image> flightStripImages = new Dictionary<string, Image>();
+        private readonly Dictionary<string, RectTransform> minimapAircraftDots = new Dictionary<string, RectTransform>();
+        private readonly Dictionary<string, Image> minimapAircraftImages = new Dictionary<string, Image>();
+        private readonly Dictionary<string, Text> minimapAircraftLabels = new Dictionary<string, Text>();
         private readonly List<string> commandLogEntries = new List<string>();
         private GameManager gameManager;
         private ScoreManager scoreManager;
@@ -42,6 +45,8 @@ namespace ATCJourneyJapan.UI
         private GameObject flightStripPanel;
         private GameObject stripCommandPopup;
         private GameObject commandPanel;
+        private GameObject minimapPanel;
+        private RectTransform minimapContent;
         private GameObject selectedPanel;
         private GameObject guidePanel;
         private GameObject tutorialPanel;
@@ -215,6 +220,7 @@ namespace ATCJourneyJapan.UI
             hudRoot = CreateRoot("HUD Root", canvasObject.transform);
             scoreText = CreatePanelText("Score", hudRoot.transform, new Vector2(24f, -22f), new Vector2(320f, 126f), AnchorPreset.TopLeft, string.Empty, 24, TextAnchor.UpperLeft);
             instructorText = CreatePanelText("Instructor", hudRoot.transform, new Vector2(-24f, -22f), new Vector2(430f, 112f), AnchorPreset.TopRight, "教官コメント", 19, TextAnchor.UpperLeft);
+            BuildMiniMapPanel();
             BuildFlightStripPanel();
             guideText = CreatePanelText("Command Log", hudRoot.transform, new Vector2(0f, 12f), new Vector2(780f, 84f), AnchorPreset.BottomCenter, string.Empty, 16, TextAnchor.UpperLeft);
             guidePanel = guideText.transform.parent.gameObject;
@@ -268,6 +274,7 @@ namespace ATCJourneyJapan.UI
             UpdateTutorialPanel();
             UpdateCommandLogPanel();
             UpdateFlightStrips(selected);
+            UpdateMiniMap(selected);
 
             selectedPanel.SetActive(selected != null);
             commandPanel.SetActive(false);
@@ -363,6 +370,142 @@ namespace ATCJourneyJapan.UI
             stripCommandButtonText = stripCommandButton.GetComponentInChildren<Text>();
             stripCommandButton.onClick.AddListener(ExecuteStripCommand);
             stripCommandPopup.SetActive(false);
+        }
+
+        private void BuildMiniMapPanel()
+        {
+            minimapPanel = CreatePanel("Mini Map Panel", hudRoot.transform, new Vector2(1f, 1f), new Vector2(300f, 196f), AnchorPreset.TopRight, new Vector2(-24f, -148f));
+            minimapPanel.GetComponent<Image>().color = new Color(0.015f, 0.025f, 0.032f, 0.82f);
+            minimapPanel.GetComponent<Image>().raycastTarget = false;
+            CreateText("Mini Map Title", minimapPanel.transform, "MINIMAP  RWY 18L", 16, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-64f, 78f), new Vector2(150f, 24f));
+
+            var contentObject = new GameObject("Mini Map Content");
+            contentObject.transform.SetParent(minimapPanel.transform, false);
+            minimapContent = contentObject.AddComponent<RectTransform>();
+            ApplyAnchor(minimapContent, AnchorPreset.Center);
+            minimapContent.sizeDelta = new Vector2(264f, 130f);
+            minimapContent.anchoredPosition = new Vector2(0f, -18f);
+
+            CreateMiniMapBlock("Mini Map Ground", Vector2.zero, new Vector2(264f, 130f), new Color(0.04f, 0.07f, 0.055f, 0.68f));
+            CreateMiniMapBlock("Mini Map Runway A", WorldToMiniMap(new Vector3(3f, 0f, 0f)), WorldSizeToMiniMap(new Vector2(30f, 2.2f)), new Color(0.34f, 0.36f, 0.38f, 0.95f));
+            CreateMiniMapBlock("Mini Map Taxiway Main", WorldToMiniMap(new Vector3(0f, 0f, -5f)), WorldSizeToMiniMap(new Vector2(26f, 1.2f)), new Color(0.18f, 0.28f, 0.34f, 0.96f));
+            CreateMiniMapBlock("Mini Map Taxiway West", WorldToMiniMap(new Vector3(-7f, 0f, -2.5f)), WorldSizeToMiniMap(new Vector2(1.1f, 5f)), new Color(0.18f, 0.28f, 0.34f, 0.96f));
+            CreateMiniMapBlock("Mini Map Taxiway East", WorldToMiniMap(new Vector3(12f, 0f, -2.5f)), WorldSizeToMiniMap(new Vector2(1.1f, 5f)), new Color(0.18f, 0.28f, 0.34f, 0.96f));
+            CreateMiniMapBlock("Mini Map Hold A", WorldToMiniMap(new Vector3(-7f, 0f, -3f)), new Vector2(14f, 9f), new Color(0.86f, 0.68f, 0.14f, 0.95f));
+
+            CreateMiniMapSpot("SPOT 01", new Vector3(2f, 0f, -9f));
+            CreateMiniMapSpot("SPOT 02", new Vector3(-11f, 0f, -9f));
+            CreateMiniMapSpot("SPOT 03", new Vector3(7f, 0f, -11.6f));
+            CreateMiniMapSpot("SPOT 04", new Vector3(-16f, 0f, -11.6f));
+            CreateText("Mini Map Runway Label", minimapContent, "RWY 18L", 10, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(3f, 0f, 1.35f)), new Vector2(64f, 16f));
+        }
+
+        private void CreateMiniMapSpot(string label, Vector3 worldPosition)
+        {
+            var position = WorldToMiniMap(worldPosition);
+            CreateMiniMapBlock($"Mini Map {label}", position, new Vector2(15f, 11f), new Color(0.1f, 0.58f, 0.52f, 0.95f));
+            CreateText($"Mini Map {label} Label", minimapContent, label.Replace("SPOT ", "S"), 9, FontStyle.Bold, TextAnchor.MiddleCenter, position + new Vector2(0f, -13f), new Vector2(42f, 12f));
+        }
+
+        private Image CreateMiniMapBlock(string name, Vector2 anchoredPosition, Vector2 size, Color color)
+        {
+            var blockObject = new GameObject(name);
+            blockObject.transform.SetParent(minimapContent, false);
+            var rectTransform = blockObject.AddComponent<RectTransform>();
+            ApplyAnchor(rectTransform, AnchorPreset.Center);
+            rectTransform.sizeDelta = size;
+            rectTransform.anchoredPosition = anchoredPosition;
+            var image = blockObject.AddComponent<Image>();
+            image.color = color;
+            image.raycastTarget = false;
+            return image;
+        }
+
+        private void UpdateMiniMap(AircraftController selected)
+        {
+            if (minimapPanel == null)
+            {
+                return;
+            }
+
+            foreach (var dot in minimapAircraftDots)
+            {
+                dot.Value.gameObject.SetActive(false);
+            }
+
+            foreach (var aircraft in gameManager.Aircraft)
+            {
+                if (aircraft == null || aircraft.FlightData == null)
+                {
+                    continue;
+                }
+
+                var flightNumber = aircraft.FlightNumber;
+                if (!minimapAircraftDots.ContainsKey(flightNumber))
+                {
+                    CreateMiniMapAircraftDot(flightNumber);
+                }
+
+                var isSelected = aircraft == selected;
+                var dotTransform = minimapAircraftDots[flightNumber];
+                dotTransform.gameObject.SetActive(true);
+                dotTransform.anchoredPosition = WorldToMiniMap(aircraft.transform.position);
+                dotTransform.sizeDelta = isSelected ? new Vector2(18f, 18f) : new Vector2(12f, 12f);
+
+                var image = minimapAircraftImages[flightNumber];
+                image.color = GetMiniMapAircraftColor(aircraft, isSelected);
+
+                var label = minimapAircraftLabels[flightNumber];
+                label.text = isSelected ? flightNumber : string.Empty;
+                label.gameObject.SetActive(isSelected);
+                var labelTransform = label.GetComponent<RectTransform>();
+                labelTransform.anchoredPosition = dotTransform.anchoredPosition.x > 82f ? new Vector2(-60f, 0f) : new Vector2(14f, 0f);
+                label.alignment = dotTransform.anchoredPosition.x > 82f ? TextAnchor.MiddleRight : TextAnchor.MiddleLeft;
+            }
+        }
+
+        private void CreateMiniMapAircraftDot(string flightNumber)
+        {
+            var dotObject = new GameObject($"Mini Map Aircraft {flightNumber}");
+            dotObject.transform.SetParent(minimapContent, false);
+            var rectTransform = dotObject.AddComponent<RectTransform>();
+            ApplyAnchor(rectTransform, AnchorPreset.Center);
+            rectTransform.sizeDelta = new Vector2(12f, 12f);
+
+            var image = dotObject.AddComponent<Image>();
+            image.color = new Color(0.4f, 0.88f, 1f, 0.96f);
+            image.raycastTarget = false;
+
+            var label = CreateText($"{flightNumber} Mini Map Label", dotObject.transform, string.Empty, 9, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(14f, 0f), new Vector2(46f, 14f));
+            minimapAircraftDots[flightNumber] = rectTransform;
+            minimapAircraftImages[flightNumber] = image;
+            minimapAircraftLabels[flightNumber] = label;
+        }
+
+        private Color GetMiniMapAircraftColor(AircraftController aircraft, bool isSelected)
+        {
+            if (isSelected)
+            {
+                return new Color(1f, 0.92f, 0.22f, 1f);
+            }
+
+            return aircraft.IsArrivalAircraft
+                ? new Color(0.36f, 0.86f, 1f, 0.95f)
+                : new Color(1f, 0.58f, 0.22f, 0.95f);
+        }
+
+        private Vector2 WorldToMiniMap(Vector3 worldPosition)
+        {
+            var x = Mathf.InverseLerp(-30f, 28f, worldPosition.x) * 264f - 132f;
+            var y = Mathf.InverseLerp(-13f, 4f, worldPosition.z) * 130f - 65f;
+            return new Vector2(Mathf.Round(x), Mathf.Round(y));
+        }
+
+        private Vector2 WorldSizeToMiniMap(Vector2 worldSize)
+        {
+            var x = Mathf.Max(2f, worldSize.x / 58f * 264f);
+            var y = Mathf.Max(2f, worldSize.y / 17f * 130f);
+            return new Vector2(Mathf.Round(x), Mathf.Round(y));
         }
 
         private void CreateFlightStripButton(string flightNumber, Vector2 anchoredPosition)
