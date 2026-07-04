@@ -2,11 +2,20 @@
 
 ## Current Phase
 
-Phase 3.9-3A Aircraft scale system
+Phase 3.9-3B Minimap layout alignment
 
 ## Previous Phase
 
-Phase 3.9-2B passenger and base area layout
+Phase 3.9-3A Aircraft scale system
+
+## Phase 3.9-3Bで行うこと
+
+- Phase 3.9-2A〜3.9-3Aで更新した那覇空港風ブロックアウトに合わせて、右上ミニマップの簡略図を更新する
+- A滑走路をターミナル側、B滑走路を海側として表示し、B滑走路島、A/B間水域、中央施設帯、右側接続島の関係を大まかに見せる
+- A滑走路下側の基地エリア、JASDF支援・輸送機エリア、旅客エリアを、色分けした矩形で簡略表示する
+- `WorldToMiniMap` の投影範囲を現在のゲーム空間に合わせ、航空機位置がメイン画面と大きくズレないようにする
+- 航空機矢印の表示、heading / facingDirectionによる回転、選択中航空機の強調は維持する
+- 今回はターミナル詳細、ボーディングブリッジ、Taxi waypoint再設計、B滑走路運用は行わない
 
 ## Phase 3.9-3Aで行うこと
 

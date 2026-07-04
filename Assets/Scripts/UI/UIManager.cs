@@ -403,7 +403,7 @@ namespace ATCJourneyJapan.UI
             minimapPanel.GetComponent<Image>().color = new Color(0.015f, 0.025f, 0.032f, 0.82f);
             minimapPanel.GetComponent<Image>().raycastTarget = false;
             CreateText("Mini Map Title", minimapPanel.transform, "AIRPORT MAP", 20, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-114f, 116f), new Vector2(170f, 30f));
-            CreateText("Mini Map Runway Header", minimapPanel.transform, "RWY 18L", 16, FontStyle.Bold, TextAnchor.MiddleRight, new Vector2(132f, 116f), new Vector2(110f, 28f));
+            CreateText("Mini Map Runway Header", minimapPanel.transform, "RWY 18L / 18R", 15, FontStyle.Bold, TextAnchor.MiddleRight, new Vector2(118f, 116f), new Vector2(140f, 28f));
 
             var contentObject = new GameObject("Mini Map Content");
             contentObject.transform.SetParent(minimapPanel.transform, false);
@@ -412,18 +412,31 @@ namespace ATCJourneyJapan.UI
             minimapContent.sizeDelta = new Vector2(376f, 206f);
             minimapContent.anchoredPosition = new Vector2(0f, -22f);
 
-            CreateMiniMapBlock("Mini Map Ground", Vector2.zero, new Vector2(376f, 206f), new Color(0.04f, 0.07f, 0.055f, 0.68f));
-            minimapRunwayImage = CreateMiniMapBlock("Mini Map Runway A", WorldToMiniMap(new Vector3(3f, 0f, 0f)), WorldSizeToMiniMap(new Vector2(30f, 2.8f)), new Color(0.38f, 0.4f, 0.42f, 0.98f));
-            CreateMiniMapBlock("Mini Map Taxiway Main", WorldToMiniMap(new Vector3(0f, 0f, -5f)), WorldSizeToMiniMap(new Vector2(26f, 1.8f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
+            CreateMiniMapBlock("Mini Map Sea Background", Vector2.zero, new Vector2(376f, 206f), new Color(0.02f, 0.28f, 0.42f, 0.82f));
+            CreateMiniMapBlock("Mini Map Main Airport Island", WorldToMiniMap(new Vector3(3f, 0f, -8.2f)), WorldSizeToMiniMap(new Vector2(68f, 18.8f)), new Color(0.08f, 0.19f, 0.12f, 0.88f));
+            CreateMiniMapBlock("Mini Map Future Runway Island", WorldToMiniMap(new Vector3(3f, 0f, 10.2f)), WorldSizeToMiniMap(new Vector2(36.5f, 5.4f)), new Color(0.11f, 0.21f, 0.13f, 0.88f));
+            CreateMiniMapBlock("Mini Map Central Wedge Base", WorldToMiniMap(new Vector3(4.3f, 0f, 2.7f)), WorldSizeToMiniMap(new Vector2(16.8f, 2.8f)), new Color(0.1f, 0.23f, 0.14f, 0.9f));
+            CreateMiniMapBlock("Mini Map Central Wedge Nose", WorldToMiniMap(new Vector3(6.6f, 0f, 5.1f)), WorldSizeToMiniMap(new Vector2(9.6f, 2.9f)), new Color(0.1f, 0.23f, 0.14f, 0.9f));
+            CreateMiniMapBlock("Mini Map Right Connector Island", WorldToMiniMap(new Vector3(17.1f, 0f, 5.1f)), WorldSizeToMiniMap(new Vector2(4.6f, 10.6f)), new Color(0.1f, 0.22f, 0.14f, 0.9f));
+
+            CreateMiniMapBlock("Mini Map Fighter Base Area", WorldToMiniMap(new Vector3(-13.5f, 0f, -9.7f)), WorldSizeToMiniMap(new Vector2(12.5f, 5.2f)), new Color(0.25f, 0.31f, 0.24f, 0.96f));
+            CreateMiniMapBlock("Mini Map Support Base Area", WorldToMiniMap(new Vector3(-1.6f, 0f, -10f)), WorldSizeToMiniMap(new Vector2(11.2f, 5.9f)), new Color(0.29f, 0.34f, 0.29f, 0.96f));
+            CreateMiniMapBlock("Mini Map Passenger Area", WorldToMiniMap(new Vector3(13.8f, 0f, -10.4f)), WorldSizeToMiniMap(new Vector2(18.6f, 6.8f)), new Color(0.35f, 0.39f, 0.38f, 0.96f));
+
+            minimapRunwayImage = CreateMiniMapBlock("Mini Map Runway A", WorldToMiniMap(new Vector3(3f, 0f, 0f)), WorldSizeToMiniMap(new Vector2(32.5f, 2.35f)), new Color(0.38f, 0.4f, 0.42f, 0.98f));
+            CreateMiniMapBlock("Mini Map Runway B", WorldToMiniMap(new Vector3(3f, 0f, 10.2f)), WorldSizeToMiniMap(new Vector2(29.2f, 2.8f)), new Color(0.31f, 0.34f, 0.35f, 0.78f));
+            CreateMiniMapBlock("Mini Map Taxiway Main", WorldToMiniMap(new Vector3(0f, 0f, -5f)), WorldSizeToMiniMap(new Vector2(26f, 1.24f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
             CreateMiniMapBlock("Mini Map Taxiway West", WorldToMiniMap(new Vector3(-7f, 0f, -2.5f)), WorldSizeToMiniMap(new Vector2(1.7f, 5f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
             CreateMiniMapBlock("Mini Map Taxiway East", WorldToMiniMap(new Vector3(12f, 0f, -2.5f)), WorldSizeToMiniMap(new Vector2(1.7f, 5f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
-            CreateMiniMapBlock("Mini Map Hold A", WorldToMiniMap(new Vector3(-7f, 0f, -3f)), new Vector2(22f, 14f), new Color(0.92f, 0.72f, 0.16f, 0.98f));
+            CreateMiniMapBlock("Mini Map Taxiway E Right", WorldToMiniMap(new Vector3(17.1f, 0f, 5.1f)), WorldSizeToMiniMap(new Vector2(1.25f, 10.2f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
+            CreateMiniMapBlock("Mini Map Hold A", WorldToMiniMap(new Vector3(12f, 0f, -3f)), new Vector2(18f, 12f), new Color(0.92f, 0.72f, 0.16f, 0.98f));
 
-            CreateMiniMapSpot("SPOT 01", new Vector3(2f, 0f, -9f));
-            CreateMiniMapSpot("SPOT 02", new Vector3(-11f, 0f, -9f));
-            CreateMiniMapSpot("SPOT 03", new Vector3(7f, 0f, -11.6f));
-            CreateMiniMapSpot("SPOT 04", new Vector3(-16f, 0f, -11.6f));
-            CreateText("Mini Map Runway Label", minimapContent, "RWY 18L", 13, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(3f, 0f, 1.7f)), new Vector2(84f, 20f));
+            CreateMiniMapSpot("SPOT 01", new Vector3(9.5f, 0f, -9.25f));
+            CreateMiniMapSpot("SPOT 02", new Vector3(12.8f, 0f, -9.25f));
+            CreateMiniMapSpot("SPOT 03", new Vector3(16.1f, 0f, -9.25f));
+            CreateMiniMapSpot("SPOT 04", new Vector3(18.2f, 0f, -11.75f));
+            CreateText("Mini Map Runway A Label", minimapContent, "18L", 12, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(3f, 0f, 1.8f)), new Vector2(54f, 18f));
+            CreateText("Mini Map Runway B Label", minimapContent, "18R", 12, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(3f, 0f, 12.2f)), new Vector2(54f, 18f));
         }
 
         private void CreateMiniMapSpot(string label, Vector3 worldPosition)
@@ -541,15 +554,15 @@ namespace ATCJourneyJapan.UI
 
         private Vector2 WorldToMiniMap(Vector3 worldPosition)
         {
-            var x = Mathf.InverseLerp(-30f, 28f, worldPosition.x) * 376f - 188f;
-            var y = Mathf.InverseLerp(-13f, 4f, worldPosition.z) * 206f - 103f;
+            var x = Mathf.InverseLerp(-31f, 37f, worldPosition.x) * 376f - 188f;
+            var y = Mathf.InverseLerp(-18f, 24f, worldPosition.z) * 206f - 103f;
             return new Vector2(Mathf.Round(x), Mathf.Round(y));
         }
 
         private Vector2 WorldSizeToMiniMap(Vector2 worldSize)
         {
-            var x = Mathf.Max(3f, worldSize.x / 58f * 376f);
-            var y = Mathf.Max(3f, worldSize.y / 17f * 206f);
+            var x = Mathf.Max(3f, worldSize.x / 68f * 376f);
+            var y = Mathf.Max(3f, worldSize.y / 42f * 206f);
             return new Vector2(Mathf.Round(x), Mathf.Round(y));
         }
 
