@@ -23,6 +23,7 @@ namespace ATCJourneyJapan.Airport
         private Material spotMarkingMaterial;
         private Material groundMaterial;
         private Material seaMaterial;
+        private Material shorelineMaterial;
         private Material terminalMaterial;
         private Material towerMaterial;
         private Material holdShortMaterial;
@@ -135,19 +136,20 @@ namespace ATCJourneyJapan.Airport
 
         private void CreateMaterials()
         {
-            runwayMaterial = CreateMaterial("Runway Asphalt", new Color(0.095f, 0.1f, 0.105f));
-            futureRunwayMaterial = CreateMaterial("Future Runway Asphalt", new Color(0.26f, 0.28f, 0.29f));
-            runwayEdgeMaterial = CreateMaterial("Runway Edge Paint", new Color(0.82f, 0.84f, 0.78f));
-            runwayMarkingMaterial = CreateMaterial("Runway Marking Paint", new Color(0.92f, 0.9f, 0.82f));
-            taxiwayMaterial = CreateMaterial("Taxiway Asphalt", new Color(0.18f, 0.23f, 0.26f));
-            taxiwayMarkingMaterial = CreateMaterial("Taxiway Centerline Paint", new Color(0.9f, 0.68f, 0.18f));
-            gateMaterial = CreateMaterial("Spot Apron Concrete", new Color(0.16f, 0.36f, 0.35f));
-            apronMaterial = CreateMaterial("Terminal Apron Concrete", new Color(0.22f, 0.29f, 0.28f));
-            spotMarkingMaterial = CreateMaterial("Spot Marking Paint", new Color(0.86f, 0.88f, 0.76f));
-            groundMaterial = CreateMaterial("Ground Green", new Color(0.18f, 0.32f, 0.22f));
-            seaMaterial = CreateMaterial("Naha Sea Blockout", new Color(0.04f, 0.34f, 0.55f));
-            terminalMaterial = CreateMaterial("Terminal Blockout", new Color(0.58f, 0.62f, 0.61f));
-            towerMaterial = CreateMaterial("Tower Blockout", new Color(0.72f, 0.76f, 0.72f));
+            runwayMaterial = CreateMaterial("Runway Asphalt", new Color(0.13f, 0.14f, 0.145f));
+            futureRunwayMaterial = CreateMaterial("Future Runway Asphalt", new Color(0.31f, 0.34f, 0.35f));
+            runwayEdgeMaterial = CreateMaterial("Runway Edge Paint", new Color(0.9f, 0.92f, 0.86f));
+            runwayMarkingMaterial = CreateMaterial("Runway Marking Paint", new Color(0.98f, 0.96f, 0.86f));
+            taxiwayMaterial = CreateMaterial("Taxiway Asphalt", new Color(0.22f, 0.29f, 0.32f));
+            taxiwayMarkingMaterial = CreateMaterial("Taxiway Centerline Paint", new Color(1f, 0.76f, 0.22f));
+            gateMaterial = CreateMaterial("Spot Apron Concrete", new Color(0.22f, 0.44f, 0.42f));
+            apronMaterial = CreateMaterial("Terminal Apron Concrete", new Color(0.29f, 0.37f, 0.36f));
+            spotMarkingMaterial = CreateMaterial("Spot Marking Paint", new Color(0.95f, 0.96f, 0.84f));
+            groundMaterial = CreateMaterial("Ground Green", new Color(0.24f, 0.42f, 0.29f));
+            seaMaterial = CreateMaterial("Naha Sea Blockout", new Color(0.03f, 0.48f, 0.72f));
+            shorelineMaterial = CreateMaterial("Shoreline Blockout", new Color(0.52f, 0.82f, 0.84f));
+            terminalMaterial = CreateMaterial("Terminal Blockout", new Color(0.68f, 0.72f, 0.7f));
+            towerMaterial = CreateMaterial("Tower Blockout", new Color(0.86f, 0.88f, 0.82f));
             holdShortMaterial = CreateMaterial("Hold Yellow", new Color(0.85f, 0.68f, 0.18f));
         }
 
@@ -202,6 +204,9 @@ namespace ATCJourneyJapan.Airport
         {
             CreateBox("Sea Between A and B Runways", new Vector3(3f, -0.035f, 4.5f), new Vector3(62f, 0.04f, 3.2f), seaMaterial, parent);
             CreateBox("Sea East of Future B Runway", new Vector3(3f, -0.035f, 15.4f), new Vector3(68f, 0.04f, 10.2f), seaMaterial, parent);
+            CreateBox("Shoreline Between A and B Runways", new Vector3(3f, 0.005f, 2.86f), new Vector3(62f, 0.025f, 0.12f), shorelineMaterial, parent);
+            CreateBox("Shoreline West of Future B Runway", new Vector3(3f, 0.005f, 6.12f), new Vector3(62f, 0.025f, 0.12f), shorelineMaterial, parent);
+            CreateBox("Shoreline East of Future B Runway", new Vector3(3f, 0.005f, 10.26f), new Vector3(68f, 0.025f, 0.12f), shorelineMaterial, parent);
 
             CreateBox("Future Runway B 18R 36L", new Vector3(3f, -0.02f, 9.2f), new Vector3(26.5f, 0.12f, 1.8f), futureRunwayMaterial, parent);
             CreateBox("Future Runway B Centerline", new Vector3(3f, 0.065f, 9.2f), new Vector3(22f, 0.035f, 0.06f), runwayEdgeMaterial, parent);

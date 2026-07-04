@@ -13,6 +13,10 @@
 - 今回実装すること
 - 今回は実装せず後続Phaseに回すこと
 
+## 2026-07-04 Phase 3.8-3 Sky / Lighting / Atmosphere Blockout
+
+- 青空背景、昼間寄りLighting、海/地面/滑走路/誘導路/SPOTの視認性を調整し、次Phase候補をPhase 3.9-1 Naha Layout Alignmentとした
+
 ## 2026-07-04 Phase 3.8-2 Naha-style 3D Airport Blockout QA / 那覇空港風ブロックアウト位置調整
 
 - A滑走路を少し長く、B滑走路を短く控えめにし、海、ターミナル、管制塔、エプロン周辺の見え方を調整

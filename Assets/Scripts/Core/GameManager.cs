@@ -4,6 +4,7 @@ using ATCJourneyJapan.Airport;
 using ATCJourneyJapan.Scoring;
 using ATCJourneyJapan.UI;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace ATCJourneyJapan.Core
 {
@@ -268,7 +269,18 @@ namespace ATCJourneyJapan.Core
 
             InitializeCameraPresets();
             ApplyCameraPreset(0);
-            mainCamera.backgroundColor = new Color(0.08f, 0.12f, 0.16f);
+            mainCamera.clearFlags = CameraClearFlags.SolidColor;
+            mainCamera.backgroundColor = new Color(0.42f, 0.72f, 0.94f);
+            ConfigureAtmosphere();
+        }
+
+        private void ConfigureAtmosphere()
+        {
+            RenderSettings.ambientMode = AmbientMode.Trilight;
+            RenderSettings.ambientSkyColor = new Color(0.72f, 0.84f, 0.95f);
+            RenderSettings.ambientEquatorColor = new Color(0.48f, 0.56f, 0.55f);
+            RenderSettings.ambientGroundColor = new Color(0.28f, 0.34f, 0.3f);
+            RenderSettings.fog = false;
         }
 
         private void InitializeCameraPresets()
@@ -339,16 +351,18 @@ namespace ATCJourneyJapan.Core
 
         private void SetupLight()
         {
-            if (FindFirstObjectByType<Light>() != null)
+            var light = FindFirstObjectByType<Light>();
+            if (light == null)
             {
-                return;
+                var lightObject = new GameObject("Directional Light");
+                light = lightObject.AddComponent<Light>();
             }
 
-            var lightObject = new GameObject("Directional Light");
-            var light = lightObject.AddComponent<Light>();
             light.type = LightType.Directional;
-            light.intensity = 1.4f;
-            lightObject.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
+            light.intensity = 1.25f;
+            light.shadows = LightShadows.Soft;
+            light.shadowStrength = 0.35f;
+            light.transform.rotation = Quaternion.Euler(45f, -35f, 12f);
         }
     }
 }

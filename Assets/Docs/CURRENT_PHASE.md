@@ -2,11 +2,28 @@
 
 ## Current Phase
 
-Phase 3.8-2 Naha-style 3D Airport Blockout QA / 那覇空港風ブロックアウト位置調整
+Phase 3.8-3 Sky / Lighting / Atmosphere Blockout
 
 ## Previous Phase
 
-Phase 3.8-1 Naha-style 3D Airport Scene Blockout / 那覇空港風3Dブロックアウト
+Phase 3.8-2 Naha-style 3D Airport Blockout QA / 那覇空港風ブロックアウト位置調整
+
+## Phase 3.8-3で行うこと
+
+- 空、光、海、地面の雰囲気を整え、明るい昼間の空港ビューに近づける
+- Camera背景色を青空寄りにし、Unity試作画面感を少し減らす
+- Directional LightとAmbient Lightを調整し、滑走路、誘導路、ターミナル、管制塔が暗く沈まないようにする
+- 海、地面、エプロン、滑走路、誘導路、SPOTの色を必要最小限で調整し、視認性を上げる
+- 海と地面の境界を分かりやすくする
+- Top View、Oblique View、Wide Viewで見え方を確認する
+- 次Phase候補は Phase 3.9-1 Naha Layout Alignment とする
+
+## Phase 3.8-3 QAで確認すること
+
+- Top Viewで操作性が維持されているか
+- Oblique Viewで青空、光、海、建物の立体感が分かるか
+- Wide ViewでA/B滑走路、海、ターミナル、管制塔の全体関係が分かるか
+- 既存の航空機移動、滑走路占有、安全管理、ミニマップ、チュートリアルが壊れていないか
 
 ## Phase 3.8-2で行うこと
 
@@ -200,8 +217,8 @@ Phase 3.6は、Simple 3D Airport View Prototype / 簡易3D空港ビュー試作�
 
 ## Current Phaseの目的
 
-Phase 3.8-2では、Phase 3.8-1で追加した那覇空港風ブロックアウトの位置関係をQA調整します。
-本格的な那覇空港再現ではなく、A滑走路、B滑走路、海、ターミナル、管制塔、SPOTが見やすく並ぶゲーム用ブロックアウトとして整えます。
+Phase 3.8-3では、Phase 3.8-1 / 3.8-2で作った那覇空港風ブロックアウトに、空、光、海、地面の最低限の雰囲気を加えます。
+本格的なビジュアル制作ではなく、Primitiveベースのまま明るい昼間の空港ビューとして見やすくする小さな調整です。
 
 ## Phase 2.5で完了したこと
 
@@ -302,4 +319,5 @@ Phase 3.7-1では、VキーでTop View / Oblique Viewを切り替え、既存UI�
 Phase 3.7-2では、カメラ設定をCameraPresetとして整理し、Top / Oblique / Wideを順番に切り替えられる土台を作りました。
 Phase 3.8-1では、海、将来B滑走路、A/B連絡誘導路、ターミナル、管制塔を仮配置し、那覇空港風の空間ブロックアウトを追加しました。
 Phase 3.8-2では、A滑走路を主滑走路として少し長く、B滑走路を将来解放予定として短く控えめにし、海とターミナル周辺の見え方を調整しました。
-次は、3D表示QA、空港パーツのPrefab化、Tower Viewなどの追加視点検討へ進みます。
+Phase 3.8-3では、青空背景、昼間寄りの光、海と地面の視認性、ターミナルと管制塔の明るさを調整しました。
+次は、Phase 3.9-1 Naha Layout Alignment、3D表示QA、空港パーツのPrefab化、Tower Viewなどの追加視点検討へ進みます。
