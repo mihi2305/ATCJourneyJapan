@@ -338,15 +338,15 @@ namespace ATCJourneyJapan.UI
 
         private void BuildFlightStripPanel()
         {
-            flightStripPanel = CreatePanel("Flight Strip Panel", hudRoot.transform, new Vector2(0f, 1f), new Vector2(340f, 500f), AnchorPreset.TopLeft, new Vector2(24f, -164f));
+            flightStripPanel = CreatePanel("Flight Strip Panel", hudRoot.transform, new Vector2(0f, 1f), new Vector2(340f, 350f), AnchorPreset.TopLeft, new Vector2(24f, -164f));
             flightStripPanel.GetComponent<Image>().color = new Color(0.025f, 0.032f, 0.04f, 0.82f);
-            CreateText("Strip Title", flightStripPanel.transform, "STRIPS", 18, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-122f, 218f), new Vector2(76f, 28f));
-            CreateText("Arrival Header", flightStripPanel.transform, "到着  ARRIVAL", 17, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-78f, 180f), new Vector2(220f, 28f));
-            CreateText("Departure Header", flightStripPanel.transform, "出発  DEPARTURE", 17, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-78f, -6f), new Vector2(220f, 28f));
-            CreateFlightStripButton("AJJ101", new Vector2(0f, 124f));
-            CreateFlightStripButton("AJJ202", new Vector2(0f, -58f));
+            CreateText("Strip Title", flightStripPanel.transform, "STRIPS", 18, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-122f, 144f), new Vector2(76f, 28f));
+            CreateText("Arrival Header", flightStripPanel.transform, "到着  ARRIVAL", 17, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-78f, 106f), new Vector2(220f, 28f));
+            CreateText("Departure Header", flightStripPanel.transform, "出発  DEPARTURE", 17, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-78f, -56f), new Vector2(220f, 28f));
+            CreateFlightStripButton("AJJ101", new Vector2(0f, 54f));
+            CreateFlightStripButton("AJJ202", new Vector2(0f, -108f));
 
-            stripCommandButton = CreateButton("Strip Command", flightStripPanel.transform, string.Empty, new Vector2(0f, 0f), new Vector2(292f, 54f), 15);
+            stripCommandButton = CreateButton("Strip Command", flightStripPanel.transform, string.Empty, new Vector2(0f, 0f), new Vector2(208f, 58f), 13);
             stripCommandButtonText = stripCommandButton.GetComponentInChildren<Text>();
             stripCommandButton.onClick.AddListener(ExecuteStripCommand);
             stripCommandButton.gameObject.SetActive(false);
@@ -437,8 +437,8 @@ namespace ATCJourneyJapan.UI
 
         private Vector2 GetFlightStripPosition(bool isArrival, int index)
         {
-            var baseY = isArrival ? 124f : -58f;
-            return new Vector2(0f, baseY - index * 122f);
+            var baseY = isArrival ? 54f : -108f;
+            return new Vector2(0f, baseY - index * 82f);
         }
 
         private string GetFlightStripText(AircraftController aircraft, AircraftCommand? recommended)
@@ -468,7 +468,7 @@ namespace ATCJourneyJapan.UI
                 return;
             }
 
-            stripCommandButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(selectedStripPosition.x, selectedStripPosition.y - 66f);
+            stripCommandButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(selectedStripPosition.x + 260f, selectedStripPosition.y);
             stripCommandButtonText.text = GetCommandLabel(recommended.Value);
         }
 

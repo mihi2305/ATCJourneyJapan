@@ -18,11 +18,11 @@
 | Phase 2.0 | 完了 | 航空機データ拡張 | 便名 / 機種 / 運航種別 / 使用滑走路 / Spot / 状態 / 担当管制ポジション / 出発地/目的地 / nextTarget / 推奨コマンドID / A滑走路をRWY_A・18L/36Rとして扱う土台 / B滑走路は将来拡張用データのみ |
 | Phase 2.2 | 次に実装予定 | 複数機運用 | 到着2機 / 出発2機 / 時間差出現 / マルチタスク発生 |
 | Phase 2.3 | 完了 | フライトストリップ方式 | 左側に到着 ARRIVAL / 出発 DEPARTURE リスト / 便名帯で航空機を選択 / 推奨指示待ちストリップをハイライト / 機体クリック依存から脱却する土台 |
-| Phase 2.4 | 完了 | ストリップ連動コマンド | 選択ストリップ付近に指示ボタンを表示 / 右側固定指示欄を暫定維持 / ストリップ側ボタンから既存コマンドを実行 |
+| Phase 2.4 | 完了 | ストリップ連動コマンド | 選択ストリップ右側に指示ボタンを表示 / 右側固定指示欄を暫定維持 / ストリップ側ボタンから既存コマンドを実行 |
 | Phase 2.5 | 未着手 | 簡易レーダー/ミニマップ | 右上に空港/接近機/滑走路/誘導路/位置表示 / 接近機の距離・方位・進入経路を表示 |
 | Phase 2.6 | 未着手 | 経路プレビュー | 選択中機体の予定ルートを線で表示 / Taxi to GateやLine Up後の動きが予測できるようにする |
 | Phase 2.7 | 未着手 | 空港全体俯瞰ビュー | 上空カメラ / 滑走路 / 誘導路 / ゲート / 航空機ラベル / 空港全体を管制している感覚 |
-| Phase 3.0 | 未着手 | 安全管理をゲーム化 | 滑走路占有 / Hold Short違反 / 間隔不足 / 危険操作ペナルティ / Safetyに意味を持たせる |
+| Phase 3.0 | 未着手 | 安全管理をゲーム化 | 滑走路占有 / Hold Short違反 / 間隔不足 / 危険操作ペナルティ / Hold Taxi / Resume Taxi / Go-Around / Safetyに意味を持たせる |
 | Phase 3.2 | 未着手 | スコア・ランク・制限時間 | Point / Rank / Clear条件 / Time Bonus / 遅延評価 / 効率性評価 / S/A/B/Cランク / 既存ゲームを参考に評価設計を検討 |
 | Phase 3.4 | 未着手 | Clearance Delivery / 出発承認基礎 | 出発承認 / Departure Clearance / Pushback前の前提承認 / Clearance Delivery・Ground・Towerの役割整理 |
 | Phase 3.5 | 未着手 | Contact / Handoff導入 | Contact Ground / Contact Tower / Contact Departure / 管制ポジション引き継ぎ |
@@ -48,7 +48,10 @@
 - Phase 2.3以降、航空機Objectクリックに加えてフライトストリップクリックでも航空機を選択できるようにする
 - 将来的には航空機Objectクリックを補助操作とし、フライトストリップを主操作にする
 - 右側固定の指示欄は暫定UIであり、Phase 2.4で選択中ストリップ内またはストリップ横の指示UIへ段階的に統合する
-- Phase 2.4では、選択中ストリップの直下に現在出せる指示ボタンを表示し、右側固定指示欄と同じ既存コマンド処理を呼び出す
+- Phase 2.4では、選択中ストリップの右側に現在出せる指示ボタンを表示し、右側固定指示欄と同じ既存コマンド処理を呼び出す
+- ストリップ連動コマンドボタンはストリップ下に置かず、縦リストの一覧性を維持する
+- 1機に対して常に全ボタンを表示せず、現在状態で出せる指示だけを1〜2個表示する
+- プレイヤーにボタン探しをさせるのではなく、どの機体にいつ指示を出すかに集中させる
 - 右側固定指示欄は当面の暫定UIとして残し、将来的に縮小または廃止してストリップ側へ統合する
 - 複数機運用を増やす前に、ストリップ方式とストリップ連動コマンドUIを整える
 - Phase 2.3 QA以降、ストリップは一覧性を優先し、便名、機種、RWY、SPOT、短い状態/推奨指示だけを表示する
@@ -61,6 +64,11 @@
 - 左側ストリップには必要になった場合のみ `DEP 08:10` / `ARR 08:25` のように短く時刻を表示し、詳細な時刻比較や遅延分は右下詳細で扱う
 - 遅延や効率性評価の本格実装はPhase 3.2で扱う
 - Phase 3.4では、Pushback前に「出発承認 / Departure Clearance」を受ける流れを追加し、Clearance Delivery、Ground、Towerの違いを教える入口にする
-- Phase 3.4ではDeparture ClearanceボタンやClearance Delivery管制ポジションを検討するが、Phase 2.3 QAでは実装しない
+- Phase 3.4ではDeparture ClearanceボタンやClearance Delivery管制ポジションを検討するが、Phase 2.4 QAでは実装しない
+- 将来的な出発便コマンド候補は、Flight Clearance、Pushback、Pushback Direction、Taxi Permit、滑走路/誘導路ルート選択、Line Up and Wait、Cleared for Takeoff、Hand-off to Departureとする
+- 将来的な到着便コマンド候補は、Approach Contact、Runway Select / ILS Approach、Clear to Land、Hand-off to Ground、Taxi to Spotとする
+- 将来的な共通/緊急コマンド候補は、Hold Taxi、Resume Taxi、Go-Around、Hand-offとする
+- Flight Clearance / 出発承認はPhase 3.4、Hold Taxi / Resume TaxiはPhase 3.0、Go-AroundはPhase 3.0〜3.2、Hand-offはPhase 3.5で扱う
+- Pushback方向選択やTaxiルート選択は、Phase 3.0以降またはステージ制導入後に扱う
 - Phase 2.xでは、見た目の完成度よりも操作構造を優先する
 - フォント、色、枠、ボタン質感、航空管制ゲームらしいHUD表現は、Phase 6.1 UI Visual Polishで扱う
