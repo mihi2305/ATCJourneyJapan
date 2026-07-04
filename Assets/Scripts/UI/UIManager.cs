@@ -41,6 +41,7 @@ namespace ATCJourneyJapan.UI
         private GameObject hudRoot;
         private GameObject flightStripPanel;
         private GameObject stripCommandPopup;
+        private GameObject commandPanel;
         private GameObject selectedPanel;
         private GameObject guidePanel;
         private GameObject tutorialPanel;
@@ -222,12 +223,13 @@ namespace ATCJourneyJapan.UI
             selectedPanel = CreatePanel("Selected Aircraft", hudRoot.transform, new Vector2(0f, 0f), new Vector2(360f, 256f), AnchorPreset.BottomRight, new Vector2(-24f, 34f));
             selectedText = CreateText("Selected Text", selectedPanel.transform, string.Empty, 16, FontStyle.Normal, TextAnchor.UpperLeft, Vector2.zero, new Vector2(316f, 222f));
 
-            var commandPanel = CreatePanel("Command Panel", hudRoot.transform, new Vector2(0f, 0f), new Vector2(300f, 410f), AnchorPreset.MiddleRight, new Vector2(-12f, 0f));
+            commandPanel = CreatePanel("Command Panel", hudRoot.transform, new Vector2(0f, 0f), new Vector2(300f, 410f), AnchorPreset.MiddleRight, new Vector2(-12f, 0f));
             CreateText("Command Title", commandPanel.transform, "指示", 22, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(0f, 154f), new Vector2(250f, 34f));
             commandButton = CreateButton("Recommended Command", commandPanel.transform, string.Empty, new Vector2(0f, 74f), new Vector2(250f, 94f), 19);
             commandButton.onClick.AddListener(ExecuteRecommendedCommand);
             helpText = CreateText("Command Help", commandPanel.transform, string.Empty, 18, FontStyle.Normal, TextAnchor.UpperLeft, new Vector2(0f, -96f), new Vector2(250f, 94f));
             commandStatusText = CreateText("Command Status", commandPanel.transform, string.Empty, 20, FontStyle.Normal, TextAnchor.MiddleCenter, new Vector2(0f, 28f), new Vector2(250f, 86f));
+            commandPanel.SetActive(false);
 
             tutorialPanel = CreatePanel("Tutorial Panel", hudRoot.transform, new Vector2(0.5f, 0f), new Vector2(660f, 116f), AnchorPreset.BottomCenter, new Vector2(0f, 108f));
             tutorialPanel.GetComponent<Image>().color = new Color(0.01f, 0.015f, 0.02f, 0.94f);
@@ -268,6 +270,7 @@ namespace ATCJourneyJapan.UI
             UpdateFlightStrips(selected);
 
             selectedPanel.SetActive(selected != null);
+            commandPanel.SetActive(false);
 
             if (selected != null)
             {
@@ -279,14 +282,9 @@ namespace ATCJourneyJapan.UI
                 helpText.text = "航空機を選択すると、使える指示が表示されます。";
             }
 
-            var commandAllowedByTutorial = recommended.HasValue && CanAcceptCommand(recommended.Value);
-            commandButton.gameObject.SetActive(commandAllowedByTutorial && selected != null && selected.CanExecute(recommended.Value));
-            commandStatusText.gameObject.SetActive(!commandButton.gameObject.activeSelf);
+            commandButton.gameObject.SetActive(false);
+            commandStatusText.gameObject.SetActive(false);
             commandStatusText.text = GetCommandStatusText(selected, recommended);
-            if (commandButton.gameObject.activeSelf)
-            {
-                commandButtonText.text = GetCommandLabel(recommended.Value);
-            }
 
             warningPanel.SetActive(!string.IsNullOrEmpty(warningMessage));
             warningText.text = warningMessage;
@@ -678,22 +676,22 @@ namespace ATCJourneyJapan.UI
                 TutorialStep.Info("ここはA滑走路です。\n飛行機が着陸・離陸する場所です。", TutorialHighlight.RunwayA),
                 TutorialStep.Info("安全のため、1本の滑走路には\n基本的に1機だけ入れます。", TutorialHighlight.RunwayA),
                 TutorialStep.Info("AJJ101がA滑走路に\n近づいています。", TutorialHighlight.ArrivalAircraft),
-                TutorialStep.Command("滑走路が空いています。\nAJJ101に着陸許可を出しましょう。", AircraftCommand.ClearLanding, TutorialHighlight.ClearLanding, "AJJ101"),
+                TutorialStep.Command("AJJ101のストリップから\n着陸許可を出しましょう。", AircraftCommand.ClearLanding, TutorialHighlight.ClearLanding, "AJJ101"),
                 TutorialStep.RunwayExitReady("AJJ101が着陸中です。\n滑走路が使用中になります。", TutorialHighlight.RunwayInUse),
                 TutorialStep.Info("着陸後は、次の飛行機のために\n滑走路を空けます。", TutorialHighlight.RunwayInUse),
-                TutorialStep.Command("AJJ101をSPOT 01へ\n誘導しましょう。", AircraftCommand.TaxiToGate, TutorialHighlight.TaxiToGate, "AJJ101"),
+                TutorialStep.Command("AJJ101のストリップから\nSPOT 01へ誘導しましょう。", AircraftCommand.TaxiToGate, TutorialHighlight.TaxiToGate, "AJJ101"),
                 TutorialStep.ArrivalComplete("AJJ101がSPOT 01へ移動中です。\n到着完了まで見守ります。", TutorialHighlight.Gate1),
                 TutorialStep.Info("AJJ101がSPOT 01に到着しました。\n到着機の基本処理は完了です。", TutorialHighlight.Gate1),
                 TutorialStep.Info("出発訓練\nAJJ202を離陸させましょう。"),
                 TutorialStep.Info("まずSPOT 02から\n出発準備をします。", TutorialHighlight.Gate2),
-                TutorialStep.Command("AJJ202を選択し、\nプッシュバックします。", AircraftCommand.Pushback, TutorialHighlight.Pushback, "AJJ202"),
+                TutorialStep.Command("AJJ202のストリップから\nプッシュバックします。", AircraftCommand.Pushback, TutorialHighlight.Pushback, "AJJ202"),
                 TutorialStep.PushbackComplete("AJJ202が後退中です。\n地上走行の準備をします。", TutorialHighlight.Pushback),
-                TutorialStep.Command("滑走路手前まで\n地上走行させましょう。", AircraftCommand.TaxiToHold, TutorialHighlight.TaxiToHold, "AJJ202"),
+                TutorialStep.Command("AJJ202のストリップから\n滑走路手前へ誘導します。", AircraftCommand.TaxiToHold, TutorialHighlight.TaxiToHold, "AJJ202"),
                 TutorialStep.HoldingPointReady("AJJ202が誘導路を走行中です。\n滑走路手前で止めます。", TutorialHighlight.TaxiToHold),
-                TutorialStep.Command("滑走路に入る前に\n手前で待機させます。", AircraftCommand.HoldShort, TutorialHighlight.HoldShort, "AJJ202"),
+                TutorialStep.Command("AJJ202のストリップから\n手前で待機させます。", AircraftCommand.HoldShort, TutorialHighlight.HoldShort, "AJJ202"),
                 TutorialStep.Info("Hold Shortは手前、\nLine Upは滑走路上で待機です。", TutorialHighlight.HoldShort),
-                TutorialStep.Command("滑走路が空いたので\n滑走路上で待機させます。", AircraftCommand.LineUp, TutorialHighlight.LineUp, "AJJ202"),
-                TutorialStep.Command("滑走路が安全なら、\n離陸許可を出しましょう。", AircraftCommand.ClearTakeoff, TutorialHighlight.None, "AJJ202")
+                TutorialStep.Command("AJJ202のストリップから\n滑走路上で待機させます。", AircraftCommand.LineUp, TutorialHighlight.LineUp, "AJJ202"),
+                TutorialStep.Command("AJJ202のストリップから\n離陸許可を出しましょう。", AircraftCommand.ClearTakeoff, TutorialHighlight.None, "AJJ202")
             };
         }
 
@@ -991,7 +989,7 @@ namespace ATCJourneyJapan.UI
             {
                 return selected == arrival
                     ? "着陸許可を出しましょう。"
-                    : "AJJ101をクリック\nまず到着機を選びます。";
+                    : "AJJ101のストリップを選択\nまず到着機を選びます。";
             }
 
             if (arrival != null && arrival.CurrentState == AircraftState.FinalApproach)
@@ -1008,7 +1006,7 @@ namespace ATCJourneyJapan.UI
             {
                 return selected == arrival
                     ? "スポットへ誘導しましょう。"
-                    : "AJJ101をクリック\nSPOT 01へ誘導します。";
+                    : "AJJ101のストリップを選択\nSPOT 01へ誘導します。";
             }
 
             if (arrival != null && arrival.CurrentState == AircraftState.TaxiToGate)
@@ -1020,7 +1018,7 @@ namespace ATCJourneyJapan.UI
             {
                 return selected == departure
                     ? "プッシュバックしましょう。"
-                    : "AJJ202をクリック\n出発準備を始めます。";
+                    : "AJJ202のストリップを選択\n出発準備を始めます。";
             }
 
             if (departure != null && departure.CurrentState == AircraftState.Pushbacking)
@@ -1032,7 +1030,7 @@ namespace ATCJourneyJapan.UI
             {
                 return selected == departure
                     ? "滑走路手前へ進めましょう。"
-                    : "AJJ202をクリック\n滑走路手前へ誘導します。";
+                    : "AJJ202のストリップを選択\n滑走路手前へ誘導します。";
             }
 
             if (departure != null && departure.CurrentState == AircraftState.TaxiToHold)
@@ -1044,21 +1042,21 @@ namespace ATCJourneyJapan.UI
             {
                 return selected == departure
                     ? "滑走路手前で待機させましょう。"
-                    : "AJJ202をクリック\n手前で待機させます。";
+                    : "AJJ202のストリップを選択\n手前で待機させます。";
             }
 
             if (departure != null && departure.CurrentState == AircraftState.HoldingShort)
             {
                 return selected == departure
                     ? "滑走路上で待機させましょう。"
-                    : "AJJ202をクリック\n滑走路上で待機させます。";
+                    : "AJJ202のストリップを選択\n滑走路上で待機させます。";
             }
 
             if (departure != null && departure.CurrentState == AircraftState.LiningUp)
             {
                 return selected == departure
                     ? "離陸許可を出しましょう。"
-                    : "AJJ202をクリック\n離陸許可を出します。";
+                    : "AJJ202のストリップを選択\n離陸許可を出します。";
             }
 
             if (departure != null && departure.CurrentState == AircraftState.TakeoffRoll)
