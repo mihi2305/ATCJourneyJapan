@@ -16,7 +16,7 @@ namespace ATCJourneyJapan.Core
         public void Execute(AircraftCommand command)
         {
             var selected = SelectionManager.Instance != null ? SelectionManager.Instance.SelectedAircraft : null;
-            if (gameManager != null && (!gameManager.IsTrainingStarted || !gameManager.CanAcceptCommand(selected, command)))
+            if (gameManager != null && !gameManager.IsTrainingStarted)
             {
                 return;
             }
@@ -29,6 +29,11 @@ namespace ATCJourneyJapan.Core
             if (gameManager != null && !gameManager.CanExecuteRunwaySafetyCommand(selected, command))
             {
                 gameManager.RejectUnsafeRunwayCommand(selected, command);
+                return;
+            }
+
+            if (gameManager != null && !gameManager.CanAcceptCommand(selected, command))
+            {
                 return;
             }
 

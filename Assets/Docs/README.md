@@ -100,7 +100,26 @@ Phase 3.0では、航空管制ゲームとしての緊張感を作るため、RW
 - Clear to Land、Line Up and Wait、Cleared for Takeoffは、滑走路占有状態を確認してから実行する
 - 他機がRWY 18Lを使用中の場合、危険な指示は実行せず、短い警告を出してSafetyを下げる
 - 正しい順序で操作した場合は、Safety 100のまま訓練完了できるようにする
+- Phase 3.0 QAでは、AJJ103を着陸許可待ち、AJJ204を滑走路手前待機として使い、RWY 18L占有警告をPlay確認しやすくする
+- AJJ103 / AJJ204は安全警告確認用であり、完全な状態遷移や訓練完了条件への組み込みは後続Phaseで扱う
 - Taxi経路衝突、Hold Taxi / Resume Taxi、Go-Around、本格的な間隔管理は後続Phaseで扱う
+
+### Phase 3.0 安全警告確認手順
+
+シナリオA:
+
+1. Start Training
+2. AJJ101に着陸許可 / Clear to Landを出す
+3. AJJ101がRWY 18Lを使用中の間にAJJ204を選択する
+4. 滑走路上で待機 / Line Up and Waitを押す
+5. コマンドが実行されず、RWY 18L使用中の警告とSafety減点を確認する
+
+シナリオB:
+
+1. AJJ202をLine Up and Waitまで進める
+2. AJJ202がRWY 18Lを使用中の間にAJJ103を選択する
+3. 着陸許可 / Clear to Landを押す
+4. コマンドが実行されず、AJJ202がRWY 18L使用中の警告とSafety減点を確認する
 
 ## 将来のUI方針
 

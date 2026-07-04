@@ -641,9 +641,9 @@ namespace ATCJourneyJapan.UI
             var canShow = hasSelectedStrip
                 && selected != null
                 && recommended.HasValue
-                && CanAcceptCommand(selected, recommended.Value)
-                && gameManager.CanExecuteRunwaySafetyCommand(selected, recommended.Value)
-                && selected.CanExecute(recommended.Value);
+                && selected.CanExecute(recommended.Value)
+                && (CanAcceptCommand(selected, recommended.Value)
+                    || !gameManager.CanExecuteRunwaySafetyCommand(selected, recommended.Value));
 
             stripCommandPopup.SetActive(canShow);
             if (!canShow)
@@ -655,6 +655,26 @@ namespace ATCJourneyJapan.UI
             popupTransform.sizeDelta = GetStripCommandPopupSize(1);
             popupTransform.anchoredPosition = new Vector2(selectedStripPosition.x + 306f, selectedStripPosition.y);
             stripCommandButtonText.text = GetCommandLabel(recommended.Value);
+            ApplyStripCommandButtonSafetyStyle(gameManager.CanExecuteRunwaySafetyCommand(selected, recommended.Value));
+        }
+
+        private void ApplyStripCommandButtonSafetyStyle(bool safe)
+        {
+            var colors = stripCommandButton.colors;
+            if (safe)
+            {
+                colors.normalColor = new Color(0.14f, 0.52f, 0.22f, 0.95f);
+                colors.highlightedColor = new Color(0.18f, 0.66f, 0.28f, 1f);
+                colors.pressedColor = new Color(0.1f, 0.42f, 0.18f, 1f);
+            }
+            else
+            {
+                colors.normalColor = new Color(0.58f, 0.18f, 0.12f, 0.95f);
+                colors.highlightedColor = new Color(0.72f, 0.24f, 0.16f, 1f);
+                colors.pressedColor = new Color(0.42f, 0.1f, 0.08f, 1f);
+            }
+
+            stripCommandButton.colors = colors;
         }
 
         private Vector2 GetStripCommandPopupSize(int commandCount)
@@ -983,9 +1003,7 @@ namespace ATCJourneyJapan.UI
         {
             var selected = GetSelectedAircraft();
             var recommended = selected != null ? GetRecommendedCommand(selected) : null;
-            if (recommended.HasValue
-                && selected.CanExecute(recommended.Value)
-                && gameManager.CanExecuteRunwaySafetyCommand(selected, recommended.Value))
+            if (recommended.HasValue && selected.CanExecute(recommended.Value))
             {
                 commandSystem.Execute(recommended.Value);
             }
@@ -1285,7 +1303,7 @@ namespace ATCJourneyJapan.UI
 
             foreach (var command in recommendedCommands)
             {
-                if (aircraft.CanExecute(command) && gameManager.CanExecuteRunwaySafetyCommand(aircraft, command))
+                if (aircraft.CanExecute(command))
                 {
                     return command;
                 }

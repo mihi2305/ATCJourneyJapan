@@ -32,7 +32,7 @@ namespace ATCJourneyJapan.Aircraft
             SpawnAircraft(arrivalData, true, AircraftState.Inbound, airportManager.ArrivalSpawnPosition, PrimitiveType.Capsule, arrivalMaterial);
             SpawnAircraft(secondArrivalData, true, AircraftState.Inbound, airportManager.SecondaryArrivalSpawnPosition, PrimitiveType.Capsule, arrivalMaterial);
             SpawnAircraft(departureData, false, AircraftState.AtGate, airportManager.DepartureSpawnPosition, PrimitiveType.Capsule, departureMaterial);
-            SpawnAircraft(secondDepartureData, false, AircraftState.AtGate, airportManager.SecondaryDepartureSpawnPosition, PrimitiveType.Capsule, departureMaterial);
+            SpawnAircraft(secondDepartureData, false, AircraftState.HoldingShort, airportManager.HoldShortPosition + new Vector3(-2.2f, 0f, -0.8f), PrimitiveType.Capsule, departureMaterial);
         }
 
         private void CreateMaterials()

@@ -17,17 +17,37 @@ Phase 3.0 安全管理 / Runway Safety Rules
 - AJJ202が離陸完了したらRWY 18Lの占有を解除するようにした
 - Clear to Land / Line Up and Wait / Cleared for Takeoff は、他機がRWY 18Lを使用中なら実行しない安全チェックを入れた
 - 危険な指示を出そうとした場合は、コマンドを実行せず、Safetyを10下げ、短い警告を表示する方針にした
-- ストリップ右側のコマンドポップアップは、安全上出せない指示を表示しない方針にした
+- Phase 3.0 QA追加修正として、AJJ103 / AJJ204を滑走路占有警告のPlay確認に使えるようにした
+- AJJ103は着陸許可待ちの到着機として、AJJ202がRWY 18L使用中のClear to Land競合確認に使う
+- AJJ204は滑走路手前待機の出発機として、AJJ101がRWY 18L使用中のLine Up and Wait競合確認に使う
+- 危険な指示は確認しやすいよう、選択中ストリップ横に赤系ボタンとして表示し、押した時に警告とSafety減点で止める方針にした
 - RWY 18L使用中はミニマップ上の滑走路を暖色で強調し、占有状態を見やすくした
 
 ## Phase 3.0 QAで確認すること
 
 - 正しい順序で操作した場合、Safety 100のまま訓練完了できるか
-- AJJ101が着陸中に他機へLine Up and Waitを出せないか
-- AJJ202がLine Up and Wait中に他機へClear to Landを出せないか
+- AJJ101が着陸中にAJJ204へLine Up and Waitを出そうとすると警告が出るか
+- AJJ202がLine Up and Wait中にAJJ103へClear to Landを出そうとすると警告が出るか
 - 危険な指示を試した時、Safetyが10下がり、警告文が表示されるか
 - RWY 18L使用中にミニマップ上の滑走路が強調されるか
 - 既存のストリップ選択、航空機Object選択、コマンドポップアップ、管制ログ、右下詳細、ミニマップが壊れていないか
+
+## Phase 3.0 安全警告確認手順
+
+### シナリオA
+
+1. Start Training
+2. AJJ101を選択し、着陸許可 / Clear to Landを出す
+3. AJJ101がRWY 18Lを使用中の間に、AJJ204のストリップを選択する
+4. 赤系表示の滑走路上で待機 / Line Up and Waitを押す
+5. コマンドが実行されず、RWY 18L使用中の警告が出て、Safetyが10下がることを確認する
+
+### シナリオB
+
+1. 通常訓練をAJJ202のLine Up and Waitまで進める
+2. AJJ202がRWY 18L上で待機している間に、AJJ103のストリップを選択する
+3. 赤系表示の着陸許可 / Clear to Landを押す
+4. コマンドが実行されず、AJJ202がRWY 18Lを使用中という警告が出て、Safetyが10下がることを確認する
 
 ## Phase 2.3で完了したこと
 
