@@ -160,8 +160,20 @@ namespace ATCJourneyJapan.UI
 
         public bool CanAcceptCommand(AircraftCommand command)
         {
+            return CanAcceptCommand(GetSelectedAircraft(), command);
+        }
+
+        public bool CanAcceptCommand(AircraftController aircraft, AircraftCommand command)
+        {
             var step = CurrentTutorialStep;
-            return step == null || (step.WaitForCommand && step.ExpectedCommand == command);
+            if (step == null)
+            {
+                return true;
+            }
+
+            return step.WaitForCommand
+                && step.ExpectedCommand == command
+                && step.AcceptsAircraft(aircraft);
         }
 
         public void NotifyCommandExecuted(AircraftCommand command)
@@ -339,13 +351,13 @@ namespace ATCJourneyJapan.UI
 
         private void BuildFlightStripPanel()
         {
-            flightStripPanel = CreatePanel("Flight Strip Panel", hudRoot.transform, new Vector2(0f, 1f), new Vector2(340f, 350f), AnchorPreset.TopLeft, new Vector2(24f, -164f));
+            flightStripPanel = CreatePanel("Flight Strip Panel", hudRoot.transform, new Vector2(0f, 1f), new Vector2(340f, 500f), AnchorPreset.TopLeft, new Vector2(24f, -164f));
             flightStripPanel.GetComponent<Image>().color = new Color(0.025f, 0.032f, 0.04f, 0.82f);
-            CreateText("Strip Title", flightStripPanel.transform, "STRIPS", 18, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-122f, 144f), new Vector2(76f, 28f));
-            CreateText("Arrival Header", flightStripPanel.transform, "到着  ARRIVAL", 17, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-78f, 106f), new Vector2(220f, 28f));
-            CreateText("Departure Header", flightStripPanel.transform, "出発  DEPARTURE", 17, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-78f, -56f), new Vector2(220f, 28f));
-            CreateFlightStripButton("AJJ101", new Vector2(0f, 54f));
-            CreateFlightStripButton("AJJ202", new Vector2(0f, -108f));
+            CreateText("Strip Title", flightStripPanel.transform, "STRIPS", 18, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-122f, 218f), new Vector2(76f, 28f));
+            CreateText("Arrival Header", flightStripPanel.transform, "到着  ARRIVAL", 17, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-78f, 180f), new Vector2(220f, 28f));
+            CreateText("Departure Header", flightStripPanel.transform, "出発  DEPARTURE", 17, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-78f, -34f), new Vector2(220f, 28f));
+            CreateFlightStripButton("AJJ101", new Vector2(0f, 128f));
+            CreateFlightStripButton("AJJ202", new Vector2(0f, -86f));
 
             stripCommandPopup = CreatePanel("Strip Command Popup", flightStripPanel.transform, new Vector2(0.5f, 0.5f), new Vector2(292f, 96f));
             stripCommandPopup.GetComponent<Image>().color = new Color(0.015f, 0.025f, 0.032f, 0.94f);
@@ -440,7 +452,7 @@ namespace ATCJourneyJapan.UI
 
         private Vector2 GetFlightStripPosition(bool isArrival, int index)
         {
-            var baseY = isArrival ? 54f : -108f;
+            var baseY = isArrival ? 128f : -86f;
             return new Vector2(0f, baseY - index * 82f);
         }
 
@@ -462,7 +474,7 @@ namespace ATCJourneyJapan.UI
             var canShow = hasSelectedStrip
                 && selected != null
                 && recommended.HasValue
-                && CanAcceptCommand(recommended.Value)
+                && CanAcceptCommand(selected, recommended.Value)
                 && selected.CanExecute(recommended.Value);
 
             stripCommandPopup.SetActive(canShow);
@@ -666,22 +678,22 @@ namespace ATCJourneyJapan.UI
                 TutorialStep.Info("ここはA滑走路です。\n飛行機が着陸・離陸する場所です。", TutorialHighlight.RunwayA),
                 TutorialStep.Info("安全のため、1本の滑走路には\n基本的に1機だけ入れます。", TutorialHighlight.RunwayA),
                 TutorialStep.Info("AJJ101がA滑走路に\n近づいています。", TutorialHighlight.ArrivalAircraft),
-                TutorialStep.Command("滑走路が空いています。\nAJJ101に着陸許可を出しましょう。", AircraftCommand.ClearLanding, TutorialHighlight.ClearLanding),
+                TutorialStep.Command("滑走路が空いています。\nAJJ101に着陸許可を出しましょう。", AircraftCommand.ClearLanding, TutorialHighlight.ClearLanding, "AJJ101"),
                 TutorialStep.RunwayExitReady("AJJ101が着陸中です。\n滑走路が使用中になります。", TutorialHighlight.RunwayInUse),
                 TutorialStep.Info("着陸後は、次の飛行機のために\n滑走路を空けます。", TutorialHighlight.RunwayInUse),
-                TutorialStep.Command("AJJ101をSPOT 01へ\n誘導しましょう。", AircraftCommand.TaxiToGate, TutorialHighlight.TaxiToGate),
+                TutorialStep.Command("AJJ101をSPOT 01へ\n誘導しましょう。", AircraftCommand.TaxiToGate, TutorialHighlight.TaxiToGate, "AJJ101"),
                 TutorialStep.ArrivalComplete("AJJ101がSPOT 01へ移動中です。\n到着完了まで見守ります。", TutorialHighlight.Gate1),
                 TutorialStep.Info("AJJ101がSPOT 01に到着しました。\n到着機の基本処理は完了です。", TutorialHighlight.Gate1),
                 TutorialStep.Info("出発訓練\nAJJ202を離陸させましょう。"),
                 TutorialStep.Info("まずSPOT 02から\n出発準備をします。", TutorialHighlight.Gate2),
-                TutorialStep.Command("AJJ202を選択し、\nプッシュバックします。", AircraftCommand.Pushback, TutorialHighlight.Pushback),
+                TutorialStep.Command("AJJ202を選択し、\nプッシュバックします。", AircraftCommand.Pushback, TutorialHighlight.Pushback, "AJJ202"),
                 TutorialStep.PushbackComplete("AJJ202が後退中です。\n地上走行の準備をします。", TutorialHighlight.Pushback),
-                TutorialStep.Command("滑走路手前まで\n地上走行させましょう。", AircraftCommand.TaxiToHold, TutorialHighlight.TaxiToHold),
+                TutorialStep.Command("滑走路手前まで\n地上走行させましょう。", AircraftCommand.TaxiToHold, TutorialHighlight.TaxiToHold, "AJJ202"),
                 TutorialStep.HoldingPointReady("AJJ202が誘導路を走行中です。\n滑走路手前で止めます。", TutorialHighlight.TaxiToHold),
-                TutorialStep.Command("滑走路に入る前に\n手前で待機させます。", AircraftCommand.HoldShort, TutorialHighlight.HoldShort),
+                TutorialStep.Command("滑走路に入る前に\n手前で待機させます。", AircraftCommand.HoldShort, TutorialHighlight.HoldShort, "AJJ202"),
                 TutorialStep.Info("Hold Shortは手前、\nLine Upは滑走路上で待機です。", TutorialHighlight.HoldShort),
-                TutorialStep.Command("滑走路が空いたので\n滑走路上で待機させます。", AircraftCommand.LineUp, TutorialHighlight.LineUp),
-                TutorialStep.Command("滑走路が安全なら、\n離陸許可を出しましょう。", AircraftCommand.ClearTakeoff)
+                TutorialStep.Command("滑走路が空いたので\n滑走路上で待機させます。", AircraftCommand.LineUp, TutorialHighlight.LineUp, "AJJ202"),
+                TutorialStep.Command("滑走路が安全なら、\n離陸許可を出しましょう。", AircraftCommand.ClearTakeoff, TutorialHighlight.None, "AJJ202")
             };
         }
 
@@ -1301,6 +1313,7 @@ namespace ATCJourneyJapan.UI
             public TutorialWaitMode WaitMode { get; private set; }
             public bool WaitForCommand => WaitMode == TutorialWaitMode.Command;
             public AircraftCommand ExpectedCommand { get; private set; }
+            public string ExpectedFlightNumber { get; private set; }
             public TutorialHighlight Highlight { get; private set; }
 
             public static TutorialStep Info(string message, TutorialHighlight highlight = TutorialHighlight.None)
@@ -1313,13 +1326,20 @@ namespace ATCJourneyJapan.UI
                 };
             }
 
-            public static TutorialStep Command(string message, AircraftCommand command, TutorialHighlight highlight = TutorialHighlight.None)
+            public bool AcceptsAircraft(AircraftController aircraft)
+            {
+                return string.IsNullOrEmpty(ExpectedFlightNumber)
+                    || (aircraft != null && aircraft.FlightNumber == ExpectedFlightNumber);
+            }
+
+            public static TutorialStep Command(string message, AircraftCommand command, TutorialHighlight highlight = TutorialHighlight.None, string expectedFlightNumber = "")
             {
                 return new TutorialStep
                 {
                     Message = message,
                     WaitMode = TutorialWaitMode.Command,
                     ExpectedCommand = command,
+                    ExpectedFlightNumber = expectedFlightNumber,
                     Highlight = highlight
                 };
             }

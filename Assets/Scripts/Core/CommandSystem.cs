@@ -15,12 +15,12 @@ namespace ATCJourneyJapan.Core
 
         public void Execute(AircraftCommand command)
         {
-            if (gameManager != null && (!gameManager.IsTrainingStarted || !gameManager.CanAcceptCommand(command)))
+            var selected = SelectionManager.Instance != null ? SelectionManager.Instance.SelectedAircraft : null;
+            if (gameManager != null && (!gameManager.IsTrainingStarted || !gameManager.CanAcceptCommand(selected, command)))
             {
                 return;
             }
 
-            var selected = SelectionManager.Instance != null ? SelectionManager.Instance.SelectedAircraft : null;
             if (selected == null || !selected.CanExecute(command))
             {
                 return;

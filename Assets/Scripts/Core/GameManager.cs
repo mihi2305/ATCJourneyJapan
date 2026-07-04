@@ -105,6 +105,11 @@ namespace ATCJourneyJapan.Core
             return uiManager == null || uiManager.CanAcceptCommand(command);
         }
 
+        public bool CanAcceptCommand(AircraftController controller, AircraftCommand command)
+        {
+            return uiManager == null || uiManager.CanAcceptCommand(controller, command);
+        }
+
         private string GetInstructorComment(AircraftCommand command)
         {
             switch (command)

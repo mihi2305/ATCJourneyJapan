@@ -22,6 +22,8 @@ namespace ATCJourneyJapan.Airport
         public RunwayData PrimaryRunwayData => runwayData.Count > 0 ? runwayData[0] : null;
         public Vector3 ArrivalSpawnPosition => new Vector3(-26f, 0.6f, 0f);
         public Vector3 DepartureSpawnPosition => gatePositions.Count > 1 ? gatePositions[1] : new Vector3(-10f, 0.6f, -9f);
+        public Vector3 SecondaryArrivalSpawnPosition => new Vector3(-28f, 0.6f, 3.2f);
+        public Vector3 SecondaryDepartureSpawnPosition => gatePositions.Count > 3 ? gatePositions[3] : new Vector3(-16f, 0.6f, -11.6f);
         public Vector3 PushbackReadyPosition => new Vector3(-11f, 0.6f, -6.5f);
         public Vector3 HoldShortPosition => new Vector3(-7f, 0.55f, -3f);
 
@@ -160,8 +162,12 @@ namespace ATCJourneyJapan.Airport
 
             gatePositions.Add(new Vector3(2f, 0.6f, -9f));
             gatePositions.Add(new Vector3(-11f, 0.6f, -9f));
+            gatePositions.Add(new Vector3(7f, 0.6f, -11.6f));
+            gatePositions.Add(new Vector3(-16f, 0.6f, -11.6f));
             CreateBox("Gate 1 Stand", gatePositions[0] + Vector3.down * 0.55f, new Vector3(3f, 0.12f, 2.5f), gateMaterial, root.transform);
             CreateBox("Gate 2 Stand", gatePositions[1] + Vector3.down * 0.55f, new Vector3(3f, 0.12f, 2.5f), gateMaterial, root.transform);
+            CreateBox("Gate 3 Stand", gatePositions[2] + Vector3.down * 0.55f, new Vector3(3f, 0.12f, 2.5f), gateMaterial, root.transform);
+            CreateBox("Gate 4 Stand", gatePositions[3] + Vector3.down * 0.55f, new Vector3(3f, 0.12f, 2.5f), gateMaterial, root.transform);
             CreateBox("Hold Short A", HoldShortPosition + Vector3.down * 0.52f, new Vector3(2.4f, 0.12f, 1.6f), CreateMaterial("Hold Yellow", new Color(0.85f, 0.68f, 0.18f)), root.transform);
 
             var runwayObject = new GameObject("RunwayController A");
