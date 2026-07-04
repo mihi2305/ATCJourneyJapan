@@ -13,6 +13,10 @@
 - 今回実装すること
 - 今回は実装せず後続Phaseに回すこと
 
+## 2026-07-04 Phase 3.8-2 Naha-style 3D Airport Blockout QA / 那覇空港風ブロックアウト位置調整
+
+- A滑走路を少し長く、B滑走路を短く控えめにし、海、ターミナル、管制塔、エプロン周辺の見え方を調整
+
 ## 2026-07-04 Phase 3.8-1 Naha-style 3D Airport Scene Blockout / 那覇空港風3Dブロックアウト
 
 - 海、将来B滑走路、A/B連絡誘導路、ターミナル、管制塔を簡易Primitiveで仮配置し、既存waypointと安全管理は維持

@@ -136,7 +136,7 @@ namespace ATCJourneyJapan.Airport
         private void CreateMaterials()
         {
             runwayMaterial = CreateMaterial("Runway Asphalt", new Color(0.095f, 0.1f, 0.105f));
-            futureRunwayMaterial = CreateMaterial("Future Runway Asphalt", new Color(0.22f, 0.24f, 0.25f));
+            futureRunwayMaterial = CreateMaterial("Future Runway Asphalt", new Color(0.26f, 0.28f, 0.29f));
             runwayEdgeMaterial = CreateMaterial("Runway Edge Paint", new Color(0.82f, 0.84f, 0.78f));
             runwayMarkingMaterial = CreateMaterial("Runway Marking Paint", new Color(0.92f, 0.9f, 0.82f));
             taxiwayMaterial = CreateMaterial("Taxiway Asphalt", new Color(0.18f, 0.23f, 0.26f));
@@ -145,7 +145,7 @@ namespace ATCJourneyJapan.Airport
             apronMaterial = CreateMaterial("Terminal Apron Concrete", new Color(0.22f, 0.29f, 0.28f));
             spotMarkingMaterial = CreateMaterial("Spot Marking Paint", new Color(0.86f, 0.88f, 0.76f));
             groundMaterial = CreateMaterial("Ground Green", new Color(0.18f, 0.32f, 0.22f));
-            seaMaterial = CreateMaterial("Naha Sea Blockout", new Color(0.06f, 0.28f, 0.46f));
+            seaMaterial = CreateMaterial("Naha Sea Blockout", new Color(0.04f, 0.34f, 0.55f));
             terminalMaterial = CreateMaterial("Terminal Blockout", new Color(0.58f, 0.62f, 0.61f));
             towerMaterial = CreateMaterial("Tower Blockout", new Color(0.72f, 0.76f, 0.72f));
             holdShortMaterial = CreateMaterial("Hold Yellow", new Color(0.85f, 0.68f, 0.18f));
@@ -174,7 +174,7 @@ namespace ATCJourneyJapan.Airport
             var root = new GameObject($"{airportDisplayName} Layout");
             root.transform.SetParent(transform);
 
-            CreateBox("Airport Island Ground", new Vector3(0f, -0.1f, -1.8f), new Vector3(58f, 0.1f, 30f), groundMaterial, root.transform);
+            CreateBox("Airport Island Ground", new Vector3(0f, -0.1f, -1f), new Vector3(62f, 0.1f, 32f), groundMaterial, root.transform);
             CreateNahaStyleBlockout(root.transform);
             CreateRunway(root.transform);
             CreateTaxiways(root.transform);
@@ -200,41 +200,41 @@ namespace ATCJourneyJapan.Airport
 
         private void CreateNahaStyleBlockout(Transform parent)
         {
-            CreateBox("Sea Between A and B Runways", new Vector3(3f, -0.035f, 4.1f), new Vector3(54f, 0.04f, 2.5f), seaMaterial, parent);
-            CreateBox("Sea East of Future B Runway", new Vector3(3f, -0.035f, 13.4f), new Vector3(62f, 0.04f, 8.2f), seaMaterial, parent);
+            CreateBox("Sea Between A and B Runways", new Vector3(3f, -0.035f, 4.5f), new Vector3(62f, 0.04f, 3.2f), seaMaterial, parent);
+            CreateBox("Sea East of Future B Runway", new Vector3(3f, -0.035f, 15.4f), new Vector3(68f, 0.04f, 10.2f), seaMaterial, parent);
 
-            CreateBox("Future Runway B 18R 36L", new Vector3(3f, -0.02f, 8.2f), new Vector3(30f, 0.12f, 2f), futureRunwayMaterial, parent);
-            CreateBox("Future Runway B Centerline", new Vector3(3f, 0.065f, 8.2f), new Vector3(26f, 0.035f, 0.07f), runwayEdgeMaterial, parent);
-            CreateBox("Future Runway B Edge North", new Vector3(3f, 0.06f, 9.05f), new Vector3(29f, 0.035f, 0.06f), runwayEdgeMaterial, parent);
-            CreateBox("Future Runway B Edge South", new Vector3(3f, 0.06f, 7.35f), new Vector3(29f, 0.035f, 0.06f), runwayEdgeMaterial, parent);
+            CreateBox("Future Runway B 18R 36L", new Vector3(3f, -0.02f, 9.2f), new Vector3(26.5f, 0.12f, 1.8f), futureRunwayMaterial, parent);
+            CreateBox("Future Runway B Centerline", new Vector3(3f, 0.065f, 9.2f), new Vector3(22f, 0.035f, 0.06f), runwayEdgeMaterial, parent);
+            CreateBox("Future Runway B Edge North", new Vector3(3f, 0.06f, 9.95f), new Vector3(25.4f, 0.035f, 0.055f), runwayEdgeMaterial, parent);
+            CreateBox("Future Runway B Edge South", new Vector3(3f, 0.06f, 8.45f), new Vector3(25.4f, 0.035f, 0.055f), runwayEdgeMaterial, parent);
 
-            CreateBox("A B Connector Taxiway West", new Vector3(-7f, 0.025f, 4.1f), new Vector3(1.05f, 0.13f, 8.2f), taxiwayMaterial, parent);
-            CreateBox("A B Connector Taxiway East", new Vector3(12f, 0.025f, 4.1f), new Vector3(1.05f, 0.13f, 8.2f), taxiwayMaterial, parent);
-            CreateBox("A B Connector West Centerline", new Vector3(-7f, 0.12f, 4.1f), new Vector3(0.055f, 0.035f, 7.6f), taxiwayMarkingMaterial, parent);
-            CreateBox("A B Connector East Centerline", new Vector3(12f, 0.12f, 4.1f), new Vector3(0.055f, 0.035f, 7.6f), taxiwayMarkingMaterial, parent);
+            CreateBox("A B Connector Taxiway West", new Vector3(-7f, 0.025f, 4.6f), new Vector3(1.05f, 0.13f, 9.2f), taxiwayMaterial, parent);
+            CreateBox("A B Connector Taxiway East", new Vector3(12f, 0.025f, 4.6f), new Vector3(1.05f, 0.13f, 9.2f), taxiwayMaterial, parent);
+            CreateBox("A B Connector West Centerline", new Vector3(-7f, 0.12f, 4.6f), new Vector3(0.055f, 0.035f, 8.5f), taxiwayMarkingMaterial, parent);
+            CreateBox("A B Connector East Centerline", new Vector3(12f, 0.12f, 4.6f), new Vector3(0.055f, 0.035f, 8.5f), taxiwayMarkingMaterial, parent);
         }
 
         private void CreateTerminalBlockout(Transform parent)
         {
-            CreateBox("Terminal Apron Blockout", new Vector3(-2.5f, -0.02f, -10.3f), new Vector3(33f, 0.12f, 6.2f), apronMaterial, parent);
-            CreateBox("DOM TERMINAL Blockout", new Vector3(-5.5f, 0.85f, -14.1f), new Vector3(18f, 1.7f, 2.3f), terminalMaterial, parent);
-            CreateBox("INTL TERMINAL Blockout", new Vector3(10.5f, 0.75f, -14.2f), new Vector3(10.5f, 1.5f, 2.2f), terminalMaterial, parent);
+            CreateBox("Terminal Apron Blockout", new Vector3(-2.5f, -0.02f, -10.6f), new Vector3(36f, 0.12f, 6.8f), apronMaterial, parent);
+            CreateBox("DOM TERMINAL Blockout", new Vector3(-6f, 0.85f, -14.8f), new Vector3(19f, 1.7f, 2.3f), terminalMaterial, parent);
+            CreateBox("INTL TERMINAL Blockout", new Vector3(11f, 0.75f, -14.9f), new Vector3(11.5f, 1.5f, 2.2f), terminalMaterial, parent);
 
-            CreateBox("TWR Shaft Blockout", new Vector3(17.5f, 1.4f, -12.5f), new Vector3(0.8f, 2.8f, 0.8f), towerMaterial, parent);
-            CreateBox("TWR Cab Blockout", new Vector3(17.5f, 3.05f, -12.5f), new Vector3(1.8f, 0.75f, 1.8f), towerMaterial, parent);
+            CreateBox("TWR Shaft Blockout", new Vector3(18f, 1.65f, -12.1f), new Vector3(0.85f, 3.3f, 0.85f), towerMaterial, parent);
+            CreateBox("TWR Cab Blockout", new Vector3(18f, 3.55f, -12.1f), new Vector3(2f, 0.85f, 2f), towerMaterial, parent);
         }
 
         private void CreateRunway(Transform parent)
         {
-            CreateBox("Runway A", new Vector3(3f, 0f, 0f), new Vector3(30f, 0.2f, 2.35f), runwayMaterial, parent);
-            CreateBox("Runway A Edge North", new Vector3(3f, 0.13f, 1.03f), new Vector3(29.4f, 0.04f, 0.08f), runwayEdgeMaterial, parent);
-            CreateBox("Runway A Edge South", new Vector3(3f, 0.13f, -1.03f), new Vector3(29.4f, 0.04f, 0.08f), runwayEdgeMaterial, parent);
-            CreateBox("Runway A Threshold 18L", new Vector3(-11.8f, 0.14f, 0f), new Vector3(0.28f, 0.05f, 1.72f), runwayMarkingMaterial, parent);
-            CreateBox("Runway A End Marking", new Vector3(17.8f, 0.14f, 0f), new Vector3(0.28f, 0.05f, 1.72f), runwayMarkingMaterial, parent);
+            CreateBox("Runway A", new Vector3(3f, 0f, 0f), new Vector3(32.5f, 0.2f, 2.35f), runwayMaterial, parent);
+            CreateBox("Runway A Edge North", new Vector3(3f, 0.13f, 1.03f), new Vector3(31.9f, 0.04f, 0.08f), runwayEdgeMaterial, parent);
+            CreateBox("Runway A Edge South", new Vector3(3f, 0.13f, -1.03f), new Vector3(31.9f, 0.04f, 0.08f), runwayEdgeMaterial, parent);
+            CreateBox("Runway A Threshold 18L", new Vector3(-12.8f, 0.14f, 0f), new Vector3(0.28f, 0.05f, 1.72f), runwayMarkingMaterial, parent);
+            CreateBox("Runway A End Marking", new Vector3(18.8f, 0.14f, 0f), new Vector3(0.28f, 0.05f, 1.72f), runwayMarkingMaterial, parent);
 
-            for (var index = 0; index < 8; index++)
+            for (var index = 0; index < 9; index++)
             {
-                var x = -8.5f + index * 3.3f;
+                var x = -9.4f + index * 3.1f;
                 CreateBox($"Runway A Centerline {index + 1}", new Vector3(x, 0.15f, 0f), new Vector3(1.15f, 0.045f, 0.08f), runwayMarkingMaterial, parent);
             }
         }
