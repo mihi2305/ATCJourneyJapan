@@ -27,6 +27,7 @@ namespace ATCJourneyJapan.Aircraft
         private Renderer[] aircraftRenderers;
         private Material normalMaterial;
         private Material selectedMaterial;
+        private AircraftVisualSpec visualSpec;
         private AircraftData flightData;
         private bool selected;
         private bool tutorialHighlighted;
@@ -45,7 +46,15 @@ namespace ATCJourneyJapan.Aircraft
                                   || currentState == AircraftState.LiningUp
                                   || currentState == AircraftState.TakeoffRoll;
 
-        public void Configure(AircraftData data, bool isArrival, AircraftState startingState, AirportManager airport, GameManager manager, Material normal, Material selected)
+        public void Configure(
+            AircraftData data,
+            bool isArrival,
+            AircraftState startingState,
+            AirportManager airport,
+            GameManager manager,
+            Material normal,
+            Material selected,
+            AircraftVisualSpec aircraftVisualSpec)
         {
             flightData = data;
             flightNumber = data.FlightId;
@@ -54,6 +63,7 @@ namespace ATCJourneyJapan.Aircraft
             gameManager = manager;
             normalMaterial = normal;
             selectedMaterial = selected;
+            visualSpec = aircraftVisualSpec;
 
             aircraftRenderers = GetComponentsInChildren<Renderer>();
             SetState(startingState);
@@ -574,7 +584,8 @@ namespace ATCJourneyJapan.Aircraft
         {
             var labelObject = new GameObject("Flight Label");
             labelObject.transform.SetParent(transform);
-            labelObject.transform.localPosition = new Vector3(0f, 2.05f, 0.35f);
+            var labelHeight = visualSpec != null ? visualSpec.LabelHeight : 1.35f;
+            labelObject.transform.localPosition = new Vector3(0f, labelHeight, 0.35f);
             label = labelObject.AddComponent<TextMesh>();
             label.anchor = TextAnchor.MiddleCenter;
             label.alignment = TextAlignment.Center;

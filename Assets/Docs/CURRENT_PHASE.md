@@ -2,11 +2,27 @@
 
 ## Current Phase
 
-Phase 3.9-2B passenger and base area layout
+Phase 3.9-3A Aircraft scale system
 
 ## Previous Phase
 
-Phase 3.9-2A Naha land-water structure revision
+Phase 3.9-2B passenger and base area layout
+
+## Phase 3.9-3Aで行うこと
+
+- 今後B737/B787/B777以外の機種も追加できるように、航空機の実機寸法、ゲーム内見た目サイズ、クリック判定、ラベル高さを機種別に管理する
+- 完全実寸ではなく、A滑走路3000m x 45m、B滑走路2700m x 60mを意識した準リアル縮尺を目指す
+- 見た目サイズは小さくしつつ、クリック判定は見た目より少し大きめに残す
+- 既存のAJJ101 / AJJ103 / AJJ202 / AJJ204は、B737またはA320相当の中型機サイズとして扱う
+- B737-800、B787-8、B777-300ERのサイズ定義を用意し、将来の機種追加に備える
+- 今回は航空機の逆向き挙動、Taxi waypoint再設計、B787/B777新規便追加、ボーディングブリッジ実装は行わない
+
+## 今後のロードマップ候補
+
+1. Aircraft scale system
+2. Camera view redesign
+3. Terminal / boarding bridge detail
+4. Taxi route alignment
 
 ## Phase 3.9-2Bで行うこと
 

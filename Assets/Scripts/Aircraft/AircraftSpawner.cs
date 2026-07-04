@@ -45,31 +45,35 @@ namespace ATCJourneyJapan.Aircraft
 
         private AircraftController SpawnAircraft(AircraftData flightData, bool arrival, AircraftState state, Vector3 position, Material material)
         {
+            var visualSpec = AircraftVisualSpec.Resolve(flightData.AircraftType);
             var aircraftObject = new GameObject($"{flightData.FlightId} Aircraft");
             aircraftObject.name = $"{flightData.FlightId} Aircraft";
             aircraftObject.transform.position = position;
 
             var collider = aircraftObject.AddComponent<BoxCollider>();
             collider.center = new Vector3(0f, 0f, 0.05f);
-            collider.size = new Vector3(2.25f, 0.75f, 2.25f);
-            CreateAircraftVisual(aircraftObject.transform, material);
+            collider.size = new Vector3(visualSpec.ClickBoxSize, 0.75f, visualSpec.ClickBoxSize);
+            CreateAircraftVisual(aircraftObject.transform, material, visualSpec);
 
             var controller = aircraftObject.AddComponent<AircraftController>();
-            controller.Configure(flightData, arrival, state, airportManager, gameManager, material, selectedMaterial);
+            controller.Configure(flightData, arrival, state, airportManager, gameManager, material, selectedMaterial, visualSpec);
             gameManager.RegisterAircraft(controller);
             return controller;
         }
 
-        private void CreateAircraftVisual(Transform parent, Material material)
+        private void CreateAircraftVisual(Transform parent, Material material, AircraftVisualSpec visualSpec)
         {
             var visualRoot = new GameObject("Simple 3D Aircraft Visual");
             visualRoot.transform.SetParent(parent, false);
 
-            CreateVisualPart("Fuselage", visualRoot.transform, PrimitiveType.Cube, new Vector3(0f, 0f, 0.05f), new Vector3(0.42f, 0.34f, 1.75f), material);
-            CreateVisualPart("Nose", visualRoot.transform, PrimitiveType.Sphere, new Vector3(0f, 0f, 1.02f), new Vector3(0.46f, 0.34f, 0.46f), material);
-            CreateVisualPart("Main Wing", visualRoot.transform, PrimitiveType.Cube, new Vector3(0f, -0.01f, 0.05f), new Vector3(2.15f, 0.08f, 0.32f), material);
-            CreateVisualPart("Tail Wing", visualRoot.transform, PrimitiveType.Cube, new Vector3(0f, 0.02f, -0.72f), new Vector3(0.95f, 0.07f, 0.24f), material);
-            CreateVisualPart("Vertical Tail", visualRoot.transform, PrimitiveType.Cube, new Vector3(0f, 0.34f, -0.77f), new Vector3(0.16f, 0.58f, 0.26f), material);
+            var length = visualSpec.VisualLength;
+            var wingspan = visualSpec.VisualWingspan;
+            var height = visualSpec.VisualHeight;
+            CreateVisualPart("Fuselage", visualRoot.transform, PrimitiveType.Cube, new Vector3(0f, 0f, 0.03f), new Vector3(wingspan * 0.2f, height, length * 0.82f), material);
+            CreateVisualPart("Nose", visualRoot.transform, PrimitiveType.Sphere, new Vector3(0f, 0f, length * 0.48f), new Vector3(wingspan * 0.22f, height, wingspan * 0.22f), material);
+            CreateVisualPart("Main Wing", visualRoot.transform, PrimitiveType.Cube, new Vector3(0f, -0.01f, length * 0.03f), new Vector3(wingspan, 0.07f, length * 0.18f), material);
+            CreateVisualPart("Tail Wing", visualRoot.transform, PrimitiveType.Cube, new Vector3(0f, 0.02f, -length * 0.37f), new Vector3(wingspan * 0.45f, 0.06f, length * 0.14f), material);
+            CreateVisualPart("Vertical Tail", visualRoot.transform, PrimitiveType.Cube, new Vector3(0f, height * 0.72f, -length * 0.4f), new Vector3(wingspan * 0.08f, height * 1.15f, length * 0.15f), material);
         }
 
         private void CreateVisualPart(string partName, Transform parent, PrimitiveType primitive, Vector3 localPosition, Vector3 localScale, Material material)
