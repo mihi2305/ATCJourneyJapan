@@ -21,6 +21,11 @@ namespace ATCJourneyJapan.Airport
         private Material gateMaterial;
         private Material apronMaterial;
         private Material secondaryApronMaterial;
+        private Material militaryApronMaterial;
+        private Material passengerApronMaterial;
+        private Material hangarMaterial;
+        private Material supportBuildingMaterial;
+        private Material areaDividerMaterial;
         private Material spotMarkingMaterial;
         private Material groundMaterial;
         private Material seaMaterial;
@@ -36,8 +41,8 @@ namespace ATCJourneyJapan.Airport
         public Vector3 DepartureSpawnPosition => gatePositions.Count > 1 ? gatePositions[1] : new Vector3(-10f, 0.6f, -9f);
         public Vector3 SecondaryArrivalSpawnPosition => new Vector3(-28f, 0.6f, 3.2f);
         public Vector3 SecondaryDepartureSpawnPosition => gatePositions.Count > 3 ? gatePositions[3] : new Vector3(-16f, 0.6f, -11.6f);
-        public Vector3 PushbackReadyPosition => new Vector3(-11f, 0.6f, -6.5f);
-        public Vector3 HoldShortPosition => new Vector3(-7f, 0.55f, -3f);
+        public Vector3 PushbackReadyPosition => new Vector3(13f, 0.6f, -6.5f);
+        public Vector3 HoldShortPosition => new Vector3(12f, 0.55f, -3f);
 
         public void Initialize()
         {
@@ -91,8 +96,8 @@ namespace ATCJourneyJapan.Airport
         {
             return new[]
             {
-                new Vector3(7f, 0.6f, -5f),
-                new Vector3(2f, 0.6f, -5f),
+                new Vector3(12f, 0.6f, -5f),
+                new Vector3(10.5f, 0.6f, -6.8f),
                 gatePositions[0]
             };
         }
@@ -101,7 +106,7 @@ namespace ATCJourneyJapan.Airport
         {
             return new[]
             {
-                new Vector3(-11f, 0.6f, -8f),
+                new Vector3(13f, 0.6f, -8f),
                 PushbackReadyPosition
             };
         }
@@ -110,8 +115,8 @@ namespace ATCJourneyJapan.Airport
         {
             return new[]
             {
-                new Vector3(-11f, 0.6f, -5f),
-                new Vector3(-7f, 0.6f, -5f),
+                new Vector3(13f, 0.6f, -5f),
+                new Vector3(12f, 0.6f, -5f),
                 HoldShortPosition
             };
         }
@@ -120,8 +125,8 @@ namespace ATCJourneyJapan.Airport
         {
             return new[]
             {
-                new Vector3(-7f, 0.6f, 0f),
-                new Vector3(-3f, 0.6f, 0f)
+                new Vector3(12f, 0.6f, 0f),
+                new Vector3(14.5f, 0.6f, 0f)
             };
         }
 
@@ -129,8 +134,8 @@ namespace ATCJourneyJapan.Airport
         {
             return new[]
             {
-                new Vector3(5f, 0.6f, 0f),
-                new Vector3(15f, 0.6f, 0f),
+                new Vector3(17f, 0.6f, 0f),
+                new Vector3(22f, 0.6f, 0f),
                 new Vector3(26f, 2.4f, 0f)
             };
         }
@@ -146,6 +151,11 @@ namespace ATCJourneyJapan.Airport
             gateMaterial = CreateMaterial("Spot Apron Concrete", new Color(0.22f, 0.44f, 0.42f));
             apronMaterial = CreateMaterial("Terminal Apron Concrete", new Color(0.29f, 0.37f, 0.36f));
             secondaryApronMaterial = CreateMaterial("Secondary Apron Concrete", new Color(0.25f, 0.34f, 0.34f));
+            militaryApronMaterial = CreateMaterial("Base Apron Concrete", new Color(0.26f, 0.29f, 0.27f));
+            passengerApronMaterial = CreateMaterial("Passenger Apron Concrete", new Color(0.35f, 0.39f, 0.38f));
+            hangarMaterial = CreateMaterial("Hangar Blockout", new Color(0.38f, 0.42f, 0.4f));
+            supportBuildingMaterial = CreateMaterial("Support Building Blockout", new Color(0.48f, 0.52f, 0.47f));
+            areaDividerMaterial = CreateMaterial("Area Divider Paint", new Color(0.76f, 0.79f, 0.68f));
             spotMarkingMaterial = CreateMaterial("Spot Marking Paint", new Color(0.95f, 0.96f, 0.84f));
             groundMaterial = CreateMaterial("Ground Green", new Color(0.24f, 0.42f, 0.29f));
             seaMaterial = CreateMaterial("Naha Sea Blockout", new Color(0.03f, 0.48f, 0.72f));
@@ -183,10 +193,10 @@ namespace ATCJourneyJapan.Airport
             CreateRunway(root.transform);
             CreateTaxiways(root.transform);
 
-            gatePositions.Add(new Vector3(7.5f, 0.6f, -9.2f));
-            gatePositions.Add(new Vector3(-5.5f, 0.6f, -9.2f));
-            gatePositions.Add(new Vector3(13.5f, 0.6f, -11.8f));
-            gatePositions.Add(new Vector3(-14.5f, 0.6f, -11.8f));
+            gatePositions.Add(new Vector3(9.5f, 0.6f, -9.25f));
+            gatePositions.Add(new Vector3(12.8f, 0.6f, -9.25f));
+            gatePositions.Add(new Vector3(16.1f, 0.6f, -9.25f));
+            gatePositions.Add(new Vector3(18.2f, 0.6f, -11.75f));
             CreateSpotStand("Gate 1 Stand", "SPOT 01", gatePositions[0], root.transform);
             CreateSpotStand("Gate 2 Stand", "SPOT 02", gatePositions[1], root.transform);
             CreateSpotStand("Gate 3 Stand", "SPOT 03", gatePositions[2], root.transform);
@@ -252,11 +262,23 @@ namespace ATCJourneyJapan.Airport
 
         private void CreateTerminalBlockout(Transform parent)
         {
-            CreateBox("WEST APRON Blockout", new Vector3(-13f, -0.02f, -9.8f), new Vector3(12f, 0.12f, 5.8f), secondaryApronMaterial, parent);
-            CreateBox("NR APRON Blockout", new Vector3(4f, -0.015f, -9.6f), new Vector3(19f, 0.12f, 6.4f), apronMaterial, parent);
-            CreateBox("INTL APRON Blockout", new Vector3(15f, -0.01f, -10.9f), new Vector3(10f, 0.12f, 6.2f), secondaryApronMaterial, parent);
-            CreateBox("DOM TERMINAL Blockout", new Vector3(4f, 0.85f, -15.2f), new Vector3(18f, 1.7f, 2.3f), terminalMaterial, parent);
-            CreateBox("INTL TERMINAL Blockout", new Vector3(17f, 0.75f, -15.3f), new Vector3(9f, 1.5f, 2.2f), terminalMaterial, parent);
+            CreateBox("Fighter Alert Base Apron", new Vector3(-13.5f, -0.02f, -9.7f), new Vector3(12.5f, 0.12f, 5.2f), militaryApronMaterial, parent);
+            CreateBox("JASDF Support Transport Apron", new Vector3(-1.6f, -0.018f, -10f), new Vector3(11.2f, 0.12f, 5.9f), secondaryApronMaterial, parent);
+            CreateBox("Passenger Apron Blockout", new Vector3(13.8f, -0.01f, -10.4f), new Vector3(18.6f, 0.12f, 6.8f), passengerApronMaterial, parent);
+            CreateBox("Base Passenger Area Divider", new Vector3(4.8f, 0.04f, -10.4f), new Vector3(0.16f, 0.08f, 8.2f), areaDividerMaterial, parent);
+
+            CreateBox("Fighter Shelter 01", new Vector3(-17.5f, 0.55f, -13.3f), new Vector3(2.2f, 1.1f, 2f), hangarMaterial, parent);
+            CreateBox("Fighter Shelter 02", new Vector3(-14.6f, 0.55f, -13.3f), new Vector3(2.2f, 1.1f, 2f), hangarMaterial, parent);
+            CreateBox("Fighter Shelter 03", new Vector3(-11.7f, 0.55f, -13.3f), new Vector3(2.2f, 1.1f, 2f), hangarMaterial, parent);
+            CreateBox("Alert Support Building", new Vector3(-17.8f, 0.45f, -6.7f), new Vector3(2.6f, 0.9f, 1.4f), supportBuildingMaterial, parent);
+
+            CreateBox("JASDF Transport Hangar West", new Vector3(-3.6f, 0.9f, -14.4f), new Vector3(4.4f, 1.8f, 2.5f), hangarMaterial, parent);
+            CreateBox("JASDF Transport Hangar East", new Vector3(1.6f, 0.85f, -14.5f), new Vector3(4f, 1.7f, 2.4f), hangarMaterial, parent);
+            CreateBox("Base Operations Blocks", new Vector3(-0.9f, 0.45f, -6.7f), new Vector3(5.8f, 0.9f, 1.4f), supportBuildingMaterial, parent);
+
+            CreateBox("DOM TERMINAL Blockout", new Vector3(11f, 0.85f, -15.2f), new Vector3(12.5f, 1.7f, 2.3f), terminalMaterial, parent);
+            CreateBox("INTL TERMINAL Blockout", new Vector3(19.3f, 0.75f, -15.3f), new Vector3(6.8f, 1.5f, 2.2f), terminalMaterial, parent);
+            CreateBox("Passenger Pier Blockout", new Vector3(15.6f, 0.5f, -12.9f), new Vector3(9.5f, 1f, 1.1f), terminalMaterial, parent);
 
             CreateBox("TWR Shaft Blockout", new Vector3(8.4f, 1.65f, 4.95f), new Vector3(0.85f, 3.3f, 0.85f), towerMaterial, parent);
             CreateBox("TWR Cab Blockout", new Vector3(8.4f, 3.55f, 4.95f), new Vector3(2f, 0.85f, 2f), towerMaterial, parent);

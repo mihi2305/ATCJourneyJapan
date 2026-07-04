@@ -2,11 +2,21 @@
 
 ## Current Phase
 
-Phase 3.9-2A Naha land-water structure revision
+Phase 3.9-2B passenger and base area layout
 
 ## Previous Phase
 
-Phase 3.9-1 Naha Layout Alignment
+Phase 3.9-2A Naha land-water structure revision
+
+## Phase 3.9-2Bで行うこと
+
+- A滑走路下側の本体空港島を、左側の基地エリアと右側の旅客エリアに分けて見えるようにする
+- A滑走路の長手方向を0.00〜1.00の見た目比率として扱い、0.00〜0.25を戦闘機・即応系エリア、0.25〜0.55をJASDF支援・輸送機エリア、0.55〜1.00を旅客エリアとして整理する
+- 左端側に小さめ格納庫群と軍用エプロン風ブロックを置き、精密再現ではなく基地風の抽象表現にする
+- 左〜中央寄りに大きめ格納庫、広いエプロン、基地施設風ブロックを置き、支援・輸送機エリアとして見えるようにする
+- 右側にDOM TERMINAL / INTL TERMINAL、旅客エプロン、SPOT 01〜04をまとめる
+- A/B滑走路間の中央くさび形陸地と管制塔は維持する
+- 実在軍事施設の精密再現、全Taxiway再現、航空機ルートの本格再設計、B滑走路運用は後続Phaseで扱う
 
 ## Phase 3.9-2Aで行うこと
 
