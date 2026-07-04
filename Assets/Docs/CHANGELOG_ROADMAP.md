@@ -13,6 +13,10 @@
 - 今回実装すること
 - 今回は実装せず後続Phaseに回すこと
 
+## 2026-07-04 Phase 3.8-1 Naha-style 3D Airport Scene Blockout / 那覇空港風3Dブロックアウト
+
+- 海、将来B滑走路、A/B連絡誘導路、ターミナル、管制塔を簡易Primitiveで仮配置し、既存waypointと安全管理は維持
+
 ## 2026-07-04 Phase 3.7-2 Camera Preset System / カメラ視点プリセット設計
 
 - カメラ設定をCameraPresetとして整理し、VキーでTop View、Oblique View、Wide Viewを順番に切り替えられるようにした

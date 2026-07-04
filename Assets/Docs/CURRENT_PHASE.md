@@ -2,11 +2,21 @@
 
 ## Current Phase
 
-Phase 3.7-2 Camera Preset System / カメラ視点プリセット設計
+Phase 3.8-1 Naha-style 3D Airport Scene Blockout / 那覇空港風3Dブロックアウト
 
 ## Previous Phase
 
-Phase 3.7-1 Camera / View Direction Test / カメラ・視点テスト
+Phase 3.7-2 Camera Preset System / カメラ視点プリセット設計
+
+## Phase 3.8-1で行うこと
+
+- 那覇空港を完全再現せず、ゲーム用に簡略化した3D空港ブロックアウトを作る
+- A滑走路をRWY 18L / 36Rの運用滑走路として維持する
+- B滑走路をRWY 18R / 36Lの将来解放予定滑走路として薄く仮表示する
+- A/B滑走路間とB滑走路外側に海を配置し、那覇空港らしい空間の骨格を作る
+- ターミナル、エプロン、管制塔をUnity標準Primitiveの箱で仮配置する
+- 既存waypoint、航空機移動、滑走路占有、安全管理、ミニマップ、CameraPresetは維持する
+- 正確な誘導路名、全スポット、実寸再現、B滑走路運用、外部アセット追加は今回行わない
 
 ## Phase 3.7-2で行うこと
 
@@ -181,8 +191,8 @@ Phase 3.6は、Simple 3D Airport View Prototype / 簡易3D空港ビュー試作�
 
 ## Current Phaseの目的
 
-Phase 3.7-2では、今後の視点追加に備えて、Top View / Oblique View / Wide ViewをCameraPresetとして管理します。
-本格的な管制塔視点ではなく、まずはVキーで複数の固定視点を安全に切り替えられる最小構造を作ります。
+Phase 3.8-1では、現在の空港パーツを壊さずに、海、将来B滑走路、ターミナル、管制塔を仮配置して那覇空港らしい3D空間の骨格を作ります。
+本格的な那覇空港再現ではなく、既存ロジックを維持したまま、ゲーム用に簡略化したブロックアウトとして扱います。
 
 ## Phase 2.5で完了したこと
 
@@ -281,4 +291,5 @@ Phase 3.6-1では、まず航空機Objectだけを簡易3D化し、親Objectに�
 Phase 3.6-2では、滑走路、誘導路、SPOTの見た目を簡易3Dパーツとして整理し、既存waypointと安全管理ロジックは維持しました。
 Phase 3.7-1では、VキーでTop View / Oblique Viewを切り替え、既存UIを維持したまま3D感を確認できるようにしました。
 Phase 3.7-2では、カメラ設定をCameraPresetとして整理し、Top / Oblique / Wideを順番に切り替えられる土台を作りました。
+Phase 3.8-1では、海、将来B滑走路、A/B連絡誘導路、ターミナル、管制塔を仮配置し、那覇空港風の空間ブロックアウトを追加しました。
 次は、3D表示QA、空港パーツのPrefab化、Tower Viewなどの追加視点検討へ進みます。

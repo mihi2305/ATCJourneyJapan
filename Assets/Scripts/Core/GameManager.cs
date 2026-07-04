@@ -42,7 +42,7 @@ namespace ATCJourneyJapan.Core
             }
         }
 
-        private static readonly Vector3 AirportViewCenter = new Vector3(1f, 0.2f, -4f);
+        private static readonly Vector3 AirportViewCenter = new Vector3(1f, 0.2f, -1.5f);
 
         private readonly List<AircraftController> aircraft = new List<AircraftController>();
         private readonly HashSet<AircraftController> handledAircraft = new HashSet<AircraftController>();
@@ -278,7 +278,7 @@ namespace ATCJourneyJapan.Core
                 new CameraPreset(
                     "Top View",
                     AirportViewCenter,
-                    new Vector3(-1f, 23.8f, -14f),
+                    new Vector3(-1f, 23.8f, -16.5f),
                     Quaternion.Euler(58f, 0f, 0f),
                     false,
                     true,

@@ -92,3 +92,11 @@ Phase 3.5では、本格的な3D空港化の前に、現在の2D風俯瞰プロ�
 - VキーではTop View、Oblique View、Wide Viewを順番に切り替える
 - Top Viewは従来の俯瞰確認、Oblique Viewは通常プレイ寄りの3D感確認、Wide Viewは空港全体の位置関係確認に使う
 - Tower View、Runway View、Follow Aircraft Viewは後続PhaseでCameraPresetを追加する形で検討する
+
+## 12. Phase 3.8-1で実施した那覇空港風3Dブロックアウト
+
+- A滑走路は既存のRWY 18L / 36R運用滑走路として維持し、waypointと安全管理ロジックは変更しない
+- B滑走路はRWY 18R / 36Lの将来解放予定として、海側に薄い色の仮滑走路を表示する
+- A/B滑走路間とB滑走路外側に海を配置し、那覇空港らしい水辺の空間骨格を作る
+- ターミナル、エプロン、管制塔はUnity標準Primitiveの簡易ブロックとして仮配置する
+- 正確な地形、全誘導路名、全スポット、実寸スケール、B滑走路運用は後続Phaseで扱う
