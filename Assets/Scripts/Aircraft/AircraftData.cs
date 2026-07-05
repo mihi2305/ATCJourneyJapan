@@ -69,6 +69,24 @@ namespace ATCJourneyJapan.Aircraft
         public string RunwayBilingualDisplay => $"{AssignedRunwayDisplayName}（RWY {ActiveRunwayDesignator}）";
         public string RunwayShortDisplay => $"RWY {ActiveRunwayDesignator}";
 
+        public void AssignRunwayDirection(string runwayId, string runwayDisplayName, string activeRunwayDesignator)
+        {
+            if (!string.IsNullOrEmpty(runwayId))
+            {
+                AssignedRunwayId = runwayId;
+            }
+
+            if (!string.IsNullOrEmpty(runwayDisplayName))
+            {
+                AssignedRunwayDisplayName = runwayDisplayName;
+            }
+
+            if (!string.IsNullOrEmpty(activeRunwayDesignator))
+            {
+                ActiveRunwayDesignator = activeRunwayDesignator;
+            }
+        }
+
         public void UpdateRuntimeState(
             string currentState,
             string controllerPosition,

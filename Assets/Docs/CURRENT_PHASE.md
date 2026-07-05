@@ -2,11 +2,19 @@
 
 ## Current Phase
 
-Phase 3.9-5D Runway and taxiway geometry source of truth
+Phase 3.9-5E Runway clearance direction binding
 
 ## Previous Phase
 
-Phase 3.9-5C Departure ground route stabilization
+Phase 3.9-5D Runway and taxiway geometry source of truth
+
+## Phase 3.9-5Eで行うこと
+
+- Clear to Land / Taxi to Hold / Hold Short / Line Up / Cleared for Takeoffの実行時に、現在のPrimary Runway方向を航空機の `ActiveRunwayDesignator` へ明示的にバインドする
+- AJJ202 / AJJ101は `AircraftData.ActiveRunwayDesignator` を通じて、Line Up / Takeoff / Landing Rollout / Vacate routeを `RunwayGeometry` から取得する
+- 現在のA滑走路訓練では `RWY 18L` を既定方向として扱い、`RWY 36R` へ切り替えられる構造を維持する
+- 管制ログは `A滑走路` 固定表記ではなく、航空機が保持する `RWY 18L` などの滑走路方向を表示する
+- 今回は滑走路選択UIの大規模再設計、B滑走路運用、Smooth Turn本格実装、速度・Pitch調整は行わない
 
 ## Phase 3.9-5Dで行うこと
 

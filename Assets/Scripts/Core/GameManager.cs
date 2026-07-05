@@ -144,6 +144,19 @@ namespace ATCJourneyJapan.Core
             uiManager.NotifyCommandExecuted(command);
         }
 
+        public void BindRunwayDirectionForCommand(AircraftController controller, AircraftCommand command, string operationDirection = "")
+        {
+            if (controller == null || airportManager == null || !RequiresRunwayDirectionBinding(command))
+            {
+                return;
+            }
+
+            var resolvedDirection = !string.IsNullOrEmpty(operationDirection)
+                ? operationDirection
+                : airportManager.CurrentPrimaryRunwayDesignator;
+            controller.BindRunwayDirection(airportManager.PrimaryRunwayData, resolvedDirection);
+        }
+
         public bool CanAcceptCommand(AircraftCommand command)
         {
             return uiManager == null || uiManager.CanAcceptCommand(command);
@@ -253,6 +266,15 @@ namespace ATCJourneyJapan.Core
         private bool RequiresRunwaySafetyCheck(AircraftCommand command)
         {
             return command == AircraftCommand.ClearLanding
+                || command == AircraftCommand.LineUp
+                || command == AircraftCommand.ClearTakeoff;
+        }
+
+        private bool RequiresRunwayDirectionBinding(AircraftCommand command)
+        {
+            return command == AircraftCommand.ClearLanding
+                || command == AircraftCommand.TaxiToHold
+                || command == AircraftCommand.HoldShort
                 || command == AircraftCommand.LineUp
                 || command == AircraftCommand.ClearTakeoff;
         }

@@ -15,6 +15,11 @@ namespace ATCJourneyJapan.Core
 
         public void Execute(AircraftCommand command)
         {
+            Execute(command, string.Empty);
+        }
+
+        public void Execute(AircraftCommand command, string operationDirection)
+        {
             var selected = SelectionManager.Instance != null ? SelectionManager.Instance.SelectedAircraft : null;
             if (gameManager != null && !gameManager.IsTrainingStarted)
             {
@@ -37,6 +42,7 @@ namespace ATCJourneyJapan.Core
                 return;
             }
 
+            gameManager?.BindRunwayDirectionForCommand(selected, command, operationDirection);
             selected.Execute(command);
             gameManager?.NotifyCommandExecuted(selected, command);
         }

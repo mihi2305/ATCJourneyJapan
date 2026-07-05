@@ -180,6 +180,9 @@ Pushback中は機首をターミナル側へ保持し、Line Up完了後にRWY 1
 
 Phase 3.9-5Dでは、RWY 18L/36Rを `RunwayGeometry`、主要誘導路を `TaxiwayRouteDefinition` として定義し、Line Up / Takeoff / Landing Rollout / Arrival exit routeが滑走路IDと使用方向から参照できる土台にした。
 
+Phase 3.9-5Eでは、管制コマンド実行時に現在のPrimary Runway方向を `AircraftData.ActiveRunwayDesignator` へ明示的にバインドする。
+Line Up / Cleared for Takeoff / Clear to Landは、バインド済みの方向をもとに `RunwayGeometry` からheadingとrouteを取得する。
+
 次PhaseのSmooth Turn方針:
 
 - 現在の `headingDegrees` を即時反映値から現在headingとして扱い、別に `targetHeadingDegrees` を持つ。

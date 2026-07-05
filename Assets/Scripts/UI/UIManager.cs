@@ -357,9 +357,11 @@ namespace ATCJourneyJapan.UI
                 return phraseText;
             }
 
+            var runwayLabel = aircraft.FlightData != null ? aircraft.FlightData.RunwayShortDisplay : "A滑走路";
             return phraseText
                 .Replace("AJJ101", aircraft.FlightNumber)
-                .Replace("AJJ202", aircraft.FlightNumber);
+                .Replace("AJJ202", aircraft.FlightNumber)
+                .Replace("A滑走路", runwayLabel);
         }
 
         private void UpdateCommandLogPanel()

@@ -183,6 +183,18 @@ namespace ATCJourneyJapan.Aircraft
             }
         }
 
+        public void BindRunwayDirection(RunwayData runway, string operationDirection)
+        {
+            if (flightData == null || runway == null)
+            {
+                return;
+            }
+
+            var resolvedDirection = !string.IsNullOrEmpty(operationDirection) ? operationDirection : runway.CurrentActiveDesignator;
+            flightData.AssignRunwayDirection(runway.RunwayId, runway.SimpleNameJa, resolvedDirection);
+            SyncFlightData();
+        }
+
         private void ClearLanding()
         {
             SetState(AircraftState.FinalApproach);

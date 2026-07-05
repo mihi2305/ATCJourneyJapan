@@ -45,6 +45,7 @@ namespace ATCJourneyJapan.Airport
         public IReadOnlyList<AirportSpotDefinition> SpotDefinitions => spotDefinitions;
         public RunwayData PrimaryRunwayData => runwayData.Count > 0 ? runwayData[0] : null;
         public RunwayGeometry PrimaryRunwayGeometry => runwayGeometries.Count > 0 ? runwayGeometries[0] : null;
+        public string CurrentPrimaryRunwayDesignator => GetPrimaryRunwayDirection();
         public Vector3 ArrivalSpawnPosition => new Vector3(-26f, 0.6f, 0f);
         public Vector3 DepartureSpawnPosition => gatePositions.Count > 1 ? gatePositions[1] : new Vector3(-10f, 0.6f, -9f);
         public Vector3 SecondaryArrivalSpawnPosition => new Vector3(-28f, 0.6f, 3.2f);
@@ -132,6 +133,17 @@ namespace ATCJourneyJapan.Airport
         public Vector3 GetPrimaryRunwayLineupPoint(string operationDirection)
         {
             return PrimaryRunwayGeometry != null ? PrimaryRunwayGeometry.GetLineupPoint(operationDirection) : new Vector3(14.5f, 0.6f, 0f);
+        }
+
+        public IEnumerable<string> GetPrimaryRunwayDirectionOptions()
+        {
+            if (PrimaryRunwayData == null)
+            {
+                yield break;
+            }
+
+            yield return PrimaryRunwayData.DesignatorA;
+            yield return PrimaryRunwayData.DesignatorB;
         }
 
         private string GetPrimaryRunwayDirection()

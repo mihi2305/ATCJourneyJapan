@@ -13,6 +13,10 @@
 - 今回実装すること
 - 今回は実装せず後続Phaseに回すこと
 
+## 2026-07-05 Phase 3.9-5E Runway clearance direction binding
+
+- Clear to Land / Line Up / Cleared for Takeoffなどの実行時に、現在のPrimary Runway方向を航空機の `ActiveRunwayDesignator` へ明示バインドするよう更新
+
 ## 2026-07-05 Phase 3.9-5D Runway and taxiway geometry source of truth
 
 - RWY 18L/36Rを `RunwayGeometry`、主要誘導路を `TaxiwayRouteDefinition` として定義し、離着陸routeが滑走路ID・使用方向から参照できる土台を追加
