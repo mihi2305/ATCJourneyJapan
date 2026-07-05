@@ -2,11 +2,19 @@
 
 ## Current Phase
 
-Phase 3.9-5E Runway clearance direction binding
+Phase 3.9-5F Runway-specific command options
 
 ## Previous Phase
 
-Phase 3.9-5D Runway and taxiway geometry source of truth
+Phase 3.9-5E Runway clearance direction binding
+
+## Phase 3.9-5Fで行うこと
+
+- Clear to Land / Line Up and Wait / Cleared for Takeoffのストリップ横コマンドを、RWY 18L / RWY 36R付きの選択肢として表示する
+- 選択した滑走路方向を `CommandSystem.Execute(command, runwayDesignator)` 経由で `GameManager` / `AircraftData.ActiveRunwayDesignator` へ渡す
+- 現在はA滑走路のみ運用のため、選択肢はRWY 18L / RWY 36Rに限定し、RWY 18R / 36Lは表示しない
+- 管制ログと右下詳細は、航空機が保持する `ActiveRunwayDesignator` を使ってRWY方向を確認できる状態を維持する
+- 今回はB滑走路運用、Taxi route全面再設計、Smooth Turn本格実装、速度・Pitch調整は行わない
 
 ## Phase 3.9-5Eで行うこと
 

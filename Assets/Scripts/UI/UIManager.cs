@@ -41,6 +41,8 @@ namespace ATCJourneyJapan.UI
         private readonly Dictionary<string, Outline> minimapAircraftOutlines = new Dictionary<string, Outline>();
         private readonly Dictionary<string, Text> minimapAircraftLabels = new Dictionary<string, Text>();
         private readonly List<string> commandLogEntries = new List<string>();
+        private readonly List<Button> stripCommandOptionButtons = new List<Button>();
+        private readonly List<Text> stripCommandOptionTexts = new List<Text>();
         private GameManager gameManager;
         private ScoreManager scoreManager;
         private CommandSystem commandSystem;
@@ -401,9 +403,8 @@ namespace ATCJourneyJapan.UI
 
             stripCommandPopup = CreatePanel("Strip Command Popup", flightStripPanel.transform, new Vector2(0.5f, 0.5f), new Vector2(292f, 96f));
             stripCommandPopup.GetComponent<Image>().color = new Color(0.015f, 0.025f, 0.032f, 0.94f);
-            stripCommandButton = CreateButton("Strip Command", stripCommandPopup.transform, string.Empty, Vector2.zero, new Vector2(260f, 72f), 16);
-            stripCommandButtonText = stripCommandButton.GetComponentInChildren<Text>();
-            stripCommandButton.onClick.AddListener(ExecuteStripCommand);
+            CreateStripCommandOptionButton(0);
+            CreateStripCommandOptionButton(1);
             stripCommandPopup.SetActive(false);
         }
 
@@ -717,7 +718,7 @@ namespace ATCJourneyJapan.UI
 
         private void UpdateStripCommandButton(AircraftController selected, AircraftCommand? recommended, Vector2 selectedStripPosition, bool hasSelectedStrip)
         {
-            if (stripCommandPopup == null || stripCommandButton == null)
+            if (stripCommandPopup == null || stripCommandOptionButtons.Count == 0)
             {
                 return;
             }
@@ -732,19 +733,80 @@ namespace ATCJourneyJapan.UI
             stripCommandPopup.SetActive(canShow);
             if (!canShow)
             {
+                SetStripCommandOptionButtonsActive(0);
                 return;
             }
 
+            var runwayOptions = GetCommandRunwayOptions(recommended.Value);
+            var optionCount = runwayOptions.Count > 0 ? runwayOptions.Count : 1;
             var popupTransform = stripCommandPopup.GetComponent<RectTransform>();
-            popupTransform.sizeDelta = GetStripCommandPopupSize(1);
+            popupTransform.sizeDelta = GetStripCommandPopupSize(optionCount);
             popupTransform.anchoredPosition = new Vector2(selectedStripPosition.x + 306f, selectedStripPosition.y);
-            stripCommandButtonText.text = GetCommandLabel(recommended.Value);
-            ApplyStripCommandButtonSafetyStyle(gameManager.CanExecuteRunwaySafetyCommand(selected, recommended.Value));
+            ConfigureStripCommandOptions(recommended.Value, runwayOptions, gameManager.CanExecuteRunwaySafetyCommand(selected, recommended.Value));
         }
 
-        private void ApplyStripCommandButtonSafetyStyle(bool safe)
+        private void CreateStripCommandOptionButton(int index)
         {
-            var colors = stripCommandButton.colors;
+            var optionButton = CreateButton($"Strip Command Option {index + 1}", stripCommandPopup.transform, string.Empty, Vector2.zero, new Vector2(260f, 72f), 16);
+            var optionText = optionButton.GetComponentInChildren<Text>();
+            stripCommandOptionButtons.Add(optionButton);
+            stripCommandOptionTexts.Add(optionText);
+
+            if (index == 0)
+            {
+                stripCommandButton = optionButton;
+                stripCommandButtonText = optionText;
+            }
+        }
+
+        private void ConfigureStripCommandOptions(AircraftCommand command, IReadOnlyList<string> runwayOptions, bool safe)
+        {
+            var optionCount = runwayOptions.Count > 0 ? runwayOptions.Count : 1;
+            EnsureStripCommandOptionButtonCount(optionCount);
+            SetStripCommandOptionButtonsActive(optionCount);
+
+            for (var index = 0; index < optionCount; index++)
+            {
+                var runwayDesignator = runwayOptions.Count > 0 ? runwayOptions[index] : string.Empty;
+                var button = stripCommandOptionButtons[index];
+                var label = stripCommandOptionTexts[index];
+                var rectTransform = button.GetComponent<RectTransform>();
+                rectTransform.anchoredPosition = GetStripCommandOptionPosition(index, optionCount);
+                label.text = string.IsNullOrEmpty(runwayDesignator)
+                    ? GetCommandLabel(command)
+                    : GetRunwaySpecificCommandLabel(command, runwayDesignator);
+                button.onClick.RemoveAllListeners();
+                button.onClick.AddListener(() => ExecuteStripCommand(command, runwayDesignator));
+                ApplyStripCommandButtonSafetyStyle(button, safe);
+            }
+        }
+
+        private void EnsureStripCommandOptionButtonCount(int optionCount)
+        {
+            while (stripCommandOptionButtons.Count < optionCount)
+            {
+                CreateStripCommandOptionButton(stripCommandOptionButtons.Count);
+            }
+        }
+
+        private Vector2 GetStripCommandOptionPosition(int index, int optionCount)
+        {
+            var spacing = 82f;
+            var topY = (optionCount - 1) * spacing * 0.5f;
+            return new Vector2(0f, topY - index * spacing);
+        }
+
+        private void SetStripCommandOptionButtonsActive(int activeCount)
+        {
+            for (var index = 0; index < stripCommandOptionButtons.Count; index++)
+            {
+                stripCommandOptionButtons[index].gameObject.SetActive(index < activeCount);
+            }
+        }
+
+        private void ApplyStripCommandButtonSafetyStyle(Button button, bool safe)
+        {
+            var colors = button.colors;
             if (safe)
             {
                 colors.normalColor = new Color(0.14f, 0.52f, 0.22f, 0.95f);
@@ -758,7 +820,7 @@ namespace ATCJourneyJapan.UI
                 colors.pressedColor = new Color(0.42f, 0.1f, 0.08f, 1f);
             }
 
-            stripCommandButton.colors = colors;
+            button.colors = colors;
         }
 
         private Vector2 GetStripCommandPopupSize(int commandCount)
@@ -950,7 +1012,7 @@ namespace ATCJourneyJapan.UI
                 TutorialStep.Info("ここはA滑走路です。\n飛行機が着陸・離陸する場所です。", TutorialHighlight.RunwayA),
                 TutorialStep.Info("安全のため、1本の滑走路には\n基本的に1機だけ入れます。", TutorialHighlight.RunwayA),
                 TutorialStep.Info("AJJ101がA滑走路に\n近づいています。", TutorialHighlight.ArrivalAircraft),
-                TutorialStep.Command("AJJ101のストリップから\n着陸許可を出しましょう。", AircraftCommand.ClearLanding, TutorialHighlight.ClearLanding, "AJJ101"),
+                TutorialStep.Command("AJJ101のストリップから\nClear to Land RWY 18Lを選びましょう。", AircraftCommand.ClearLanding, TutorialHighlight.ClearLanding, "AJJ101"),
                 TutorialStep.RunwayExitReady("AJJ101が着陸中です。\n滑走路が使用中になります。", TutorialHighlight.RunwayInUse),
                 TutorialStep.Info("着陸後は、次の飛行機のために\n滑走路を空けます。", TutorialHighlight.RunwayInUse),
                 TutorialStep.Command("AJJ101のストリップから\nSPOT 01へ誘導しましょう。", AircraftCommand.TaxiToGate, TutorialHighlight.TaxiToGate, "AJJ101"),
@@ -964,8 +1026,8 @@ namespace ATCJourneyJapan.UI
                 TutorialStep.HoldingPointReady("AJJ202が誘導路を走行中です。\n滑走路手前で止めます。", TutorialHighlight.TaxiToHold),
                 TutorialStep.Command("AJJ202のストリップから\n手前で待機させます。", AircraftCommand.HoldShort, TutorialHighlight.HoldShort, "AJJ202"),
                 TutorialStep.Info("Hold Shortは手前、\nLine Upは滑走路上で待機です。", TutorialHighlight.HoldShort),
-                TutorialStep.Command("AJJ202のストリップから\n滑走路上で待機させます。", AircraftCommand.LineUp, TutorialHighlight.LineUp, "AJJ202"),
-                TutorialStep.Command("AJJ202のストリップから\n離陸許可を出しましょう。", AircraftCommand.ClearTakeoff, TutorialHighlight.None, "AJJ202")
+                TutorialStep.Command("AJJ202のストリップから\nLine Up and Wait RWY 18Lを選びましょう。", AircraftCommand.LineUp, TutorialHighlight.LineUp, "AJJ202"),
+                TutorialStep.Command("AJJ202のストリップから\nCleared for Takeoff RWY 18Lを選びましょう。", AircraftCommand.ClearTakeoff, TutorialHighlight.None, "AJJ202")
             };
         }
 
@@ -1096,6 +1158,15 @@ namespace ATCJourneyJapan.UI
         private void ExecuteStripCommand()
         {
             ExecuteRecommendedCommand();
+        }
+
+        private void ExecuteStripCommand(AircraftCommand command, string runwayDesignator)
+        {
+            var selected = GetSelectedAircraft();
+            if (selected != null && selected.CanExecute(command))
+            {
+                commandSystem.Execute(command, runwayDesignator);
+            }
         }
 
         private GameObject CreateRoot(string name, Transform parent)
@@ -1443,6 +1514,45 @@ namespace ATCJourneyJapan.UI
                 default:
                     return command.ToString();
             }
+        }
+
+        private string GetRunwaySpecificCommandLabel(AircraftCommand command, string runwayDesignator)
+        {
+            var runwayLabel = $"RWY {runwayDesignator}";
+            switch (command)
+            {
+                case AircraftCommand.ClearLanding:
+                    return $"着陸許可 {runwayLabel}\nClear to Land {runwayLabel}";
+                case AircraftCommand.LineUp:
+                    return $"滑走路上で待機 {runwayLabel}\nLine Up and Wait {runwayLabel}";
+                case AircraftCommand.ClearTakeoff:
+                    return $"離陸許可 {runwayLabel}\nCleared for Takeoff {runwayLabel}";
+                default:
+                    return GetCommandLabel(command);
+            }
+        }
+
+        private List<string> GetCommandRunwayOptions(AircraftCommand command)
+        {
+            var options = new List<string>();
+            if (!RequiresRunwayOption(command) || gameManager == null || gameManager.Airport == null)
+            {
+                return options;
+            }
+
+            foreach (var runwayDesignator in gameManager.Airport.GetPrimaryRunwayDirectionOptions())
+            {
+                options.Add(runwayDesignator);
+            }
+
+            return options;
+        }
+
+        private bool RequiresRunwayOption(AircraftCommand command)
+        {
+            return command == AircraftCommand.ClearLanding
+                || command == AircraftCommand.LineUp
+                || command == AircraftCommand.ClearTakeoff;
         }
 
         private string GetCommandShortLabel(AircraftCommand command)
