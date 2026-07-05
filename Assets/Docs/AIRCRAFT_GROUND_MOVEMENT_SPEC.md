@@ -75,11 +75,11 @@ Phase 3.9-5A時点の航空機移動、heading、facingDirection、visual rotati
 
 ## Takeoff Attitude Target
 
-Phase 3.9-5D時点の `GetTakeoffRoute` は `RunwayGeometry` のLine Up点、使用方向、departure endから生成する。
-RWY 18Lの場合、現状のゲーム用routeは概ね以下になる。
+Phase 3.9-5H時点の `GetTakeoffRoute` は `RunwayGeometry` のLine Up点、使用方向、departure endから生成する。
+RWY 18Lの場合、Unity上では `-X` 側thresholdから `+X` 方向へ離陸するため、現状のゲーム用routeは概ね以下になる。
 
 ```text
-(17, 0.6, 0) -> (19, 0.6, 0) -> (26, 2.4, 0)
+(-8, 0.6, 0) -> (19, 0.6, 0) -> (26, 2.4, 0)
 ```
 
 これはまだ「離陸滑走」と「浮き上がり」を1つの一定速度routeで表現している。今後は状態を分ける。
@@ -173,7 +173,7 @@ public class AircraftMovementProfile
 6. 速度の機種別化は、まず `AircraftMovementProfile` 追加のみ。routeやwaypointの大規模再設計は後続。
 
 Phase 3.9-5Bでは、出発機のLine Up / Takeoff中だけ使用滑走路方向のheadingを固定し、`SimpleRoute` のTransform rotation更新を外す。
-現在のRWY 18LはUnity座標の+X方向、将来のRWY 36Rは-X方向として扱う。
+現在のRWY 18LはUnity座標の-X側thresholdから+X方向、RWY 36Rは+X側thresholdから-X方向として扱う。
 
 Phase 3.9-5Cでは、出発機routeを現在位置ベースにして、SPOT -> Pushback Line -> Taxiway Main -> Holding Short -> RWY 18L centerlineへつなぐ。
 Pushback中は機首をターミナル側へ保持し、Line Up完了後にRWY 18Lの+X方向へ揃える。
@@ -185,6 +185,10 @@ Line Up / Cleared for Takeoff / Clear to Landは、バインド済みの方向�
 
 Phase 3.9-5Gでは、出発機の使用滑走路方向をPushback後の `Taxi to RWY` で確定する。
 Hold Short / Line Up / Cleared for Takeoffは、Taxi clearanceで保存済みの `ActiveRunwayDesignator` を再利用し、Line Up / Takeoff時に別滑走路を再選択させない。
+
+Phase 3.9-5Hでは、A滑走路を物理滑走路 `A`、運用方向 `RWY 18L / 36R` として再整理した。
+Unity空間ではA滑走路を横向きに描くため、`+X` を18Lの南向き相当、`-X` を36Rの北向き相当として扱い、Line Up位置とTakeoff / Landing方向を `RunwayGeometry` から取得する。
+B滑走路は将来用の物理滑走路 `B`、運用方向 `RWY 18R / 36L` として登録するが、現Phaseでは運用しない。
 
 次PhaseのSmooth Turn方針:
 

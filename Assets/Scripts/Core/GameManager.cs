@@ -186,7 +186,7 @@ namespace ATCJourneyJapan.Core
             var occupiedBy = runway != null && !string.IsNullOrEmpty(runway.OccupiedByFlightId)
                 ? runway.OccupiedByFlightId
                 : "他機";
-            uiManager.ShowWarning($"RWY 18Lは使用中です。{occupiedBy}が滑走路を使用中です。");
+            uiManager.ShowWarning($"A滑走路は使用中です。{occupiedBy}が滑走路を使用中です。");
         }
 
         public void OccupyPrimaryRunway(AircraftController controller, string reason)

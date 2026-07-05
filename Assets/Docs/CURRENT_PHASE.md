@@ -2,16 +2,24 @@
 
 ## Current Phase
 
-Phase 3.9-5G Departure taxi clearance route binding
+Phase 3.9-5H Runway designator orientation correction
 
 ## Previous Phase
 
-Phase 3.9-5F Runway-specific command options
+Phase 3.9-5G Departure taxi clearance route binding
+
+## Phase 3.9-5Hで行うこと
+
+- A滑走路を物理滑走路 `A`、運用方向 `RWY 18L / 36R` として整理し、Unity上では `18L = -X側thresholdから+Xへ進む方向`、`36R = +X側thresholdから-Xへ進む方向` と定義する
+- B滑走路は将来用の物理滑走路 `B`、運用方向 `RWY 18R / 36L` として `RunwayGeometry` に登録するが、今回はコマンド表示・運用開始はしない
+- `RunwayGeometry` に物理滑走路ID、両端designator、designator別heading / direction / threshold / lineup pointを持たせ、離着陸方向のsource of truthにする
+- `TaxiToHold` / `LineUp` / `Takeoff` は、選択済みdesignatorに応じて18L側または36R側のHolding Point / Line Up位置へ向かう
+- 今回はSmooth Turn、速度・加速、Takeoff pitch、Taxiway全面再設計、B滑走路運用は行わない
 
 ## Phase 3.9-5Gで行うこと
 
 - 出発機はPushback後の `Taxi to RWY 18L / RWY 36R` で使用滑走路方向を確定し、`AircraftData.ActiveRunwayDesignator` に保存する
-- `TaxiToHold` のrouteは選択済みRWY方向からHolding Pointを切り替え、RWY 18Lは東側link、RWY 36Rは西側linkへ向かう
+- `TaxiToHold` のrouteは選択済みRWY方向からHolding Pointを切り替える
 - Hold Short / Line Up / Cleared for Takeoffは、Taxi clearanceで確定済みのRWY方向を表示・使用し、Line Up / Takeoff時に別方向を再選択させない
 - 到着機の `Clear to Land RWY 18L / RWY 36R` は従来通り着陸許可時に選択する
 - 今回はSmooth Turn、速度・加速、Takeoff pitch、B滑走路運用、空港レイアウト再配置は行わない

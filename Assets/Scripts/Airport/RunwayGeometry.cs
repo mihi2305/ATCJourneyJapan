@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace ATCJourneyJapan.Airport
@@ -6,85 +7,122 @@ namespace ATCJourneyJapan.Airport
     {
         public RunwayGeometry(
             string runwayId,
+            string physicalRunwayId,
+            string designatorAEnd,
+            string designatorBOppositeEnd,
             Vector3 center,
             float length,
             float width,
-            float heading18L,
-            float heading36R,
-            Vector3 endpoint18L,
-            Vector3 endpoint36R,
+            float headingForDesignatorA,
+            float headingForDesignatorB,
+            Vector3 designatorAThresholdPoint,
+            Vector3 designatorBThresholdPoint,
             Vector3 centerlineStart,
             Vector3 centerlineEnd,
-            Vector3 lineupPoint18L,
-            Vector3 lineupPoint36R,
-            Vector3 takeoffDirection18L,
-            Vector3 takeoffDirection36R,
-            Vector3 landingDirection18L,
-            Vector3 landingDirection36R)
+            Vector3 lineupPointForDesignatorA,
+            Vector3 lineupPointForDesignatorB,
+            Vector3 directionForDesignatorA,
+            Vector3 directionForDesignatorB)
         {
             RunwayId = runwayId;
+            PhysicalRunwayId = physicalRunwayId;
+            DesignatorAEnd = designatorAEnd;
+            DesignatorBOppositeEnd = designatorBOppositeEnd;
             Center = center;
             Length = length;
             Width = width;
-            Heading18L = heading18L;
-            Heading36R = heading36R;
-            Endpoint18L = endpoint18L;
-            Endpoint36R = endpoint36R;
+            HeadingForDesignatorA = headingForDesignatorA;
+            HeadingForDesignatorB = headingForDesignatorB;
+            DesignatorAThresholdPoint = designatorAThresholdPoint;
+            DesignatorBThresholdPoint = designatorBThresholdPoint;
             CenterlineStart = centerlineStart;
             CenterlineEnd = centerlineEnd;
-            LineupPoint18L = lineupPoint18L;
-            LineupPoint36R = lineupPoint36R;
-            TakeoffDirection18L = takeoffDirection18L.normalized;
-            TakeoffDirection36R = takeoffDirection36R.normalized;
-            LandingDirection18L = landingDirection18L.normalized;
-            LandingDirection36R = landingDirection36R.normalized;
+            LineupPointForDesignatorA = lineupPointForDesignatorA;
+            LineupPointForDesignatorB = lineupPointForDesignatorB;
+            DirectionForDesignatorA = directionForDesignatorA.normalized;
+            DirectionForDesignatorB = directionForDesignatorB.normalized;
         }
 
         public string RunwayId { get; private set; }
+        public string PhysicalRunwayId { get; private set; }
+        public string DesignatorAEnd { get; private set; }
+        public string DesignatorBOppositeEnd { get; private set; }
         public Vector3 Center { get; private set; }
         public float Length { get; private set; }
         public float Width { get; private set; }
-        public float Heading18L { get; private set; }
-        public float Heading36R { get; private set; }
-        public Vector3 Endpoint18L { get; private set; }
-        public Vector3 Endpoint36R { get; private set; }
+        public float HeadingForDesignatorA { get; private set; }
+        public float HeadingForDesignatorB { get; private set; }
+        public Vector3 DesignatorAThresholdPoint { get; private set; }
+        public Vector3 DesignatorBThresholdPoint { get; private set; }
         public Vector3 CenterlineStart { get; private set; }
         public Vector3 CenterlineEnd { get; private set; }
-        public Vector3 LineupPoint18L { get; private set; }
-        public Vector3 LineupPoint36R { get; private set; }
-        public Vector3 TakeoffDirection18L { get; private set; }
-        public Vector3 TakeoffDirection36R { get; private set; }
-        public Vector3 LandingDirection18L { get; private set; }
-        public Vector3 LandingDirection36R { get; private set; }
+        public Vector3 LineupPointForDesignatorA { get; private set; }
+        public Vector3 LineupPointForDesignatorB { get; private set; }
+        public Vector3 DirectionForDesignatorA { get; private set; }
+        public Vector3 DirectionForDesignatorB { get; private set; }
+        public IEnumerable<string> AvailableDesignators
+        {
+            get
+            {
+                yield return DesignatorAEnd;
+                yield return DesignatorBOppositeEnd;
+            }
+        }
+
+        public float Heading18L => GetHeadingForDesignator("18L");
+        public float Heading36R => GetHeadingForDesignator("36R");
+        public Vector3 Endpoint18L => GetThresholdPointForDesignator("18L");
+        public Vector3 Endpoint36R => GetThresholdPointForDesignator("36R");
+        public Vector3 LineupPoint18L => GetLineupPoint("18L");
+        public Vector3 LineupPoint36R => GetLineupPoint("36R");
+        public Vector3 TakeoffDirection18L => GetDirectionForDesignator("18L");
+        public Vector3 TakeoffDirection36R => GetDirectionForDesignator("36R");
+        public Vector3 LandingDirection18L => GetDirectionForDesignator("18L");
+        public Vector3 LandingDirection36R => GetDirectionForDesignator("36R");
 
         public Vector3 GetLineupPoint(string operationDirection)
         {
-            return Is36R(operationDirection) ? LineupPoint36R : LineupPoint18L;
+            return IsOppositeDesignator(operationDirection) ? LineupPointForDesignatorB : LineupPointForDesignatorA;
         }
 
         public Vector3 GetTakeoffDirection(string operationDirection)
         {
-            return Is36R(operationDirection) ? TakeoffDirection36R : TakeoffDirection18L;
+            return GetDirectionForDesignator(operationDirection);
         }
 
         public Vector3 GetLandingDirection(string operationDirection)
         {
-            return Is36R(operationDirection) ? LandingDirection36R : LandingDirection18L;
+            return GetDirectionForDesignator(operationDirection);
+        }
+
+        public Vector3 GetDirectionForDesignator(string operationDirection)
+        {
+            return IsOppositeDesignator(operationDirection) ? DirectionForDesignatorB : DirectionForDesignatorA;
+        }
+
+        public float GetHeadingForDesignator(string operationDirection)
+        {
+            return IsOppositeDesignator(operationDirection) ? HeadingForDesignatorB : HeadingForDesignatorA;
+        }
+
+        public Vector3 GetThresholdPointForDesignator(string operationDirection)
+        {
+            return IsOppositeDesignator(operationDirection) ? DesignatorBThresholdPoint : DesignatorAThresholdPoint;
         }
 
         public Vector3 GetDepartureEndPoint(string operationDirection)
         {
-            return Is36R(operationDirection) ? Endpoint18L : Endpoint36R;
+            return IsOppositeDesignator(operationDirection) ? DesignatorAThresholdPoint : DesignatorBThresholdPoint;
         }
 
         public Vector3 GetArrivalThresholdPoint(string operationDirection)
         {
-            return Is36R(operationDirection) ? Endpoint36R : Endpoint18L;
+            return IsOppositeDesignator(operationDirection) ? DesignatorBThresholdPoint : DesignatorAThresholdPoint;
         }
 
-        private bool Is36R(string operationDirection)
+        private bool IsOppositeDesignator(string operationDirection)
         {
-            return operationDirection == "36R";
+            return operationDirection == DesignatorBOppositeEnd;
         }
     }
 }
