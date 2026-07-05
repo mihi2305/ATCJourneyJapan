@@ -183,6 +183,9 @@ Phase 3.9-5Dでは、RWY 18L/36Rを `RunwayGeometry`、主要誘導路を `Taxiw
 Phase 3.9-5Eでは、管制コマンド実行時に現在のPrimary Runway方向を `AircraftData.ActiveRunwayDesignator` へ明示的にバインドする。
 Line Up / Cleared for Takeoff / Clear to Landは、バインド済みの方向をもとに `RunwayGeometry` からheadingとrouteを取得する。
 
+Phase 3.9-5Gでは、出発機の使用滑走路方向をPushback後の `Taxi to RWY` で確定する。
+Hold Short / Line Up / Cleared for Takeoffは、Taxi clearanceで保存済みの `ActiveRunwayDesignator` を再利用し、Line Up / Takeoff時に別滑走路を再選択させない。
+
 次PhaseのSmooth Turn方針:
 
 - 現在の `headingDegrees` を即時反映値から現在headingとして扱い、別に `targetHeadingDegrees` を持つ。

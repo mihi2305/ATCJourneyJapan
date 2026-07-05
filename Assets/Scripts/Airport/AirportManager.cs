@@ -135,6 +135,11 @@ namespace ATCJourneyJapan.Airport
             return PrimaryRunwayGeometry != null ? PrimaryRunwayGeometry.GetLineupPoint(operationDirection) : new Vector3(14.5f, 0.6f, 0f);
         }
 
+        public Vector3 GetHoldShortPosition(string operationDirection)
+        {
+            return Is36R(operationDirection) ? new Vector3(-7f, 0.55f, -3f) : HoldShortPosition;
+        }
+
         public IEnumerable<string> GetPrimaryRunwayDirectionOptions()
         {
             if (PrimaryRunwayData == null)
@@ -244,17 +249,23 @@ namespace ATCJourneyJapan.Airport
 
         public IEnumerable<Vector3> GetTaxiToHoldRoute()
         {
-            return GetTaxiToHoldRoute(PushbackReadyPosition);
+            return GetTaxiToHoldRoute(PushbackReadyPosition, GetPrimaryRunwayDirection());
         }
 
         public IEnumerable<Vector3> GetTaxiToHoldRoute(Vector3 startPosition)
         {
+            return GetTaxiToHoldRoute(startPosition, GetPrimaryRunwayDirection());
+        }
+
+        public IEnumerable<Vector3> GetTaxiToHoldRoute(Vector3 startPosition, string operationDirection)
+        {
             var taxiwayMainEntry = new Vector3(startPosition.x, 0.6f, -5f);
+            var runwayLinkX = Is36R(operationDirection) ? -7f : 12f;
             return new[]
             {
                 taxiwayMainEntry,
-                new Vector3(12f, 0.6f, -5f),
-                HoldShortPosition
+                new Vector3(runwayLinkX, 0.6f, -5f),
+                GetHoldShortPosition(operationDirection)
             };
         }
 
@@ -376,6 +387,13 @@ namespace ATCJourneyJapan.Airport
                 "TWY_EAST_RUNWAY_LINK",
                 "Taxiway East Runway Link",
                 new[] { new Vector3(12f, 0.6f, -5f), new Vector3(12f, 0.6f, -2.5f), new Vector3(12f, 0.6f, 0f) },
+                "TWY_MAIN",
+                "RWY_A",
+                TaxiwayRoutePurpose.Both));
+            taxiwayRoutes.Add(new TaxiwayRouteDefinition(
+                "TWY_WEST_RUNWAY_LINK",
+                "Taxiway West Runway Link",
+                new[] { new Vector3(-7f, 0.6f, -5f), new Vector3(-7f, 0.6f, -2.5f), new Vector3(-7f, 0.6f, 0f) },
                 "TWY_MAIN",
                 "RWY_A",
                 TaxiwayRoutePurpose.Both));

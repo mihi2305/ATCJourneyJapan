@@ -146,7 +146,7 @@ namespace ATCJourneyJapan.Core
 
         public void BindRunwayDirectionForCommand(AircraftController controller, AircraftCommand command, string operationDirection = "")
         {
-            if (controller == null || airportManager == null || !RequiresRunwayDirectionBinding(command))
+            if (controller == null || airportManager == null || !RequiresRunwayDirectionBinding(command, operationDirection))
             {
                 return;
             }
@@ -270,13 +270,17 @@ namespace ATCJourneyJapan.Core
                 || command == AircraftCommand.ClearTakeoff;
         }
 
-        private bool RequiresRunwayDirectionBinding(AircraftCommand command)
+        private bool RequiresRunwayDirectionBinding(AircraftCommand command, string operationDirection)
         {
-            return command == AircraftCommand.ClearLanding
-                || command == AircraftCommand.TaxiToHold
-                || command == AircraftCommand.HoldShort
-                || command == AircraftCommand.LineUp
-                || command == AircraftCommand.ClearTakeoff;
+            if (command == AircraftCommand.ClearLanding || command == AircraftCommand.TaxiToHold)
+            {
+                return true;
+            }
+
+            return !string.IsNullOrEmpty(operationDirection)
+                && (command == AircraftCommand.HoldShort
+                    || command == AircraftCommand.LineUp
+                    || command == AircraftCommand.ClearTakeoff);
         }
 
         private void SetupCamera()

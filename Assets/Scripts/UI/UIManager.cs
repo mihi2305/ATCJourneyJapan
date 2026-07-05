@@ -737,7 +737,7 @@ namespace ATCJourneyJapan.UI
                 return;
             }
 
-            var runwayOptions = GetCommandRunwayOptions(recommended.Value);
+            var runwayOptions = GetCommandRunwayOptions(recommended.Value, selected);
             var optionCount = runwayOptions.Count > 0 ? runwayOptions.Count : 1;
             var popupTransform = stripCommandPopup.GetComponent<RectTransform>();
             popupTransform.sizeDelta = GetStripCommandPopupSize(optionCount);
@@ -900,7 +900,7 @@ namespace ATCJourneyJapan.UI
             return $"{data.FlightId}  {data.AircraftType}\n"
                 + $"{routeLine}\n\n"
                 + $"{timeLine}\n"
-                + $"RWY：{data.ActiveRunwayDesignator}\n"
+                + $"RWY：{(data.HasActiveRunwayDesignator ? data.ActiveRunwayDesignator : "-")}\n"
                 + $"SPOT：{GetSpotNumber(data.SpotDisplayName)}\n"
                 + $"状態：{data.CurrentState}\n"
                 + $"担当：{data.ControllerPosition}\n"
@@ -1022,9 +1022,9 @@ namespace ATCJourneyJapan.UI
                 TutorialStep.Info("まずSPOT 02から\n出発準備をします。", TutorialHighlight.Gate2),
                 TutorialStep.Command("AJJ202のストリップから\nプッシュバックします。", AircraftCommand.Pushback, TutorialHighlight.Pushback, "AJJ202"),
                 TutorialStep.PushbackComplete("AJJ202が後退中です。\n地上走行の準備をします。", TutorialHighlight.Pushback),
-                TutorialStep.Command("AJJ202のストリップから\n滑走路手前へ誘導します。", AircraftCommand.TaxiToHold, TutorialHighlight.TaxiToHold, "AJJ202"),
+                TutorialStep.Command("AJJ202のストリップから\nTaxi to RWY 18Lを選びましょう。", AircraftCommand.TaxiToHold, TutorialHighlight.TaxiToHold, "AJJ202"),
                 TutorialStep.HoldingPointReady("AJJ202が誘導路を走行中です。\n滑走路手前で止めます。", TutorialHighlight.TaxiToHold),
-                TutorialStep.Command("AJJ202のストリップから\n手前で待機させます。", AircraftCommand.HoldShort, TutorialHighlight.HoldShort, "AJJ202"),
+                TutorialStep.Command("AJJ202のストリップから\nHold Short RWY 18Lを選びましょう。", AircraftCommand.HoldShort, TutorialHighlight.HoldShort, "AJJ202"),
                 TutorialStep.Info("Hold Shortは手前、\nLine Upは滑走路上で待機です。", TutorialHighlight.HoldShort),
                 TutorialStep.Command("AJJ202のストリップから\nLine Up and Wait RWY 18Lを選びましょう。", AircraftCommand.LineUp, TutorialHighlight.LineUp, "AJJ202"),
                 TutorialStep.Command("AJJ202のストリップから\nCleared for Takeoff RWY 18Lを選びましょう。", AircraftCommand.ClearTakeoff, TutorialHighlight.None, "AJJ202")
@@ -1498,7 +1498,7 @@ namespace ATCJourneyJapan.UI
                 case AircraftCommand.Pushback:
                     return "プッシュバック\nPushback";
                 case AircraftCommand.TaxiToHold:
-                    return "滑走路手前へ誘導\nTaxi to Holding Point";
+                    return "滑走路手前へ誘導\nTaxi to Runway";
                 case AircraftCommand.HoldTaxi:
                     return "停止\nHold Taxi";
                 case AircraftCommand.ResumeTaxi:
@@ -1523,6 +1523,10 @@ namespace ATCJourneyJapan.UI
             {
                 case AircraftCommand.ClearLanding:
                     return $"着陸許可 {runwayLabel}\nClear to Land {runwayLabel}";
+                case AircraftCommand.TaxiToHold:
+                    return $"滑走路手前へ誘導 {runwayLabel}\nTaxi to {runwayLabel}";
+                case AircraftCommand.HoldShort:
+                    return $"滑走路手前で待機 {runwayLabel}\nHold Short {runwayLabel}";
                 case AircraftCommand.LineUp:
                     return $"滑走路上で待機 {runwayLabel}\nLine Up and Wait {runwayLabel}";
                 case AircraftCommand.ClearTakeoff:
@@ -1532,7 +1536,7 @@ namespace ATCJourneyJapan.UI
             }
         }
 
-        private List<string> GetCommandRunwayOptions(AircraftCommand command)
+        private List<string> GetCommandRunwayOptions(AircraftCommand command, AircraftController selected)
         {
             var options = new List<string>();
             if (!RequiresRunwayOption(command) || gameManager == null || gameManager.Airport == null)
@@ -1540,9 +1544,19 @@ namespace ATCJourneyJapan.UI
                 return options;
             }
 
-            foreach (var runwayDesignator in gameManager.Airport.GetPrimaryRunwayDirectionOptions())
+            if (command == AircraftCommand.ClearLanding || command == AircraftCommand.TaxiToHold)
             {
-                options.Add(runwayDesignator);
+                foreach (var runwayDesignator in gameManager.Airport.GetPrimaryRunwayDirectionOptions())
+                {
+                    options.Add(runwayDesignator);
+                }
+
+                return options;
+            }
+
+            if (selected != null && selected.FlightData != null && selected.FlightData.HasActiveRunwayDesignator)
+            {
+                options.Add(selected.FlightData.ActiveRunwayDesignator);
             }
 
             return options;
@@ -1551,6 +1565,8 @@ namespace ATCJourneyJapan.UI
         private bool RequiresRunwayOption(AircraftCommand command)
         {
             return command == AircraftCommand.ClearLanding
+                || command == AircraftCommand.TaxiToHold
+                || command == AircraftCommand.HoldShort
                 || command == AircraftCommand.LineUp
                 || command == AircraftCommand.ClearTakeoff;
         }

@@ -129,11 +129,11 @@ namespace ATCJourneyJapan.Aircraft
                 case AircraftCommand.ResumeTaxi:
                     return currentState == AircraftState.TaxiHeld;
                 case AircraftCommand.HoldShort:
-                    return !arrivalAircraft && currentState == AircraftState.HoldingPoint;
+                    return !arrivalAircraft && currentState == AircraftState.HoldingPoint && HasBoundRunwayDirection();
                 case AircraftCommand.LineUp:
-                    return !arrivalAircraft && currentState == AircraftState.HoldingShort;
+                    return !arrivalAircraft && currentState == AircraftState.HoldingShort && HasBoundRunwayDirection();
                 case AircraftCommand.ClearTakeoff:
-                    return !arrivalAircraft && (currentState == AircraftState.LiningUp || currentState == AircraftState.Waiting);
+                    return !arrivalAircraft && currentState == AircraftState.LiningUp && HasBoundRunwayDirection();
                 case AircraftCommand.Stop:
                     return currentState != AircraftState.AtGate && currentState != AircraftState.AirborneDeparture;
                 default:
@@ -239,7 +239,7 @@ namespace ATCJourneyJapan.Aircraft
         private void TaxiToHold()
         {
             SetState(AircraftState.TaxiToHold);
-            StartRouteWithHeading(airportManager.GetTaxiToHoldRoute(transform.position), groundSpeed, () =>
+            StartRouteWithHeading(airportManager.GetTaxiToHoldRoute(transform.position, GetOperationRunwayDirection()), groundSpeed, () =>
             {
                 SetState(AircraftState.HoldingPoint);
             });
@@ -266,7 +266,7 @@ namespace ATCJourneyJapan.Aircraft
         {
             route.Stop();
             SetState(AircraftState.HoldingShort);
-            transform.position = airportManager.HoldShortPosition;
+            transform.position = airportManager.GetHoldShortPosition(GetOperationRunwayDirection());
             SetHeadingFromWorldDirection(Vector3.forward);
         }
 
@@ -391,6 +391,11 @@ namespace ATCJourneyJapan.Aircraft
         private string GetOperationRunwayDirection()
         {
             return flightData != null && !string.IsNullOrEmpty(flightData.ActiveRunwayDesignator) ? flightData.ActiveRunwayDesignator : "18L";
+        }
+
+        private bool HasBoundRunwayDirection()
+        {
+            return flightData != null && flightData.HasActiveRunwayDesignator;
         }
 
         private void SetHeadingFromWorldDirection(Vector3 worldDirection)
@@ -624,7 +629,7 @@ namespace ATCJourneyJapan.Aircraft
             switch (GetNextTargetType())
             {
                 case "Runway":
-                    return $"RWY_{flightData.ActiveRunwayDesignator}";
+                    return flightData.HasActiveRunwayDesignator ? $"RWY_{flightData.ActiveRunwayDesignator}" : "RWY_UNASSIGNED";
                 case "Spot":
                     return flightData.SpotId;
                 case "HoldingPoint":
