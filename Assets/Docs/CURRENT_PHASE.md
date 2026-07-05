@@ -2,11 +2,18 @@
 
 ## Current Phase
 
-Phase 3.9-4A Passenger terminal and spot layout foundation
+Phase 3.9-4B Terminal layout specification
 
 ## Previous Phase
 
-Phase 3.9-3B Minimap layout alignment
+Phase 3.9-4A Passenger terminal and spot layout foundation
+
+## Phase 3.9-4Bで行うこと
+
+- 現在の旅客ターミナル、DOM/INTL、フィンガー、SPOT、ボーディングブリッジのUnity配置をA滑走路基準で整理する
+- AIP AD CHART / ADC-2上の丸数字・番号をSPOT番号として扱い、DOM側/INTL側の配置思想を設計メモへ反映する
+- 推定寸法と現在のUnity比率を比較し、次Phaseで再配置すべき具体項目を `TERMINAL_LAYOUT_SPEC.md` にまとめる
+- 今回はターミナル再配置、Taxi waypoint調整、航空機ルート修正、全SPOT再現は行わない
 
 ## Phase 3.9-4Aで行うこと
 
