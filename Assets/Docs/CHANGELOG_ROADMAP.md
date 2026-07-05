@@ -13,6 +13,10 @@
 - 今回実装すること
 - 今回は実装せず後続Phaseに回すこと
 
+## 2026-07-05 Phase 3.9-5C Departure ground route stabilization
+
+- AJJ202向けにSPOTからPushback Line、Taxiway Main、Holding Short、RWY 18L中心線へつながる現在位置ベースの出発routeへ調整
+
 ## 2026-07-05 Phase 3.9-5B Fix departure runway takeoff direction
 
 - 出発機のLine Up / Takeoff中は使用滑走路方向のheadingを固定し、`SimpleRoute` のTransform rotation上書きを外した

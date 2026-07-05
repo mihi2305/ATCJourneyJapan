@@ -2,11 +2,19 @@
 
 ## Current Phase
 
-Phase 3.9-5B Fix departure runway takeoff direction
+Phase 3.9-5C Departure ground route stabilization
 
 ## Previous Phase
 
-Phase 3.9-5A Aircraft ground movement and takeoff attitude spec
+Phase 3.9-5B Fix departure runway takeoff direction
+
+## Phase 3.9-5Cで行うこと
+
+- AJJ202を中心に、SPOTからPushback Line、Taxiway Main、Holding Short、RWY 18L中心線へつながる出発導線を安定化する
+- 出発機のAtGate初期向きは滑走路方向ではなく、ターミナル側を向く駐機姿勢として扱う
+- Pushback中は移動方向と機首方向を分け、SPOTから後退しているように見せる
+- Line Upは滑走路接続誘導路からRWY 18L中心線へ入り、最後に+X方向へ機首を揃える
+- 今回は速度・加速・Takeoff pitch本格実装、全Taxiway精密再現、B滑走路運用は行わない
 
 ## Phase 3.9-5Bで行うこと
 

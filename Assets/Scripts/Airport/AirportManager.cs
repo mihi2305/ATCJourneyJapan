@@ -46,6 +46,7 @@ namespace ATCJourneyJapan.Airport
         public Vector3 SecondaryDepartureSpawnPosition => gatePositions.Count > 3 ? gatePositions[3] : new Vector3(-16f, 0.6f, -11.6f);
         public Vector3 PushbackReadyPosition => new Vector3(13f, 0.6f, -6.5f);
         public Vector3 HoldShortPosition => new Vector3(12f, 0.55f, -3f);
+        public Vector3 PrimaryRunwayLineUpPosition => new Vector3(14.5f, 0.6f, 0f);
         public Vector3 PrimaryRunwayTakeoffDirection => GetTakeoffDirection(PrimaryRunwayData);
 
         public void Initialize()
@@ -118,18 +119,29 @@ namespace ATCJourneyJapan.Airport
 
         public IEnumerable<Vector3> GetPushbackRoute()
         {
+            return GetPushbackRoute(DepartureSpawnPosition);
+        }
+
+        public IEnumerable<Vector3> GetPushbackRoute(Vector3 startPosition)
+        {
+            var pushbackLineZ = startPosition.x >= 22f ? -6.2f : -6.45f;
             return new[]
             {
-                new Vector3(13f, 0.6f, -8f),
-                PushbackReadyPosition
+                new Vector3(startPosition.x, 0.6f, pushbackLineZ)
             };
         }
 
         public IEnumerable<Vector3> GetTaxiToHoldRoute()
         {
+            return GetTaxiToHoldRoute(PushbackReadyPosition);
+        }
+
+        public IEnumerable<Vector3> GetTaxiToHoldRoute(Vector3 startPosition)
+        {
+            var taxiwayMainEntry = new Vector3(startPosition.x, 0.6f, -5f);
             return new[]
             {
-                new Vector3(13f, 0.6f, -5f),
+                taxiwayMainEntry,
                 new Vector3(12f, 0.6f, -5f),
                 HoldShortPosition
             };
@@ -137,10 +149,16 @@ namespace ATCJourneyJapan.Airport
 
         public IEnumerable<Vector3> GetLineUpRoute()
         {
+            return GetLineUpRoute(HoldShortPosition);
+        }
+
+        public IEnumerable<Vector3> GetLineUpRoute(Vector3 startPosition)
+        {
             return new[]
             {
+                new Vector3(startPosition.x, 0.6f, -1.05f),
                 new Vector3(12f, 0.6f, 0f),
-                new Vector3(14.5f, 0.6f, 0f)
+                PrimaryRunwayLineUpPosition
             };
         }
 

@@ -174,6 +174,9 @@ public class AircraftMovementProfile
 Phase 3.9-5Bでは、出発機のLine Up / Takeoff中だけ使用滑走路方向のheadingを固定し、`SimpleRoute` のTransform rotation更新を外す。
 現在のRWY 18LはUnity座標の+X方向、将来のRWY 36Rは-X方向として扱う。
 
+Phase 3.9-5Cでは、出発機routeを現在位置ベースにして、SPOT -> Pushback Line -> Taxiway Main -> Holding Short -> RWY 18L centerlineへつなぐ。
+Pushback中は機首をターミナル側へ保持し、Line Up完了後にRWY 18Lの+X方向へ揃える。
+
 ## Do Not Change Yet
 
 - Taxi waypoint再設計

@@ -78,7 +78,11 @@ namespace ATCJourneyJapan.Aircraft
             {
                 var previousPosition = transform.position;
                 route.Tick(transform, Time.deltaTime);
-                if (ShouldLockRunwayTakeoffHeading())
+                if (ShouldLockPushbackHeading())
+                {
+                    SetDepartureParkingHeading();
+                }
+                else if (ShouldLockRunwayTakeoffHeading())
                 {
                     SetRunwayTakeoffHeading();
                 }
@@ -212,17 +216,18 @@ namespace ATCJourneyJapan.Aircraft
 
         private void Pushback()
         {
-            SetState(AircraftState.Pushbacking);
-            StartRouteWithHeading(airportManager.GetPushbackRoute(), groundSpeed * 0.65f, () =>
+            SetState(AircraftState.Pushbacking, false);
+            SetDepartureParkingHeading();
+            StartRouteWithHeading(airportManager.GetPushbackRoute(transform.position), groundSpeed * 0.65f, () =>
             {
                 SetState(AircraftState.PushbackReady);
-            });
+            }, false);
         }
 
         private void TaxiToHold()
         {
             SetState(AircraftState.TaxiToHold);
-            StartRouteWithHeading(airportManager.GetTaxiToHoldRoute(), groundSpeed, () =>
+            StartRouteWithHeading(airportManager.GetTaxiToHoldRoute(transform.position), groundSpeed, () =>
             {
                 SetState(AircraftState.HoldingPoint);
             });
@@ -256,13 +261,13 @@ namespace ATCJourneyJapan.Aircraft
         private void LineUp()
         {
             SetState(AircraftState.LiningUp, false);
-            SetRunwayTakeoffHeading();
             gameManager.OccupyPrimaryRunway(this, "滑走路上待機");
-            StartRouteWithHeading(airportManager.GetLineUpRoute(), groundSpeed, () =>
+            StartRouteWithHeading(airportManager.GetLineUpRoute(transform.position), groundSpeed, () =>
             {
+                transform.position = airportManager.PrimaryRunwayLineUpPosition;
                 SetState(AircraftState.LiningUp, false);
                 SetRunwayTakeoffHeading();
-            }, false);
+            });
         }
 
         private void ClearTakeoff()
@@ -337,14 +342,23 @@ namespace ATCJourneyJapan.Aircraft
 
         private bool ShouldLockRunwayTakeoffHeading()
         {
-            return currentState == AircraftState.LiningUp
-                   || currentState == AircraftState.TakeoffRoll
+            return currentState == AircraftState.TakeoffRoll
                    || currentState == AircraftState.AirborneDeparture;
+        }
+
+        private bool ShouldLockPushbackHeading()
+        {
+            return currentState == AircraftState.Pushbacking;
         }
 
         private void SetRunwayTakeoffHeading()
         {
             SetHeadingFromWorldDirection(GetRunwayTakeoffDirection());
+        }
+
+        private void SetDepartureParkingHeading()
+        {
+            SetHeadingFromWorldDirection(Vector3.back);
         }
 
         private Vector3 GetRunwayTakeoffDirection()
@@ -383,11 +397,13 @@ namespace ATCJourneyJapan.Aircraft
                     break;
                 case AircraftState.VacatingRunway:
                 case AircraftState.TaxiToGate:
-                case AircraftState.Pushbacking:
                     SetHeadingFromWorldDirection(Vector3.back);
                     break;
+                case AircraftState.Pushbacking:
+                    SetDepartureParkingHeading();
+                    break;
                 case AircraftState.AtGate:
-                    SetHeadingFromWorldDirection(arrivalAircraft ? Vector3.back : Vector3.forward);
+                    SetHeadingFromWorldDirection(Vector3.back);
                     break;
                 case AircraftState.PushbackReady:
                 case AircraftState.TaxiToHold:
