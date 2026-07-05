@@ -110,6 +110,35 @@ namespace ATCJourneyJapan.Airport
             return IsOppositeDesignator(operationDirection) ? DesignatorBThresholdPoint : DesignatorAThresholdPoint;
         }
 
+        public Vector3 GetFinalApproachStart(string operationDirection)
+        {
+            var direction = GetDirectionForDesignator(operationDirection);
+            return GetArrivalThresholdPoint(operationDirection) - direction * 12f;
+        }
+
+        public Vector3 GetFinalApproachFix(string operationDirection)
+        {
+            var direction = GetDirectionForDesignator(operationDirection);
+            return GetArrivalThresholdPoint(operationDirection) - direction * 6f;
+        }
+
+        public Vector3 GetTouchdownPoint(string operationDirection)
+        {
+            var direction = GetDirectionForDesignator(operationDirection);
+            return GetArrivalThresholdPoint(operationDirection) + direction * 2.25f;
+        }
+
+        public Vector3 GetRolloutEndPoint(string operationDirection)
+        {
+            var direction = GetDirectionForDesignator(operationDirection);
+            return GetArrivalThresholdPoint(operationDirection) + direction * (Length * 0.78f);
+        }
+
+        public Vector3 GetVacateStartPoint(string operationDirection)
+        {
+            return GetRolloutEndPoint(operationDirection);
+        }
+
         public Vector3 GetDepartureEndPoint(string operationDirection)
         {
             return IsOppositeDesignator(operationDirection) ? DesignatorAThresholdPoint : DesignatorBThresholdPoint;

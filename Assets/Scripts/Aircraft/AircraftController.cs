@@ -197,17 +197,20 @@ namespace ATCJourneyJapan.Aircraft
 
         private void ClearLanding()
         {
+            var operationDirection = GetOperationRunwayDirection();
+            transform.position = airportManager.GetArrivalFinalApproachStart(operationDirection);
             SetState(AircraftState.FinalApproach);
+            SetRunwayLandingHeading();
             gameManager.OccupyPrimaryRunway(this, "着陸中");
-            StartRouteWithHeading(airportManager.GetArrivalFinalRoute(GetOperationRunwayDirection()), airborneSpeed, () =>
+            StartRouteWithHeading(airportManager.GetArrivalFinalRoute(operationDirection), airborneSpeed, () =>
             {
                 SetState(AircraftState.LandingRoll);
                 gameManager.OccupyPrimaryRunway(this, "着陸滑走中");
-                StartRouteWithHeading(airportManager.GetLandingRollRoute(GetOperationRunwayDirection()), groundSpeed + 1f, () =>
+                StartRouteWithHeading(airportManager.GetLandingRollRoute(operationDirection), groundSpeed + 1f, () =>
                 {
                     SetState(AircraftState.VacatingRunway);
                     gameManager.OccupyPrimaryRunway(this, "滑走路離脱中");
-                    StartRouteWithHeading(airportManager.GetVacateRunwayRoute(GetOperationRunwayDirection()), groundSpeed, () =>
+                    StartRouteWithHeading(airportManager.GetVacateRunwayRoute(operationDirection), groundSpeed, () =>
                     {
                         gameManager.ReleasePrimaryRunway(this);
                         SetState(AircraftState.Waiting);

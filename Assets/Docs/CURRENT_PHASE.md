@@ -2,11 +2,19 @@
 
 ## Current Phase
 
-Phase 3.9-5H Runway designator orientation correction
+Phase 3.9-5I Arrival final approach route binding
 
 ## Previous Phase
 
-Phase 3.9-5G Departure taxi clearance route binding
+Phase 3.9-5H Runway designator orientation correction
+
+## Phase 3.9-5Iで行うこと
+
+- 到着機の `Clear to Land RWY 18L / RWY 36R` で、指定designatorに応じたFinal Approach Start / Final Approach Fix / threshold / touchdown / rollout endを `RunwayGeometry` から取得する
+- Clear Landing時に到着機を滑走路中心線延長上のFinal Approach Startへ載せ、そこからFAF、threshold、touchdownへ進入させる
+- Landing Rolloutはtouchdown pointからrollout end pointへ、滑走路中心線上を指定designator方向に進める
+- Vacate routeはrollout end / vacate start付近から既存TaxiwayRouteDefinitionへつなぐ暫定構造を維持する
+- 今回はSmooth Turn、速度・減速、到着後Taxi route全面再設計、B滑走路運用は行わない
 
 ## Phase 3.9-5Hで行うこと
 

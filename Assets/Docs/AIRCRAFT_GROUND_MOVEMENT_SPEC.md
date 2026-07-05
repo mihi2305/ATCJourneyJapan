@@ -190,6 +190,9 @@ Phase 3.9-5Hでは、A滑走路を物理滑走路 `A`、運用方向 `RWY 18L / 
 Unity空間ではA滑走路を横向きに描くため、`+X` を18Lの南向き相当、`-X` を36Rの北向き相当として扱い、Line Up位置とTakeoff / Landing方向を `RunwayGeometry` から取得する。
 B滑走路は将来用の物理滑走路 `B`、運用方向 `RWY 18R / 36L` として登録するが、現Phaseでは運用しない。
 
+Phase 3.9-5Iでは、到着機のFinal Approachを `RunwayGeometry` に接続する。
+`Clear to Land` 時に指定designatorの中心線延長上にあるFinal Approach Startへ入り、Final Approach Fix、threshold、touchdown、rollout endの順で滑走路中心線上を進む。
+
 次PhaseのSmooth Turn方針:
 
 - 現在の `headingDegrees` を即時反映値から現在headingとして扱い、別に `targetHeadingDegrees` を持つ。
