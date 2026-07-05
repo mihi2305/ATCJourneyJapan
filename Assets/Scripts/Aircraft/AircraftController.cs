@@ -187,15 +187,15 @@ namespace ATCJourneyJapan.Aircraft
         {
             SetState(AircraftState.FinalApproach);
             gameManager.OccupyPrimaryRunway(this, "着陸中");
-            StartRouteWithHeading(airportManager.GetArrivalFinalRoute(), airborneSpeed, () =>
+            StartRouteWithHeading(airportManager.GetArrivalFinalRoute(GetOperationRunwayDirection()), airborneSpeed, () =>
             {
                 SetState(AircraftState.LandingRoll);
                 gameManager.OccupyPrimaryRunway(this, "着陸滑走中");
-                StartRouteWithHeading(airportManager.GetLandingRollRoute(), groundSpeed + 1f, () =>
+                StartRouteWithHeading(airportManager.GetLandingRollRoute(GetOperationRunwayDirection()), groundSpeed + 1f, () =>
                 {
                     SetState(AircraftState.VacatingRunway);
                     gameManager.OccupyPrimaryRunway(this, "滑走路離脱中");
-                    StartRouteWithHeading(airportManager.GetVacateRunwayRoute(), groundSpeed, () =>
+                    StartRouteWithHeading(airportManager.GetVacateRunwayRoute(GetOperationRunwayDirection()), groundSpeed, () =>
                     {
                         gameManager.ReleasePrimaryRunway(this);
                         SetState(AircraftState.Waiting);
@@ -262,9 +262,9 @@ namespace ATCJourneyJapan.Aircraft
         {
             SetState(AircraftState.LiningUp, false);
             gameManager.OccupyPrimaryRunway(this, "滑走路上待機");
-            StartRouteWithHeading(airportManager.GetLineUpRoute(transform.position), groundSpeed, () =>
+            StartRouteWithHeading(airportManager.GetLineUpRoute(transform.position, GetOperationRunwayDirection()), groundSpeed, () =>
             {
-                transform.position = airportManager.PrimaryRunwayLineUpPosition;
+                transform.position = airportManager.GetPrimaryRunwayLineupPoint(GetOperationRunwayDirection());
                 SetState(AircraftState.LiningUp, false);
                 SetRunwayTakeoffHeading();
             });
@@ -275,7 +275,7 @@ namespace ATCJourneyJapan.Aircraft
             SetState(AircraftState.TakeoffRoll, false);
             SetRunwayTakeoffHeading();
             gameManager.OccupyPrimaryRunway(this, "離陸滑走中");
-            StartRouteWithHeading(airportManager.GetTakeoffRoute(), airborneSpeed, () =>
+            StartRouteWithHeading(airportManager.GetTakeoffRoute(GetOperationRunwayDirection()), airborneSpeed, () =>
             {
                 gameManager.ReleasePrimaryRunway(this);
                 SetState(AircraftState.AirborneDeparture, false);
@@ -356,6 +356,11 @@ namespace ATCJourneyJapan.Aircraft
             SetHeadingFromWorldDirection(GetRunwayTakeoffDirection());
         }
 
+        private void SetRunwayLandingHeading()
+        {
+            SetHeadingFromWorldDirection(GetRunwayLandingDirection());
+        }
+
         private void SetDepartureParkingHeading()
         {
             SetHeadingFromWorldDirection(Vector3.back);
@@ -363,7 +368,17 @@ namespace ATCJourneyJapan.Aircraft
 
         private Vector3 GetRunwayTakeoffDirection()
         {
-            return airportManager != null ? airportManager.PrimaryRunwayTakeoffDirection : Vector3.right;
+            return airportManager != null ? airportManager.GetPrimaryRunwayTakeoffDirection(GetOperationRunwayDirection()) : Vector3.right;
+        }
+
+        private Vector3 GetRunwayLandingDirection()
+        {
+            return airportManager != null ? airportManager.GetPrimaryRunwayLandingDirection(GetOperationRunwayDirection()) : Vector3.right;
+        }
+
+        private string GetOperationRunwayDirection()
+        {
+            return flightData != null && !string.IsNullOrEmpty(flightData.ActiveRunwayDesignator) ? flightData.ActiveRunwayDesignator : "18L";
         }
 
         private void SetHeadingFromWorldDirection(Vector3 worldDirection)
@@ -388,7 +403,7 @@ namespace ATCJourneyJapan.Aircraft
                 case AircraftState.Inbound:
                 case AircraftState.FinalApproach:
                 case AircraftState.LandingRoll:
-                    SetHeadingFromWorldDirection(Vector3.right);
+                    SetRunwayLandingHeading();
                     break;
                 case AircraftState.LiningUp:
                 case AircraftState.TakeoffRoll:

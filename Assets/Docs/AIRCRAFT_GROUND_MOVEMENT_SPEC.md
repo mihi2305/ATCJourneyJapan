@@ -75,13 +75,14 @@ Phase 3.9-5A時点の航空機移動、heading、facingDirection、visual rotati
 
 ## Takeoff Attitude Target
 
-現状の `GetTakeoffRoute` は以下。
+Phase 3.9-5D時点の `GetTakeoffRoute` は `RunwayGeometry` のLine Up点、使用方向、departure endから生成する。
+RWY 18Lの場合、現状のゲーム用routeは概ね以下になる。
 
 ```text
-(17, 0.6, 0) -> (22, 0.6, 0) -> (26, 2.4, 0)
+(17, 0.6, 0) -> (19, 0.6, 0) -> (26, 2.4, 0)
 ```
 
-これは「離陸滑走」と「浮き上がり」を1つの一定速度routeで表現している。今後は状態を分ける。
+これはまだ「離陸滑走」と「浮き上がり」を1つの一定速度routeで表現している。今後は状態を分ける。
 
 | Future sub-state | Target movement | Target pitch |
 | --- | --- | --- |
@@ -176,6 +177,14 @@ Phase 3.9-5Bでは、出発機のLine Up / Takeoff中だけ使用滑走路方向
 
 Phase 3.9-5Cでは、出発機routeを現在位置ベースにして、SPOT -> Pushback Line -> Taxiway Main -> Holding Short -> RWY 18L centerlineへつなぐ。
 Pushback中は機首をターミナル側へ保持し、Line Up完了後にRWY 18Lの+X方向へ揃える。
+
+Phase 3.9-5Dでは、RWY 18L/36Rを `RunwayGeometry`、主要誘導路を `TaxiwayRouteDefinition` として定義し、Line Up / Takeoff / Landing Rollout / Arrival exit routeが滑走路IDと使用方向から参照できる土台にした。
+
+次PhaseのSmooth Turn方針:
+
+- 現在の `headingDegrees` を即時反映値から現在headingとして扱い、別に `targetHeadingDegrees` を持つ。
+- 地上走行中は `turnRateDegPerSec` を低めにし、waypoint切り替え時に `Mathf.MoveTowardsAngle` でtargetへ追従する。
+- Pushback中は機首方向と移動方向を分けられるよう、`movementDirection` と `facingDirection` の分離を維持する。
 
 ## Do Not Change Yet
 

@@ -22,12 +22,19 @@ namespace ATCJourneyJapan.Airport
         public bool RunwayOccupied => runwayOccupied;
         public string OccupiedByFlightId => occupiedByFlightId;
         public string OccupiedReason => occupiedReason;
+        public RunwayGeometry Geometry { get; private set; }
 
         public void Configure(string id, Transform start, Transform end)
+        {
+            Configure(id, start, end, null);
+        }
+
+        public void Configure(string id, Transform start, Transform end, RunwayGeometry geometry)
         {
             runwayId = id;
             threshold = start;
             departureEnd = end;
+            Geometry = geometry;
         }
 
         public void Refresh(IEnumerable<AircraftController> aircraft)

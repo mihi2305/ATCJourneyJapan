@@ -13,6 +13,10 @@
 - 今回実装すること
 - 今回は実装せず後続Phaseに回すこと
 
+## 2026-07-05 Phase 3.9-5D Runway and taxiway geometry source of truth
+
+- RWY 18L/36Rを `RunwayGeometry`、主要誘導路を `TaxiwayRouteDefinition` として定義し、離着陸routeが滑走路ID・使用方向から参照できる土台を追加
+
 ## 2026-07-05 Phase 3.9-5C Departure ground route stabilization
 
 - AJJ202向けにSPOTからPushback Line、Taxiway Main、Holding Short、RWY 18L中心線へつながる現在位置ベースの出発routeへ調整

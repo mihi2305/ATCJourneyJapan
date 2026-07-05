@@ -2,11 +2,19 @@
 
 ## Current Phase
 
-Phase 3.9-5C Departure ground route stabilization
+Phase 3.9-5D Runway and taxiway geometry source of truth
 
 ## Previous Phase
 
-Phase 3.9-5B Fix departure runway takeoff direction
+Phase 3.9-5C Departure ground route stabilization
+
+## Phase 3.9-5Dで行うこと
+
+- RWY 18L/36Rの中心線、端点、幅、Line Up位置、離着陸方向を `RunwayGeometry` として整理する
+- 見た目のRunway A生成と航空機routeが、同じ滑走路ジオメトリのX/Z座標を参照するようにする
+- 主要Taxiwayを `TaxiwayRouteDefinition` として定義し、Arrival exit / Gate linkなどのroute生成で参照できる土台を作る
+- AJJ202 / AJJ101などは `AircraftData.ActiveRunwayDesignator` をもとにLine Up / Takeoff / Landing Rollout方向を取得する
+- 今回はSmooth Turn本格実装、速度・加速調整、Takeoff pitch、Taxiway全面再設計、B滑走路運用は行わない
 
 ## Phase 3.9-5Cで行うこと
 
