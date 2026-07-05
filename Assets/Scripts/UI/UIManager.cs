@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using ATCJourneyJapan.Aircraft;
+using ATCJourneyJapan.Airport;
 using ATCJourneyJapan.Core;
 using ATCJourneyJapan.Radio;
 using ATCJourneyJapan.Scoring;
@@ -11,6 +12,13 @@ namespace ATCJourneyJapan.UI
 {
     public class UIManager : MonoBehaviour
     {
+        private const float MiniMapWorldMinX = -31f;
+        private const float MiniMapWorldMaxX = 38f;
+        private const float MiniMapWorldMinZ = -18f;
+        private const float MiniMapWorldMaxZ = 24f;
+        private const float MiniMapWidth = 376f;
+        private const float MiniMapHeight = 206f;
+
         private readonly AircraftCommand[] commandOrder =
         {
             AircraftCommand.ClearLanding,
@@ -412,7 +420,7 @@ namespace ATCJourneyJapan.UI
             minimapContent.sizeDelta = new Vector2(376f, 206f);
             minimapContent.anchoredPosition = new Vector2(0f, -22f);
 
-            CreateMiniMapBlock("Mini Map Sea Background", Vector2.zero, new Vector2(376f, 206f), new Color(0.02f, 0.28f, 0.42f, 0.82f));
+            CreateMiniMapBlock("Mini Map Sea Background", Vector2.zero, new Vector2(MiniMapWidth, MiniMapHeight), new Color(0.02f, 0.28f, 0.42f, 0.82f));
             CreateMiniMapBlock("Mini Map Main Airport Island", WorldToMiniMap(new Vector3(3f, 0f, -8.2f)), WorldSizeToMiniMap(new Vector2(68f, 18.8f)), new Color(0.08f, 0.19f, 0.12f, 0.88f));
             CreateMiniMapBlock("Mini Map Future Runway Island", WorldToMiniMap(new Vector3(3f, 0f, 10.2f)), WorldSizeToMiniMap(new Vector2(36.5f, 5.4f)), new Color(0.11f, 0.21f, 0.13f, 0.88f));
             CreateMiniMapBlock("Mini Map Central Wedge Base", WorldToMiniMap(new Vector3(4.3f, 0f, 2.7f)), WorldSizeToMiniMap(new Vector2(16.8f, 2.8f)), new Color(0.1f, 0.23f, 0.14f, 0.9f));
@@ -421,7 +429,12 @@ namespace ATCJourneyJapan.UI
 
             CreateMiniMapBlock("Mini Map Fighter Base Area", WorldToMiniMap(new Vector3(-13.5f, 0f, -9.7f)), WorldSizeToMiniMap(new Vector2(12.5f, 5.2f)), new Color(0.25f, 0.31f, 0.24f, 0.96f));
             CreateMiniMapBlock("Mini Map Support Base Area", WorldToMiniMap(new Vector3(-1.6f, 0f, -10f)), WorldSizeToMiniMap(new Vector2(11.2f, 5.9f)), new Color(0.29f, 0.34f, 0.29f, 0.96f));
-            CreateMiniMapBlock("Mini Map Passenger Area", WorldToMiniMap(new Vector3(13.8f, 0f, -10.4f)), WorldSizeToMiniMap(new Vector2(18.6f, 6.8f)), new Color(0.35f, 0.39f, 0.38f, 0.96f));
+            CreateMiniMapBlock("Mini Map Passenger Apron", WorldToMiniMap(new Vector3(17.1f, 0f, -10.1f)), WorldSizeToMiniMap(new Vector2(29.2f, 9.35f)), new Color(0.35f, 0.39f, 0.38f, 0.92f));
+            CreateMiniMapBlock("Mini Map DOM Terminal", WorldToMiniMap(new Vector3(12.5f, 0f, -15.35f)), WorldSizeToMiniMap(new Vector2(18.2f, 2.35f)), new Color(0.58f, 0.64f, 0.62f, 0.98f));
+            CreateMiniMapBlock("Mini Map INTL Terminal", WorldToMiniMap(new Vector3(25.7f, 0f, -15.35f)), WorldSizeToMiniMap(new Vector2(8.4f, 2.55f)), new Color(0.64f, 0.67f, 0.65f, 0.98f));
+            CreateMiniMapBlock("Mini Map DOM Finger West", WorldToMiniMap(new Vector3(8.6f, 0f, -12.35f)), WorldSizeToMiniMap(new Vector2(1.55f, 5.25f)), new Color(0.58f, 0.64f, 0.62f, 0.98f));
+            CreateMiniMapBlock("Mini Map DOM Finger East", WorldToMiniMap(new Vector3(16.3f, 0f, -12.35f)), WorldSizeToMiniMap(new Vector2(1.55f, 5.25f)), new Color(0.58f, 0.64f, 0.62f, 0.98f));
+            CreateMiniMapBlock("Mini Map INTL Pier", WorldToMiniMap(new Vector3(25.7f, 0f, -12.55f)), WorldSizeToMiniMap(new Vector2(5.9f, 2.05f)), new Color(0.64f, 0.67f, 0.65f, 0.98f));
 
             minimapRunwayImage = CreateMiniMapBlock("Mini Map Runway A", WorldToMiniMap(new Vector3(3f, 0f, 0f)), WorldSizeToMiniMap(new Vector2(32.5f, 2.35f)), new Color(0.38f, 0.4f, 0.42f, 0.98f));
             CreateMiniMapBlock("Mini Map Runway B", WorldToMiniMap(new Vector3(3f, 0f, 10.2f)), WorldSizeToMiniMap(new Vector2(29.2f, 2.8f)), new Color(0.31f, 0.34f, 0.35f, 0.78f));
@@ -431,19 +444,56 @@ namespace ATCJourneyJapan.UI
             CreateMiniMapBlock("Mini Map Taxiway E Right", WorldToMiniMap(new Vector3(17.1f, 0f, 5.1f)), WorldSizeToMiniMap(new Vector2(1.25f, 10.2f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
             CreateMiniMapBlock("Mini Map Hold A", WorldToMiniMap(new Vector3(12f, 0f, -3f)), new Vector2(18f, 12f), new Color(0.92f, 0.72f, 0.16f, 0.98f));
 
-            CreateMiniMapSpot("SPOT 01", new Vector3(9.5f, 0f, -9.25f));
-            CreateMiniMapSpot("SPOT 02", new Vector3(12.8f, 0f, -9.25f));
-            CreateMiniMapSpot("SPOT 03", new Vector3(16.1f, 0f, -9.25f));
-            CreateMiniMapSpot("SPOT 04", new Vector3(18.2f, 0f, -11.75f));
+            CreateMiniMapSpots();
             CreateText("Mini Map Runway A Label", minimapContent, "18L", 12, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(3f, 0f, 1.8f)), new Vector2(54f, 18f));
             CreateText("Mini Map Runway B Label", minimapContent, "18R", 12, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(3f, 0f, 12.2f)), new Vector2(54f, 18f));
         }
 
-        private void CreateMiniMapSpot(string label, Vector3 worldPosition)
+        private void CreateMiniMapSpots()
+        {
+            var airport = gameManager != null ? gameManager.Airport : null;
+            if (airport == null || airport.SpotDefinitions.Count == 0)
+            {
+                CreateMiniMapSpot("SPOT 01", AirportSpotArea.DOM, AircraftSizeClass.Narrowbody, new Vector3(6.3f, 0f, -8.35f), new Vector3(2.35f, 0f, 3.45f));
+                CreateMiniMapSpot("SPOT 02", AirportSpotArea.DOM, AircraftSizeClass.Narrowbody, new Vector3(10.8f, 0f, -7.95f), new Vector3(2.35f, 0f, 3.45f));
+                CreateMiniMapSpot("SPOT 03", AirportSpotArea.DOM, AircraftSizeClass.Narrowbody, new Vector3(17.1f, 0f, -8.15f), new Vector3(2.35f, 0f, 3.45f));
+                CreateMiniMapSpot("SPOT 04", AirportSpotArea.INTL, AircraftSizeClass.Widebody, new Vector3(26.2f, 0f, -8.65f), new Vector3(3.7f, 0f, 4.85f));
+                return;
+            }
+
+            foreach (var spotDefinition in airport.SpotDefinitions)
+            {
+                CreateMiniMapSpot(
+                    spotDefinition.TutorialId,
+                    spotDefinition.Area,
+                    spotDefinition.AircraftSizeClass,
+                    spotDefinition.Position,
+                    spotDefinition.StandScale);
+            }
+        }
+
+        private void CreateMiniMapSpot(string label, AirportSpotArea area, AircraftSizeClass aircraftSizeClass, Vector3 worldPosition, Vector3 standScale)
         {
             var position = WorldToMiniMap(worldPosition);
-            CreateMiniMapBlock($"Mini Map {label}", position, new Vector2(24f, 18f), new Color(0.1f, 0.64f, 0.56f, 0.98f));
+            var size = WorldSizeToMiniMap(new Vector2(standScale.x, standScale.z));
+            size = new Vector2(Mathf.Max(size.x, aircraftSizeClass == AircraftSizeClass.Widebody ? 22f : 18f), Mathf.Max(size.y, aircraftSizeClass == AircraftSizeClass.Widebody ? 18f : 14f));
+            CreateMiniMapBlock($"Mini Map {label}", position, size, GetMiniMapSpotColor(area, aircraftSizeClass));
             CreateText($"Mini Map {label} Label", minimapContent, label.Replace("SPOT ", "S"), 11, FontStyle.Bold, TextAnchor.MiddleCenter, position + new Vector2(0f, -20f), new Vector2(50f, 16f));
+        }
+
+        private Color GetMiniMapSpotColor(AirportSpotArea area, AircraftSizeClass aircraftSizeClass)
+        {
+            if (area == AirportSpotArea.INTL || aircraftSizeClass == AircraftSizeClass.Widebody)
+            {
+                return new Color(0.12f, 0.58f, 0.78f, 0.98f);
+            }
+
+            if (area == AirportSpotArea.DOM)
+            {
+                return new Color(0.1f, 0.64f, 0.56f, 0.98f);
+            }
+
+            return new Color(0.56f, 0.56f, 0.46f, 0.98f);
         }
 
         private Image CreateMiniMapBlock(string name, Vector2 anchoredPosition, Vector2 size, Color color)
@@ -554,15 +604,15 @@ namespace ATCJourneyJapan.UI
 
         private Vector2 WorldToMiniMap(Vector3 worldPosition)
         {
-            var x = Mathf.InverseLerp(-31f, 37f, worldPosition.x) * 376f - 188f;
-            var y = Mathf.InverseLerp(-18f, 24f, worldPosition.z) * 206f - 103f;
+            var x = Mathf.InverseLerp(MiniMapWorldMinX, MiniMapWorldMaxX, worldPosition.x) * MiniMapWidth - MiniMapWidth * 0.5f;
+            var y = Mathf.InverseLerp(MiniMapWorldMinZ, MiniMapWorldMaxZ, worldPosition.z) * MiniMapHeight - MiniMapHeight * 0.5f;
             return new Vector2(Mathf.Round(x), Mathf.Round(y));
         }
 
         private Vector2 WorldSizeToMiniMap(Vector2 worldSize)
         {
-            var x = Mathf.Max(3f, worldSize.x / 68f * 376f);
-            var y = Mathf.Max(3f, worldSize.y / 42f * 206f);
+            var x = Mathf.Max(3f, worldSize.x / (MiniMapWorldMaxX - MiniMapWorldMinX) * MiniMapWidth);
+            var y = Mathf.Max(3f, worldSize.y / (MiniMapWorldMaxZ - MiniMapWorldMinZ) * MiniMapHeight);
             return new Vector2(Mathf.Round(x), Mathf.Round(y));
         }
 

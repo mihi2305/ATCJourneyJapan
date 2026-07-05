@@ -2,11 +2,18 @@
 
 ## Current Phase
 
-Phase 3.9-4C Spot ID and apron layout data foundation
+Phase 3.9-4D Minimap alignment with terminal and spot data
 
 ## Previous Phase
 
-Phase 3.9-4B Terminal layout specification
+Phase 3.9-4C Spot ID and apron layout data foundation
+
+## Phase 3.9-4Dで行うこと
+
+- 右上ミニマップを現在のA/B滑走路、海、本体空港島、中央施設帯、旅客ターミナル、基地エリアの相対配置に合わせて更新する
+- `AirportSpotDefinition` を参照してSPOT 01〜04をミニマップ表示し、メイン画面との大きなズレを減らす
+- 航空機アイコンの `WorldToMiniMap` 投影範囲を現在の空港レイアウトへ合わせ、headingによる矢印回転は維持する
+- 今回はメイン画面の再配置、Taxi route再設計、Pushback Line実装、全SPOT表示、B滑走路運用は行わない
 
 ## Phase 3.9-4Cで行うこと
 

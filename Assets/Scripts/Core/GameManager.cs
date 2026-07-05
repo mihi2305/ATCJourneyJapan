@@ -67,6 +67,7 @@ namespace ATCJourneyJapan.Core
         public bool IsPrimaryRunwayOccupied => GetPrimaryRunwayController()?.RunwayOccupied ?? false;
         public string PrimaryRunwayOccupiedByFlightId => GetPrimaryRunwayController()?.OccupiedByFlightId ?? string.Empty;
         public string PrimaryRunwayOccupiedReason => GetPrimaryRunwayController()?.OccupiedReason ?? string.Empty;
+        public AirportManager Airport => airportManager;
 
         public void Initialize()
         {
