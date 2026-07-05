@@ -46,6 +46,7 @@ namespace ATCJourneyJapan.Airport
         public Vector3 SecondaryDepartureSpawnPosition => gatePositions.Count > 3 ? gatePositions[3] : new Vector3(-16f, 0.6f, -11.6f);
         public Vector3 PushbackReadyPosition => new Vector3(13f, 0.6f, -6.5f);
         public Vector3 HoldShortPosition => new Vector3(12f, 0.55f, -3f);
+        public Vector3 PrimaryRunwayTakeoffDirection => GetTakeoffDirection(PrimaryRunwayData);
 
         public void Initialize()
         {
@@ -75,6 +76,16 @@ namespace ATCJourneyJapan.Airport
                 new Vector3(-12f, 0.6f, 0f),
                 new Vector3(-6f, 0.6f, 0f)
             };
+        }
+
+        private Vector3 GetTakeoffDirection(RunwayData runway)
+        {
+            if (runway != null && runway.CurrentActiveDesignator == "36R")
+            {
+                return Vector3.left;
+            }
+
+            return Vector3.right;
         }
 
         public IEnumerable<Vector3> GetLandingRollRoute()

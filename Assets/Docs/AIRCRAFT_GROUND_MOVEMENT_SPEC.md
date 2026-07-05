@@ -13,7 +13,7 @@ Phase 3.9-5A時点の航空機移動、heading、facingDirection、visual rotati
 | File | Current responsibility |
 | --- | --- |
 | `AircraftController.cs` | 状態遷移、コマンド実行、速度指定、heading / facingDirection / Transform rotation同期 |
-| `SimpleRoute.cs` | waypointキュー、一定速度の `Vector3.MoveTowards` 移動、移動中Transform rotation更新 |
+| `SimpleRoute.cs` | waypointキュー、一定速度の `Vector3.MoveTowards` 移動。Phase 3.9-5B以降はTransform rotationを直接更新しない |
 | `AircraftVisualSpec.cs` | 機種別の実寸、見た目サイズ、クリック判定、ラベル高さ |
 | `AirportManager.cs` | Pushback / Taxi / Line Up / Takeoff / Landing Rollout の仮route waypoint |
 | `AircraftData.cs` | UI表示用のruntime heading / facingDirection / stateを保持 |
@@ -39,16 +39,16 @@ Phase 3.9-5A時点の航空機移動、heading、facingDirection、visual rotati
 | --- | --- | --- |
 | `headingDegrees` | `AircraftController` | UI / minimap向け角度。`-Atan2(x, z)` で算出 |
 | `facingDirection` | `AircraftController` | X/Z平面の向きベクトル。`East/West/North/South`表示の元 |
-| Parent transform yaw | `AircraftController` と `SimpleRoute` | 機体全体の見た目回転 |
+| Parent transform yaw | `AircraftController` | 機体全体の見た目回転 |
 | Visual child rotation | なし | 現状は親Transformと同じ。pitch/roll専用制御は未実装 |
 | Visual pitch | なし | Takeoff rotation / climb pitchは未実装 |
 | Visual roll/bank | なし | 常に0相当 |
 
 注意点:
 
-- `SimpleRoute.Tick` が `target.rotation = Quaternion.LookRotation(...)` を実行する。
-- 同じUpdate内で `AircraftController.UpdateHeadingFromMovement` も `SetHeadingFromWorldDirection` を呼び、`transform.rotation` を更新する。
-- 結果としてyawは概ね正しいが、rotation責務が2か所に分かれている。
+- Phase 3.9-5B前は `SimpleRoute.Tick` が `target.rotation = Quaternion.LookRotation(...)` を実行していた。
+- Phase 3.9-5B以降は `SimpleRoute` からrotation更新を外し、`AircraftController.UpdateHeadingFromMovement` / runway heading lock側に寄せた。
+- これにより、Taxi route由来のrotationがLine Up / Takeoff headingを上書きしない。
 - Hold / Stopなど移動差分が小さい時は `MinHeadingMovementSqrMagnitude` によりheading更新しないため、停止中の向き保持はある程度できている。
 
 ## State Speed And Attitude Targets
@@ -170,6 +170,9 @@ public class AircraftMovementProfile
 4. Resume時は、現状通り次waypoint方向へ向き直してから移動再開する。
 5. Takeoff pitch本実装はまだ入れず、地上状態ではvisual child pitchを0に戻す土台だけ検討する。
 6. 速度の機種別化は、まず `AircraftMovementProfile` 追加のみ。routeやwaypointの大規模再設計は後続。
+
+Phase 3.9-5Bでは、出発機のLine Up / Takeoff中だけ使用滑走路方向のheadingを固定し、`SimpleRoute` のTransform rotation更新を外す。
+現在のRWY 18LはUnity座標の+X方向、将来のRWY 36Rは-X方向として扱う。
 
 ## Do Not Change Yet
 

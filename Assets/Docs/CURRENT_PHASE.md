@@ -2,11 +2,19 @@
 
 ## Current Phase
 
-Phase 3.9-5A Aircraft ground movement and takeoff attitude spec
+Phase 3.9-5B Fix departure runway takeoff direction
 
 ## Previous Phase
 
-Phase 3.9-4D Minimap alignment with terminal and spot data
+Phase 3.9-5A Aircraft ground movement and takeoff attitude spec
+
+## Phase 3.9-5Bで行うこと
+
+- 出発機がLine Up / Cleared for Takeoffに入った時、使用滑走路方向へ機首を固定する
+- 現在のチュートリアル出発はRWY 18L扱いとして、A滑走路上をUnity座標の+X方向へ離陸する
+- 将来RWY 36Rへ切り替える場合は、同じA滑走路上を-X方向へ離陸する前提で方向定義を分ける
+- `SimpleRoute` は移動だけを担当し、Transform rotationの直接更新は `AircraftController` に寄せる
+- 今回はTakeoff pitch本格実装、速度・加速調整、Taxi waypoint再設計、B滑走路運用は行わない
 
 ## Phase 3.9-5Aで行うこと
 

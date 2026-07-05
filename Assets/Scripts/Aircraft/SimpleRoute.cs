@@ -71,13 +71,6 @@ namespace ATCJourneyJapan.Aircraft
             var updated = Vector3.MoveTowards(current, next, Speed * deltaTime);
             target.position = updated;
 
-            var direction = next - current;
-            direction.y = 0f;
-            if (direction.sqrMagnitude > 0.001f)
-            {
-                target.rotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
-            }
-
             if (Vector3.Distance(updated, next) <= 0.05f)
             {
                 waypoints.Dequeue();
