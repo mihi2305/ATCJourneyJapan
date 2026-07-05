@@ -2,11 +2,21 @@
 
 ## Current Phase
 
-Phase 3.9-3B Minimap layout alignment
+Phase 3.9-4A Passenger terminal and spot layout foundation
 
 ## Previous Phase
 
-Phase 3.9-3A Aircraft scale system
+Phase 3.9-3B Minimap layout alignment
+
+## Phase 3.9-4Aで行うこと
+
+- AIP Aerodrome Chart上の丸数字をSPOT番号として読み、DOM TERMINAL前とINTL TERMINAL前に複数SPOT群が並ぶ配置思想をブロックアウトへ反映する
+- 旅客ターミナルをA滑走路下側・右寄りに置き、横長本体をDOM TERMINAL風ブロックとINTL TERMINAL風ブロックに分ける
+- エプロン側へ伸びるコブ型・フィンガー型の出っ張りを2個だけ追加し、2個の間にはB737級がプッシュバックできそうな広い通路余白を残す
+- ターミナル前の旅客エプロンを広げ、DOM側に将来4〜6機分、INTL側に将来2〜4機分程度の駐機余白を残す
+- 既存SPOT 01〜04はゲーム用の仮SPOTとして残し、旅客ターミナル前エプロンに自然にまとまるよう再配置する
+- 簡易ボーディングブリッジを2〜4本だけPrimitiveで試作し、ターミナルまたはフィンガーからSPOT方向へ伸ばす
+- 今回はAIP上の全SPOT完全再現、Taxi waypoint調整、航空機ルート再設計、B滑走路運用、外部アセット導入は行わない
 
 ## Phase 3.9-3Bで行うこと
 

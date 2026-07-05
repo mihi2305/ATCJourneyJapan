@@ -31,6 +31,7 @@ namespace ATCJourneyJapan.Airport
         private Material seaMaterial;
         private Material shorelineMaterial;
         private Material terminalMaterial;
+        private Material boardingBridgeMaterial;
         private Material towerMaterial;
         private Material holdShortMaterial;
 
@@ -161,6 +162,7 @@ namespace ATCJourneyJapan.Airport
             seaMaterial = CreateMaterial("Naha Sea Blockout", new Color(0.03f, 0.48f, 0.72f));
             shorelineMaterial = CreateMaterial("Shoreline Blockout", new Color(0.52f, 0.82f, 0.84f));
             terminalMaterial = CreateMaterial("Terminal Blockout", new Color(0.68f, 0.72f, 0.7f));
+            boardingBridgeMaterial = CreateMaterial("Boarding Bridge Blockout", new Color(0.82f, 0.84f, 0.8f));
             towerMaterial = CreateMaterial("Tower Blockout", new Color(0.86f, 0.88f, 0.82f));
             holdShortMaterial = CreateMaterial("Hold Yellow", new Color(0.85f, 0.68f, 0.18f));
         }
@@ -193,10 +195,10 @@ namespace ATCJourneyJapan.Airport
             CreateRunway(root.transform);
             CreateTaxiways(root.transform);
 
-            gatePositions.Add(new Vector3(9.5f, 0.6f, -9.25f));
-            gatePositions.Add(new Vector3(12.8f, 0.6f, -9.25f));
-            gatePositions.Add(new Vector3(16.1f, 0.6f, -9.25f));
-            gatePositions.Add(new Vector3(18.2f, 0.6f, -11.75f));
+            gatePositions.Add(new Vector3(8.2f, 0.6f, -9.15f));
+            gatePositions.Add(new Vector3(11.5f, 0.6f, -9.15f));
+            gatePositions.Add(new Vector3(15.5f, 0.6f, -9.2f));
+            gatePositions.Add(new Vector3(22.3f, 0.6f, -9.6f));
             CreateSpotStand("Gate 1 Stand", "SPOT 01", gatePositions[0], root.transform);
             CreateSpotStand("Gate 2 Stand", "SPOT 02", gatePositions[1], root.transform);
             CreateSpotStand("Gate 3 Stand", "SPOT 03", gatePositions[2], root.transform);
@@ -264,8 +266,9 @@ namespace ATCJourneyJapan.Airport
         {
             CreateBox("Fighter Alert Base Apron", new Vector3(-13.5f, -0.02f, -9.7f), new Vector3(12.5f, 0.12f, 5.2f), militaryApronMaterial, parent);
             CreateBox("JASDF Support Transport Apron", new Vector3(-1.6f, -0.018f, -10f), new Vector3(11.2f, 0.12f, 5.9f), secondaryApronMaterial, parent);
-            CreateBox("Passenger Apron Blockout", new Vector3(13.8f, -0.01f, -10.4f), new Vector3(18.6f, 0.12f, 6.8f), passengerApronMaterial, parent);
-            CreateBox("Base Passenger Area Divider", new Vector3(4.8f, 0.04f, -10.4f), new Vector3(0.16f, 0.08f, 8.2f), areaDividerMaterial, parent);
+            CreateBox("Passenger Apron Blockout", new Vector3(15.4f, -0.01f, -10.7f), new Vector3(23.4f, 0.12f, 8.2f), passengerApronMaterial, parent);
+            CreateBox("Passenger Apron Pushback Lane", new Vector3(15.4f, 0.065f, -7.6f), new Vector3(20.6f, 0.035f, 0.08f), taxiwayMarkingMaterial, parent);
+            CreateBox("Base Passenger Area Divider", new Vector3(4f, 0.04f, -10.4f), new Vector3(0.16f, 0.08f, 8.8f), areaDividerMaterial, parent);
 
             CreateBox("Fighter Shelter 01", new Vector3(-17.5f, 0.55f, -13.3f), new Vector3(2.2f, 1.1f, 2f), hangarMaterial, parent);
             CreateBox("Fighter Shelter 02", new Vector3(-14.6f, 0.55f, -13.3f), new Vector3(2.2f, 1.1f, 2f), hangarMaterial, parent);
@@ -276,9 +279,17 @@ namespace ATCJourneyJapan.Airport
             CreateBox("JASDF Transport Hangar East", new Vector3(1.6f, 0.85f, -14.5f), new Vector3(4f, 1.7f, 2.4f), hangarMaterial, parent);
             CreateBox("Base Operations Blocks", new Vector3(-0.9f, 0.45f, -6.7f), new Vector3(5.8f, 0.9f, 1.4f), supportBuildingMaterial, parent);
 
-            CreateBox("DOM TERMINAL Blockout", new Vector3(11f, 0.85f, -15.2f), new Vector3(12.5f, 1.7f, 2.3f), terminalMaterial, parent);
-            CreateBox("INTL TERMINAL Blockout", new Vector3(19.3f, 0.75f, -15.3f), new Vector3(6.8f, 1.5f, 2.2f), terminalMaterial, parent);
-            CreateBox("Passenger Pier Blockout", new Vector3(15.6f, 0.5f, -12.9f), new Vector3(9.5f, 1f, 1.1f), terminalMaterial, parent);
+            CreateBox("DOM TERMINAL Main Blockout", new Vector3(11.6f, 0.85f, -15.25f), new Vector3(13.8f, 1.7f, 2.25f), terminalMaterial, parent);
+            CreateBox("INTL TERMINAL Main Blockout", new Vector3(21.4f, 0.78f, -15.25f), new Vector3(8.4f, 1.55f, 2.25f), terminalMaterial, parent);
+            CreateBox("Passenger Terminal Concourse Joint", new Vector3(16.5f, 0.68f, -14f), new Vector3(3.2f, 1.35f, 1.25f), terminalMaterial, parent);
+            CreateBox("DOM Finger Pier Blockout", new Vector3(9.3f, 0.58f, -12.15f), new Vector3(2.15f, 1.15f, 4.95f), terminalMaterial, parent);
+            CreateBox("INTL Finger Pier Blockout", new Vector3(17.6f, 0.58f, -12.1f), new Vector3(2.25f, 1.15f, 5.1f), terminalMaterial, parent);
+            CreateBox("DOM Future Stand Apron Reserve", new Vector3(6.1f, 0.04f, -10.75f), new Vector3(3.2f, 0.04f, 5.65f), secondaryApronMaterial, parent);
+            CreateBox("INTL Widebody Apron Reserve", new Vector3(24.7f, 0.04f, -10.65f), new Vector3(4.9f, 0.04f, 6.35f), secondaryApronMaterial, parent);
+            CreateBoardingBridge("Boarding Bridge SPOT 01", new Vector3(8.8f, 0.72f, -11.05f), new Vector3(0.34f, 0.2f, 2.55f), parent);
+            CreateBoardingBridge("Boarding Bridge SPOT 02", new Vector3(10.2f, 0.72f, -11.05f), new Vector3(0.34f, 0.2f, 2.55f), parent);
+            CreateBoardingBridge("Boarding Bridge SPOT 03", new Vector3(16.4f, 0.72f, -11.05f), new Vector3(0.34f, 0.2f, 2.65f), parent);
+            CreateBoardingBridge("Boarding Bridge SPOT 04", new Vector3(21.4f, 0.72f, -11.45f), new Vector3(0.34f, 0.2f, 2.85f), parent);
 
             CreateBox("TWR Shaft Blockout", new Vector3(8.4f, 1.65f, 4.95f), new Vector3(0.85f, 3.3f, 0.85f), towerMaterial, parent);
             CreateBox("TWR Cab Blockout", new Vector3(8.4f, 3.55f, 4.95f), new Vector3(2f, 0.85f, 2f), towerMaterial, parent);
@@ -326,6 +337,12 @@ namespace ATCJourneyJapan.Airport
             CreateBox($"{spotLabel} Left Line", basePosition + new Vector3(-1.36f, 0.12f, 0f), new Vector3(0.07f, 0.04f, 2.1f), spotMarkingMaterial, parent);
             CreateBox($"{spotLabel} Right Line", basePosition + new Vector3(1.36f, 0.12f, 0f), new Vector3(0.07f, 0.04f, 2.1f), spotMarkingMaterial, parent);
             CreateBox($"{spotLabel} Stop Bar", basePosition + new Vector3(0f, 0.13f, 0.56f), new Vector3(1.25f, 0.045f, 0.08f), runwayMarkingMaterial, parent);
+        }
+
+        private void CreateBoardingBridge(string bridgeName, Vector3 position, Vector3 scale, Transform parent)
+        {
+            CreateBox(bridgeName, position, scale, boardingBridgeMaterial, parent);
+            CreateBox($"{bridgeName} Head", position + new Vector3(0f, -0.04f, scale.z * 0.5f), new Vector3(0.58f, 0.28f, 0.44f), boardingBridgeMaterial, parent);
         }
 
         private GameObject CreateBox(string objectName, Vector3 position, Vector3 scale, Material material, Transform parent)

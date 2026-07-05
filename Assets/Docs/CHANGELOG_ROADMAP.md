@@ -13,6 +13,10 @@
 - 今回実装すること
 - 今回は実装せず後続Phaseに回すこと
 
+## 2026-07-05 Phase 3.9-4A Passenger terminal and spot layout foundation
+
+- AIP上の丸数字をSPOT番号として読み、DOM/INTL風の横長旅客ターミナル、2本のフィンガー、広い旅客エプロン、SPOT 01〜04再配置、簡易ボーディングブリッジを追加
+
 ## 2026-07-05 Phase 3.9-3B Minimap layout alignment
 
 - 現在の那覇空港風ブロックアウトに合わせ、ミニマップのA/B滑走路、海、本体空港島、中央施設帯、基地/旅客エリア、航空機座標投影範囲を調整
