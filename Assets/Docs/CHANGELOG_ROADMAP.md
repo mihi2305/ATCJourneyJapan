@@ -16,6 +16,7 @@
 ## 2026-07-05 Phase 3.9-4A Passenger terminal and spot layout foundation
 
 - AIP上の丸数字をSPOT番号として読み、DOM/INTL風の横長旅客ターミナル、2本のフィンガー、広い旅客エプロン、SPOT 01〜04再配置、簡易ボーディングブリッジを追加
+- QA: ADC-2と推定寸法をもとにDOM/INTL長さ比、DOMフィンガー間隔、INTL大型機余白、SPOT/ボーディングブリッジの見た目スケールを再調整
 
 ## 2026-07-05 Phase 3.9-3B Minimap layout alignment
 

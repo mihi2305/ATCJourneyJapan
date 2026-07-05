@@ -18,6 +18,14 @@ Phase 3.9-3B Minimap layout alignment
 - 簡易ボーディングブリッジを2〜4本だけPrimitiveで試作し、ターミナルまたはフィンガーからSPOT方向へ伸ばす
 - 今回はAIP上の全SPOT完全再現、Taxi waypoint調整、航空機ルート再設計、B滑走路運用、外部アセット導入は行わない
 
+## Phase 3.9-4A QAで修正したこと
+
+- AIP AD CHART / ADC-2のDOM TERMINAL、INTL TERMINAL、Pushback Line、NR/INTL Apron、SPOT配置を参考に、旅客ターミナル全体をより横長の比率へ再調整した
+- 推定寸法は航空機・SPOTの見た目スケールを優先し、DOM:INTLの長さ比をおおむね650:300に近づけた
+- DOMフィンガー2本の間隔を広げ、フィンガー間をSPOTで埋めずPushback Line / 地上走行余白として見えるようにした
+- INTL側はDOM側より広いエプロン奥行きと大型機向けSPOT余白を持つ配置にした
+- SPOT 01〜03はB737級、SPOT 04はB787/B777級を想定した広めの区画として再調整した
+
 ## Phase 3.9-3Bで行うこと
 
 - Phase 3.9-2A〜3.9-3Aで更新した那覇空港風ブロックアウトに合わせて、右上ミニマップの簡略図を更新する
