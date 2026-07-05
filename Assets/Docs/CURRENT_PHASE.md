@@ -2,11 +2,19 @@
 
 ## Current Phase
 
-Phase 3.9-5I Arrival final approach route binding
+Phase 3.9-5H QA Correct Naha runway movement directions
 
 ## Previous Phase
 
-Phase 3.9-5H Runway designator orientation correction
+Phase 3.9-5I Arrival final approach route binding
+
+## Phase 3.9-5H QAで修正したこと
+
+- 那覇空港の滑走路番号ルールに合わせ、A滑走路の `18L = 北端から南向き`、`36R = 南端から北向き` を明示した
+- Unity座標では、A/B滑走路の `-X側 = 北端`、`+X側 = 南端` と定義する
+- `RunwayGeometry` に `DesignatorNorthEnd` / `DesignatorSouthEnd`、`NorthEndPoint` / `SouthEndPoint`、`NorthToSouthDirection` / `SouthToNorthDirection` を追加し、方向定義を読み取りやすくした
+- A滑走路は `18L threshold = NorthEndPoint`、`36R threshold = SouthEndPoint` として扱う
+- B滑走路は将来用に `18R = 北→南`、`36L = 南→北` として残すが、現Phaseでは運用しない
 
 ## Phase 3.9-5Iで行うこと
 

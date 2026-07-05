@@ -364,8 +364,8 @@ namespace ATCJourneyJapan.Airport
         private void CreateGeometryData()
         {
             runwayGeometries.Clear();
-            // A runway is drawn left-to-right in Unity. For Naha's RWY 18L/36R, this prototype maps
-            // Unity +X to southbound 18L use and Unity -X to northbound 36R use.
+            // A runway is drawn horizontally in Unity: -X is the north end and +X is the south end.
+            // Naha A runway uses 18L from north to south and 36R from south to north.
             runwayGeometries.Add(new RunwayGeometry(
                 "RWY_A",
                 "A",
@@ -385,8 +385,8 @@ namespace ATCJourneyJapan.Airport
                 Vector3.right,
                 Vector3.left));
 
-            // B runway remains future-only in gameplay. It is registered as the sea-side RWY 18R/36L
-            // so later phases can enable it without changing the designator model.
+            // B runway remains future-only in gameplay. It follows the same north/south mapping:
+            // 18R is north to south, and 36L is south to north.
             runwayGeometries.Add(new RunwayGeometry(
                 "RWY_B",
                 "B",
@@ -468,8 +468,8 @@ namespace ATCJourneyJapan.Airport
             var runwayGeometry = PrimaryRunwayGeometry;
             runway.Configure(
                 "A",
-                CreateMarker("Runway A 18L Threshold", ToGroundPoint(runwayGeometry.DesignatorAThresholdPoint), runwayObject.transform),
-                CreateMarker("Runway A 36R Threshold", ToGroundPoint(runwayGeometry.DesignatorBThresholdPoint), runwayObject.transform),
+                CreateMarker("Runway A 18L North Threshold", ToGroundPoint(runwayGeometry.NorthEndPoint), runwayObject.transform),
+                CreateMarker("Runway A 36R South Threshold", ToGroundPoint(runwayGeometry.SouthEndPoint), runwayObject.transform),
                 runwayGeometry);
             runways.Add(runway);
         }
@@ -628,16 +628,16 @@ namespace ATCJourneyJapan.Airport
             var runway = PrimaryRunwayGeometry;
             var runwayCenter = ToGroundPoint(runway.Center);
             var edgeOffset = runway.Width * 0.5f - 0.145f;
-            var markingDirection = runway.GetDirectionForDesignator(runway.DesignatorAEnd);
+            var markingDirection = runway.NorthToSouthDirection;
             CreateBox("Runway A", runwayCenter, new Vector3(runway.Length, 0.2f, runway.Width), runwayMaterial, parent);
             CreateBox("Runway A Edge North", runwayCenter + new Vector3(0f, 0.13f, edgeOffset), new Vector3(runway.Length - 0.6f, 0.04f, 0.08f), runwayEdgeMaterial, parent);
             CreateBox("Runway A Edge South", runwayCenter + new Vector3(0f, 0.13f, -edgeOffset), new Vector3(runway.Length - 0.6f, 0.04f, 0.08f), runwayEdgeMaterial, parent);
-            CreateBox($"Runway A Threshold {runway.DesignatorAEnd}", ToGroundPoint(runway.DesignatorAThresholdPoint + markingDirection * 0.45f) + Vector3.up * 0.14f, new Vector3(0.28f, 0.05f, runway.Width - 0.63f), runwayMarkingMaterial, parent);
-            CreateBox($"Runway A Threshold {runway.DesignatorBOppositeEnd}", ToGroundPoint(runway.DesignatorBThresholdPoint - markingDirection * 0.45f) + Vector3.up * 0.14f, new Vector3(0.28f, 0.05f, runway.Width - 0.63f), runwayMarkingMaterial, parent);
+            CreateBox($"Runway A Threshold {runway.DesignatorNorthEnd}", ToGroundPoint(runway.NorthEndPoint + markingDirection * 0.45f) + Vector3.up * 0.14f, new Vector3(0.28f, 0.05f, runway.Width - 0.63f), runwayMarkingMaterial, parent);
+            CreateBox($"Runway A Threshold {runway.DesignatorSouthEnd}", ToGroundPoint(runway.SouthEndPoint - markingDirection * 0.45f) + Vector3.up * 0.14f, new Vector3(0.28f, 0.05f, runway.Width - 0.63f), runwayMarkingMaterial, parent);
 
             for (var index = 0; index < 9; index++)
             {
-                var centerlinePosition = runway.DesignatorAThresholdPoint + markingDirection * (3.85f + index * 3.1f);
+                var centerlinePosition = runway.NorthEndPoint + markingDirection * (3.85f + index * 3.1f);
                 CreateBox($"Runway A Centerline {index + 1}", ToGroundPoint(centerlinePosition) + Vector3.up * 0.15f, new Vector3(1.15f, 0.045f, 0.08f), runwayMarkingMaterial, parent);
             }
         }

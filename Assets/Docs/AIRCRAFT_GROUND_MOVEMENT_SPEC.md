@@ -187,7 +187,9 @@ Phase 3.9-5Gでは、出発機の使用滑走路方向をPushback後の `Taxi to
 Hold Short / Line Up / Cleared for Takeoffは、Taxi clearanceで保存済みの `ActiveRunwayDesignator` を再利用し、Line Up / Takeoff時に別滑走路を再選択させない。
 
 Phase 3.9-5Hでは、A滑走路を物理滑走路 `A`、運用方向 `RWY 18L / 36R` として再整理した。
-Unity空間ではA滑走路を横向きに描くため、`+X` を18Lの南向き相当、`-X` を36Rの北向き相当として扱い、Line Up位置とTakeoff / Landing方向を `RunwayGeometry` から取得する。
+Unity空間ではA滑走路を横向きに描くため、`-X側 = 北端`、`+X側 = 南端` とする。
+`RWY 18L` は北端thresholdから南向き、つまりUnity上では `-X -> +X`、`RWY 36R` は南端thresholdから北向き、つまりUnity上では `+X -> -X` として扱う。
+Line Up位置とTakeoff / Landing方向は `RunwayGeometry` から取得する。
 B滑走路は将来用の物理滑走路 `B`、運用方向 `RWY 18R / 36L` として登録するが、現Phaseでは運用しない。
 
 Phase 3.9-5Iでは、到着機のFinal Approachを `RunwayGeometry` に接続する。

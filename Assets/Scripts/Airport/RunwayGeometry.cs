@@ -47,6 +47,8 @@ namespace ATCJourneyJapan.Airport
         public string PhysicalRunwayId { get; private set; }
         public string DesignatorAEnd { get; private set; }
         public string DesignatorBOppositeEnd { get; private set; }
+        public string DesignatorNorthEnd => DesignatorAEnd;
+        public string DesignatorSouthEnd => DesignatorBOppositeEnd;
         public Vector3 Center { get; private set; }
         public float Length { get; private set; }
         public float Width { get; private set; }
@@ -54,12 +56,18 @@ namespace ATCJourneyJapan.Airport
         public float HeadingForDesignatorB { get; private set; }
         public Vector3 DesignatorAThresholdPoint { get; private set; }
         public Vector3 DesignatorBThresholdPoint { get; private set; }
+        public Vector3 NorthEndPoint => DesignatorAThresholdPoint;
+        public Vector3 SouthEndPoint => DesignatorBThresholdPoint;
         public Vector3 CenterlineStart { get; private set; }
         public Vector3 CenterlineEnd { get; private set; }
         public Vector3 LineupPointForDesignatorA { get; private set; }
         public Vector3 LineupPointForDesignatorB { get; private set; }
+        public Vector3 LineupPointForNorthEndDesignator => LineupPointForDesignatorA;
+        public Vector3 LineupPointForSouthEndDesignator => LineupPointForDesignatorB;
         public Vector3 DirectionForDesignatorA { get; private set; }
         public Vector3 DirectionForDesignatorB { get; private set; }
+        public Vector3 NorthToSouthDirection => DirectionForDesignatorA;
+        public Vector3 SouthToNorthDirection => DirectionForDesignatorB;
         public IEnumerable<string> AvailableDesignators
         {
             get
