@@ -2,11 +2,18 @@
 
 ## Current Phase
 
-Phase 3.9-4D Minimap alignment with terminal and spot data
+Phase 3.9-5A Aircraft ground movement and takeoff attitude spec
 
 ## Previous Phase
 
-Phase 3.9-4C Spot ID and apron layout data foundation
+Phase 3.9-4D Minimap alignment with terminal and spot data
+
+## Phase 3.9-5Aで行うこと
+
+- 航空機のPushback / Taxi / Hold / Resume / Line Up / Takeoff / Landing Rolloutの速度感、機首方向、pitch基準を整理する
+- 現在の `AircraftController` / `SimpleRoute` / `AircraftVisualSpec` における速度、heading、facingDirection、visual rotationの責務を確認する
+- Takeoff roll / Rotation / Liftoff / Initial climbを将来分離するための設計案を `AIRCRAFT_GROUND_MOVEMENT_SPEC.md` にまとめる
+- 今回は航空機挙動の大規模修正、Taxi waypoint再設計、Takeoff pitch本格実装、B787/B777新規便追加は行わない
 
 ## Phase 3.9-4Dで行うこと
 

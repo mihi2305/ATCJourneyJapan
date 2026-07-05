@@ -13,6 +13,10 @@
 - 今回実装すること
 - 今回は実装せず後続Phaseに回すこと
 
+## 2026-07-05 Phase 3.9-5A Aircraft ground movement and takeoff attitude spec
+
+- 航空機の地上移動速度、heading/facingDirection/visual rotationの責務、Takeoff roll/Rotation/Liftoff/Initial climbの将来設計を `AIRCRAFT_GROUND_MOVEMENT_SPEC.md` に文書化
+
 ## 2026-07-05 Phase 3.9-4D Minimap alignment with terminal and spot data
 
 - ミニマップの旅客エリア、DOM/INTLターミナル、フィンガー、SPOT 01〜04表示、ワールド座標投影範囲を現在の空港レイアウトと `AirportSpotDefinition` に合わせて更新
