@@ -13,6 +13,10 @@
 - 今回実装すること
 - 今回は実装せず後続Phaseに回すこと
 
+## 2026-07-05 Phase 3.9-4C Spot ID and apron layout data foundation
+
+- SPOT 01〜04を `AirportSpotDefinition` で管理し、チュートリアル用ID、将来番号候補、DOM/INTLエリア、機体サイズ区分、ブリッジ紐づけ情報を持たせる土台を追加
+
 ## 2026-07-05 Phase 3.9-4B Terminal layout specification
 
 - 現在の旅客ターミナル配置をA滑走路基準で整理し、DOM/INTL比率、フィンガー、SPOT、ボーディングブリッジ、次Phaseの再配置項目を `TERMINAL_LAYOUT_SPEC.md` に文書化

@@ -12,6 +12,7 @@ namespace ATCJourneyJapan.Airport
         private readonly List<RunwayController> runways = new List<RunwayController>();
         private readonly List<RunwayData> runwayData = new List<RunwayData>();
         private readonly List<Vector3> gatePositions = new List<Vector3>();
+        private readonly List<AirportSpotDefinition> spotDefinitions = new List<AirportSpotDefinition>();
         private Material runwayMaterial;
         private Material futureRunwayMaterial;
         private Material runwayEdgeMaterial;
@@ -37,6 +38,7 @@ namespace ATCJourneyJapan.Airport
 
         public IReadOnlyList<RunwayController> Runways => runways;
         public IReadOnlyList<RunwayData> RunwayData => runwayData;
+        public IReadOnlyList<AirportSpotDefinition> SpotDefinitions => spotDefinitions;
         public RunwayData PrimaryRunwayData => runwayData.Count > 0 ? runwayData[0] : null;
         public Vector3 ArrivalSpawnPosition => new Vector3(-26f, 0.6f, 0f);
         public Vector3 DepartureSpawnPosition => gatePositions.Count > 1 ? gatePositions[1] : new Vector3(-10f, 0.6f, -9f);
@@ -195,14 +197,8 @@ namespace ATCJourneyJapan.Airport
             CreateRunway(root.transform);
             CreateTaxiways(root.transform);
 
-            gatePositions.Add(new Vector3(6.3f, 0.6f, -8.35f));
-            gatePositions.Add(new Vector3(10.8f, 0.6f, -7.95f));
-            gatePositions.Add(new Vector3(17.1f, 0.6f, -8.15f));
-            gatePositions.Add(new Vector3(26.2f, 0.6f, -8.65f));
-            CreateSpotStand("Gate 1 Stand", "SPOT 01", gatePositions[0], new Vector3(2.35f, 0.16f, 3.45f), root.transform);
-            CreateSpotStand("Gate 2 Stand", "SPOT 02", gatePositions[1], new Vector3(2.35f, 0.16f, 3.45f), root.transform);
-            CreateSpotStand("Gate 3 Stand", "SPOT 03", gatePositions[2], new Vector3(2.35f, 0.16f, 3.45f), root.transform);
-            CreateSpotStand("Gate 4 Stand", "SPOT 04", gatePositions[3], new Vector3(3.7f, 0.16f, 4.85f), root.transform);
+            CreateSpotDefinitions();
+            CreateSpotStands(root.transform);
             CreateTerminalBlockout(root.transform);
             CreateBox("Hold Short A", HoldShortPosition + Vector3.down * 0.5f, new Vector3(2.4f, 0.16f, 1.6f), holdShortMaterial, root.transform);
             CreateBox("Hold Short A Stop Bar", HoldShortPosition + new Vector3(0f, -0.39f, 0.62f), new Vector3(2.35f, 0.045f, 0.08f), runwayMarkingMaterial, root.transform);
@@ -212,6 +208,68 @@ namespace ATCJourneyJapan.Airport
             var runway = runwayObject.AddComponent<RunwayController>();
             runway.Configure("A", CreateMarker("Runway A Threshold", new Vector3(-12f, 0f, 0f), runwayObject.transform), CreateMarker("Runway A End", new Vector3(18f, 0f, 0f), runwayObject.transform));
             runways.Add(runway);
+        }
+
+        private void CreateSpotDefinitions()
+        {
+            spotDefinitions.Clear();
+            gatePositions.Clear();
+
+            spotDefinitions.Add(new AirportSpotDefinition(
+                "SPOT 01",
+                "DOM 21-25 candidate",
+                AirportSpotArea.DOM,
+                AircraftSizeClass.Narrowbody,
+                true,
+                new Vector3(6.3f, 0.6f, -8.35f),
+                new Vector3(2.35f, 0.16f, 3.45f),
+                "Boarding Bridge SPOT 01"));
+            spotDefinitions.Add(new AirportSpotDefinition(
+                "SPOT 02",
+                "DOM 23-27 candidate",
+                AirportSpotArea.DOM,
+                AircraftSizeClass.Narrowbody,
+                true,
+                new Vector3(10.8f, 0.6f, -7.95f),
+                new Vector3(2.35f, 0.16f, 3.45f),
+                "Boarding Bridge SPOT 02"));
+            spotDefinitions.Add(new AirportSpotDefinition(
+                "SPOT 03",
+                "DOM 31-37 candidate",
+                AirportSpotArea.DOM,
+                AircraftSizeClass.Narrowbody,
+                true,
+                new Vector3(17.1f, 0.6f, -8.15f),
+                new Vector3(2.35f, 0.16f, 3.45f),
+                "Boarding Bridge SPOT 03"));
+            spotDefinitions.Add(new AirportSpotDefinition(
+                "SPOT 04",
+                "INTL 41-46/51 candidate",
+                AirportSpotArea.INTL,
+                AircraftSizeClass.Widebody,
+                true,
+                new Vector3(26.2f, 0.6f, -8.65f),
+                new Vector3(3.7f, 0.16f, 4.85f),
+                "Boarding Bridge SPOT 04"));
+
+            foreach (var spotDefinition in spotDefinitions)
+            {
+                gatePositions.Add(spotDefinition.Position);
+            }
+        }
+
+        private void CreateSpotStands(Transform parent)
+        {
+            for (var index = 0; index < spotDefinitions.Count; index++)
+            {
+                var spotDefinition = spotDefinitions[index];
+                CreateSpotStand(
+                    $"Gate {index + 1} Stand",
+                    spotDefinition.TutorialId,
+                    spotDefinition.Position,
+                    spotDefinition.StandScale,
+                    parent);
+            }
         }
 
         private void CreateNahaStyleBlockout(Transform parent)

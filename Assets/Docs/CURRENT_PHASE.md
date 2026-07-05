@@ -2,11 +2,18 @@
 
 ## Current Phase
 
-Phase 3.9-4B Terminal layout specification
+Phase 3.9-4C Spot ID and apron layout data foundation
 
 ## Previous Phase
 
-Phase 3.9-4A Passenger terminal and spot layout foundation
+Phase 3.9-4B Terminal layout specification
+
+## Phase 3.9-4Cで行うこと
+
+- SPOT 01〜04を既存チュートリアル用IDとして維持しながら、将来の那覇空港風SPOT番号へ拡張できるデータ定義へ整理する
+- 各SPOTにDOM/INTLなどのエリア、対応機体サイズ、ボーディングブリッジ有無、Unity座標、将来番号候補を持たせる
+- AirportManagerはSPOT定義から `gatePositions` とSPOT見た目を生成し、既存Taxi / Hold / Resume / チュートリアル進行は維持する
+- 今回は全SPOT実装、SPOT再配置、Taxi route再設計、Pushback Line完全接続、ミニマップ全面更新は行わない
 
 ## Phase 3.9-4Bで行うこと
 

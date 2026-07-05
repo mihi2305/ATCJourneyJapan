@@ -77,12 +77,29 @@ ADC-2のINTL APRONでは、Pushback Lineと大型機向けに読める広いSPOT
 
 | Spot | Position | Size | Current role | Future mapping idea |
 | --- | --- | --- | --- | --- |
-| SPOT 01 | `(6.3, 0.6, -8.35)` | `(2.35, 0.16, 3.45)` | DOM西端側B737級 | DOM西側フィンガー周辺の国内線SPOT |
-| SPOT 02 | `(10.8, 0.6, -7.95)` | `(2.35, 0.16, 3.45)` | DOM西フィンガー前B737級 | DOMフィンガー間の国内線SPOT |
-| SPOT 03 | `(17.1, 0.6, -8.15)` | `(2.35, 0.16, 3.45)` | DOM東フィンガー前B737級 | DOM東側フィンガー周辺の国内線SPOT |
-| SPOT 04 | `(26.2, 0.6, -8.65)` | `(3.7, 0.16, 4.85)` | INTL大型機級 | INTL APRON側のB787/B777対応SPOT |
+| SPOT 01 | `(6.3, 0.6, -8.35)` | `(2.35, 0.16, 3.45)` | DOM西端側B737級 | `DOM 21-25 candidate` |
+| SPOT 02 | `(10.8, 0.6, -7.95)` | `(2.35, 0.16, 3.45)` | DOM西フィンガー前B737級 | `DOM 23-27 candidate` |
+| SPOT 03 | `(17.1, 0.6, -8.15)` | `(2.35, 0.16, 3.45)` | DOM東フィンガー前B737級 | `DOM 31-37 candidate` |
+| SPOT 04 | `(26.2, 0.6, -8.65)` | `(3.7, 0.16, 4.85)` | INTL大型機級 | `INTL 41-46/51 candidate` |
 
 現状のSPOT 01から04はゲーム用の仮番号として残す。将来AIP番号へ寄せる場合は、SPOT 01から03をDOM側の実スポット群、SPOT 04をINTL側の実スポット群へ置換するのが自然。
+
+## Spot ID Data Policy
+
+Phase 3.9-4C以降、SPOT 01から04は `AirportSpotDefinition` で管理する。
+
+| Field | Meaning |
+| --- | --- |
+| `TutorialId` | 既存チュートリアル、Flight Strip、Taxi to Spotで使う表示ID。現段階では `SPOT 01` から `SPOT 04` を維持する |
+| `RealWorldStyleId` | 将来AIP風の実スポット番号へ寄せるための候補名。現段階では確定番号ではなくDOM/INTLの候補エリアとして扱う |
+| `Area` | `DOM` / `INTL` / `BASE` / `OTHER` の大分類 |
+| `AircraftSizeClass` | `Narrowbody` / `Widebody` / `Any` の対応機体サイズ |
+| `HasBoardingBridge` | ボーディングブリッジ接続対象かどうか |
+| `Position` | 現在のUnity座標。`gatePositions` の生成元にもなる |
+| `StandScale` | SPOT区画の見た目サイズ |
+| `BoardingBridgeObjectName` | 将来SPOTとボーディングブリッジを紐づけるためのObject名 |
+
+現段階では `TutorialId` をゲーム進行用の安定ID、`RealWorldStyleId` を将来の那覇空港風表示番号候補として分ける。AIP上の全SPOT番号はまだ実装しない。
 
 ## SPOT Size Policy
 
