@@ -445,14 +445,16 @@ namespace ATCJourneyJapan.UI
             CreateMiniMapBlock("Mini Map Taxiway West", WorldToMiniMap(new Vector3(-7f, 0f, -2.5f)), WorldSizeToMiniMap(new Vector2(1.7f, 5f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
             CreateMiniMapBlock("Mini Map Taxiway East", WorldToMiniMap(new Vector3(12f, 0f, -2.5f)), WorldSizeToMiniMap(new Vector2(1.7f, 5f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
             CreateMiniMapBlock("Mini Map Taxiway E Right", WorldToMiniMap(new Vector3(17.1f, 0f, 5.1f)), WorldSizeToMiniMap(new Vector2(1.25f, 10.2f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
-            CreateMiniMapBlock("Mini Map Hold A 18L", WorldToMiniMap(new Vector3(-7f, 0f, -3f)), new Vector2(18f, 12f), new Color(0.92f, 0.72f, 0.16f, 0.98f));
-            CreateMiniMapBlock("Mini Map Hold A 36R", WorldToMiniMap(new Vector3(12f, 0f, -3f)), new Vector2(18f, 12f), new Color(0.92f, 0.72f, 0.16f, 0.68f));
+            CreateMiniMapBlock("Mini Map Hold A 36R", WorldToMiniMap(new Vector3(-7f, 0f, -3f)), new Vector2(18f, 12f), new Color(0.92f, 0.72f, 0.16f, 0.98f));
+            CreateMiniMapBlock("Mini Map Hold A 18L", WorldToMiniMap(new Vector3(12f, 0f, -3f)), new Vector2(18f, 12f), new Color(0.92f, 0.72f, 0.16f, 0.68f));
 
             CreateMiniMapSpots();
-            CreateText("Mini Map Runway A Label", minimapContent, "A RWY", 12, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(3f, 0f, 1.8f)), new Vector2(54f, 18f));
-            CreateText("Mini Map Runway A 36R Threshold", minimapContent, "36R THR", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(-13.25f, 0f, 1.8f)), new Vector2(62f, 18f));
-            CreateText("Mini Map Runway A 18L Threshold", minimapContent, "18L THR", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(19.25f, 0f, 1.8f)), new Vector2(62f, 18f));
+            CreateText("Mini Map Runway A Label", minimapContent, "A RWY 18L / 36R", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(3f, 0f, 1.8f)), new Vector2(112f, 18f));
+            CreateText("Mini Map Runway A 36R End", minimapContent, "36R", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(-13.25f, 0f, 1.8f)), new Vector2(44f, 18f));
+            CreateText("Mini Map Runway A 18L End", minimapContent, "18L", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(19.25f, 0f, 1.8f)), new Vector2(44f, 18f));
             CreateText("Mini Map Runway B Label", minimapContent, "B RWY 18R / 36L", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(3f, 0f, 12.2f)), new Vector2(110f, 18f));
+            CreateText("Mini Map Runway B 36L End", minimapContent, "36L", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(-11.6f, 0f, 13.35f)), new Vector2(44f, 18f));
+            CreateText("Mini Map Runway B 18R End", minimapContent, "18R", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(17.6f, 0f, 13.35f)), new Vector2(44f, 18f));
         }
 
         private void CreateMiniMapSpots()

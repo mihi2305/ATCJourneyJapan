@@ -167,6 +167,20 @@ namespace ATCJourneyJapan.Airport
             };
         }
 
+        public IEnumerable<Vector3> GetTakeoffRoute(string operationDirection)
+        {
+            var takeoffDirection = GetTakeoffDirection(operationDirection);
+            var lineupPoint = GetLineupPoint(operationDirection);
+            var departureEnd = GetDepartureEndPoint(operationDirection);
+            var climbPoint = departureEnd + takeoffDirection * 6.75f;
+            return new[]
+            {
+                lineupPoint + takeoffDirection * 2.5f,
+                departureEnd - takeoffDirection * 0.25f,
+                new Vector3(climbPoint.x, 2.4f, climbPoint.z)
+            };
+        }
+
         public Vector3 GetDepartureEndPoint(string operationDirection)
         {
             return IsOppositeDesignator(operationDirection) ? DesignatorAThresholdPoint : DesignatorBThresholdPoint;

@@ -51,7 +51,7 @@ namespace ATCJourneyJapan.Airport
         public Vector3 SecondaryArrivalSpawnPosition => new Vector3(-28f, 0.6f, 3.2f);
         public Vector3 SecondaryDepartureSpawnPosition => gatePositions.Count > 3 ? gatePositions[3] : new Vector3(-16f, 0.6f, -11.6f);
         public Vector3 PushbackReadyPosition => new Vector3(DepartureSpawnPosition.x, 0.6f, -6.45f);
-        public Vector3 HoldShortPosition => new Vector3(-7f, 0.55f, -3f);
+        public Vector3 HoldShortPosition => new Vector3(12f, 0.55f, -3f);
         public Vector3 PrimaryRunwayLineUpPosition => GetPrimaryRunwayLineupPoint(GetPrimaryRunwayDirection());
         public Vector3 PrimaryRunwayTakeoffDirection => GetPrimaryRunwayTakeoffDirection(GetPrimaryRunwayDirection());
 
@@ -154,7 +154,7 @@ namespace ATCJourneyJapan.Airport
 
         public Vector3 GetHoldShortPosition(string operationDirection)
         {
-            return Is36R(operationDirection) ? new Vector3(12f, 0.55f, -3f) : HoldShortPosition;
+            return Is36R(operationDirection) ? new Vector3(-7f, 0.55f, -3f) : HoldShortPosition;
         }
 
         public IEnumerable<string> GetPrimaryRunwayDirectionOptions()
@@ -298,7 +298,7 @@ namespace ATCJourneyJapan.Airport
         public IEnumerable<Vector3> GetTaxiToHoldRoute(Vector3 startPosition, string operationDirection)
         {
             var taxiwayMainEntry = new Vector3(startPosition.x, 0.6f, -5f);
-            var runwayLinkX = Is36R(operationDirection) ? 12f : -7f;
+            var runwayLinkX = Is36R(operationDirection) ? -7f : 12f;
             return new[]
             {
                 taxiwayMainEntry,
@@ -319,7 +319,7 @@ namespace ATCJourneyJapan.Airport
 
         public IEnumerable<Vector3> GetLineUpRoute(Vector3 startPosition, string operationDirection)
         {
-            var entryX = Is36R(operationDirection) ? 12f : -7f;
+            var entryX = Is36R(operationDirection) ? -7f : 12f;
             return new[]
             {
                 new Vector3(entryX, 0.6f, -1.05f),
@@ -336,9 +336,14 @@ namespace ATCJourneyJapan.Airport
         public IEnumerable<Vector3> GetTakeoffRoute(string operationDirection)
         {
             var runway = PrimaryRunwayGeometry;
+            if (runway != null)
+            {
+                return runway.GetTakeoffRoute(operationDirection);
+            }
+
             var takeoffDirection = GetPrimaryRunwayTakeoffDirection(operationDirection);
             var lineupPoint = GetPrimaryRunwayLineupPoint(operationDirection);
-            var departureEnd = runway != null ? runway.GetDepartureEndPoint(operationDirection) : new Vector3(19.25f, 0.6f, 0f);
+            var departureEnd = new Vector3(19.25f, 0.6f, 0f);
             var climbPoint = departureEnd + takeoffDirection * 6.75f;
             return new[]
             {
@@ -395,8 +400,8 @@ namespace ATCJourneyJapan.Airport
         private void CreateGeometryData()
         {
             runwayGeometries.Clear();
-            // A runway is drawn horizontally in Unity: -X is the north end and +X is the south end.
-            // Naha A runway uses 18L from north to south and 36R from south to north.
+            // A runway is drawn horizontally in Unity. The current minimap convention is:
+            // 36R at the left end moving right, and 18L at the right end moving left.
             runwayGeometries.Add(new RunwayGeometry(
                 "RWY_A",
                 "A",
@@ -407,14 +412,14 @@ namespace ATCJourneyJapan.Airport
                 2.35f,
                 180f,
                 360f,
-                new Vector3(-13.25f, 0.6f, 0f),
                 new Vector3(19.25f, 0.6f, 0f),
                 new Vector3(-13.25f, 0.6f, 0f),
+                new Vector3(-13.25f, 0.6f, 0f),
                 new Vector3(19.25f, 0.6f, 0f),
-                new Vector3(-10.75f, 0.6f, 0f),
                 new Vector3(16.75f, 0.6f, 0f),
-                Vector3.right,
-                Vector3.left));
+                new Vector3(-10.75f, 0.6f, 0f),
+                Vector3.left,
+                Vector3.right));
 
             // B runway remains future-only in gameplay. It follows the same north/south mapping:
             // 18R is north to south, and 36L is south to north.
@@ -499,8 +504,8 @@ namespace ATCJourneyJapan.Airport
             var runwayGeometry = PrimaryRunwayGeometry;
             runway.Configure(
                 "A",
-                CreateMarker("Runway A 18L North Threshold", ToGroundPoint(runwayGeometry.NorthEndPoint), runwayObject.transform),
-                CreateMarker("Runway A 36R South Threshold", ToGroundPoint(runwayGeometry.SouthEndPoint), runwayObject.transform),
+                CreateMarker("Runway A 18L Threshold", ToGroundPoint(runwayGeometry.Endpoint18L), runwayObject.transform),
+                CreateMarker("Runway A 36R Threshold", ToGroundPoint(runwayGeometry.Endpoint36R), runwayObject.transform),
                 runwayGeometry);
             runways.Add(runway);
         }
@@ -659,16 +664,16 @@ namespace ATCJourneyJapan.Airport
             var runway = PrimaryRunwayGeometry;
             var runwayCenter = ToGroundPoint(runway.Center);
             var edgeOffset = runway.Width * 0.5f - 0.145f;
-            var markingDirection = runway.NorthToSouthDirection;
+            var markingDirection = runway.DirectionForDesignatorA;
             CreateBox("Runway A", runwayCenter, new Vector3(runway.Length, 0.2f, runway.Width), runwayMaterial, parent);
             CreateBox("Runway A Edge North", runwayCenter + new Vector3(0f, 0.13f, edgeOffset), new Vector3(runway.Length - 0.6f, 0.04f, 0.08f), runwayEdgeMaterial, parent);
             CreateBox("Runway A Edge South", runwayCenter + new Vector3(0f, 0.13f, -edgeOffset), new Vector3(runway.Length - 0.6f, 0.04f, 0.08f), runwayEdgeMaterial, parent);
-            CreateBox($"Runway A Threshold {runway.DesignatorNorthEnd}", ToGroundPoint(runway.NorthEndPoint + markingDirection * 0.45f) + Vector3.up * 0.14f, new Vector3(0.28f, 0.05f, runway.Width - 0.63f), runwayMarkingMaterial, parent);
-            CreateBox($"Runway A Threshold {runway.DesignatorSouthEnd}", ToGroundPoint(runway.SouthEndPoint - markingDirection * 0.45f) + Vector3.up * 0.14f, new Vector3(0.28f, 0.05f, runway.Width - 0.63f), runwayMarkingMaterial, parent);
+            CreateBox($"Runway A Threshold {runway.DesignatorAEnd}", ToGroundPoint(runway.DesignatorAThresholdPoint + markingDirection * 0.45f) + Vector3.up * 0.14f, new Vector3(0.28f, 0.05f, runway.Width - 0.63f), runwayMarkingMaterial, parent);
+            CreateBox($"Runway A Threshold {runway.DesignatorBOppositeEnd}", ToGroundPoint(runway.DesignatorBThresholdPoint - markingDirection * 0.45f) + Vector3.up * 0.14f, new Vector3(0.28f, 0.05f, runway.Width - 0.63f), runwayMarkingMaterial, parent);
 
             for (var index = 0; index < 9; index++)
             {
-                var centerlinePosition = runway.NorthEndPoint + markingDirection * (3.85f + index * 3.1f);
+                var centerlinePosition = runway.DesignatorAThresholdPoint + markingDirection * (3.85f + index * 3.1f);
                 CreateBox($"Runway A Centerline {index + 1}", ToGroundPoint(centerlinePosition) + Vector3.up * 0.15f, new Vector3(1.15f, 0.045f, 0.08f), runwayMarkingMaterial, parent);
             }
         }

@@ -242,8 +242,9 @@ namespace ATCJourneyJapan.Aircraft
 
         private void TaxiToHold()
         {
+            var operationDirection = GetOperationRunwayDirection();
             SetState(AircraftState.TaxiToHold);
-            StartRouteWithHeading(airportManager.GetTaxiToHoldRoute(transform.position, GetOperationRunwayDirection()), groundSpeed, () =>
+            StartRouteWithHeading(airportManager.GetTaxiToHoldRoute(transform.position, operationDirection), groundSpeed, () =>
             {
                 SetState(AircraftState.HoldingPoint);
             });
@@ -268,21 +269,23 @@ namespace ATCJourneyJapan.Aircraft
 
         private void HoldShort()
         {
+            var operationDirection = GetOperationRunwayDirection();
             route.Stop();
             SetState(AircraftState.HoldingShort);
-            transform.position = airportManager.GetHoldShortPosition(GetOperationRunwayDirection());
+            transform.position = airportManager.GetHoldShortPosition(operationDirection);
             SetHeadingFromWorldDirection(Vector3.forward);
         }
 
         private void LineUp()
         {
+            var operationDirection = GetOperationRunwayDirection();
             SetState(AircraftState.LiningUp, false);
             gameManager.OccupyPrimaryRunway(this, "滑走路上待機");
-            StartRouteWithHeading(airportManager.GetLineUpRoute(transform.position, GetOperationRunwayDirection()), groundSpeed, () =>
+            StartRouteWithHeading(airportManager.GetLineUpRoute(transform.position, operationDirection), groundSpeed, () =>
             {
-                transform.position = airportManager.GetPrimaryRunwayLineupPoint(GetOperationRunwayDirection());
+                transform.position = airportManager.GetPrimaryRunwayLineupPoint(operationDirection);
                 SetState(AircraftState.LiningUp, false);
-                SetRunwayTakeoffHeading();
+                SetRunwayTakeoffHeading(operationDirection);
             });
         }
 

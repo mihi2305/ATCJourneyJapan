@@ -2,11 +2,20 @@
 
 ## Current Phase
 
-Phase 3.9-5H-3 Fix minimap runway labels
+Phase 3.9-5H-4 Fix aircraft runway movement direction
 
 ## Previous Phase
 
-Phase 3.9-5H-2 Fix selected runway route usage
+Phase 3.9-5H-3 Fix minimap runway labels
+
+## Phase 3.9-5H-4で修正したこと
+
+- ミニマップ表記は整ったが、航空機の着陸・離陸実移動が選択RWY方向に十分追従していない問題をQA対象にした
+- 現在のミニマップ基準に合わせ、A滑走路は `36R = 左端から右向き`、`18L = 右端から左向き` のrouteを返すよう `RunwayGeometry` 登録を修正した
+- `AirportManager.GetTakeoffRoute` は `RunwayGeometry.GetTakeoffRoute` を通し、Final Approach / Landing Rollout / Takeoff Rollをdesignator別routeへ寄せた
+- TaxiToHold / HoldShort / LineUp / Takeoffは、開始時に確定した `ActiveRunwayDesignator` を使い、途中で別方向へ戻りにくい構造にした
+- A滑走路端点ラベルは `36R` / `18L` に簡略化し、B滑走路には `36L` / `18R` の端点ラベルを追加した
+- B滑走路運用、B滑走路route、複数滑走路運用はまだ開始しない
 
 ## Phase 3.9-5H-3で修正したこと
 
