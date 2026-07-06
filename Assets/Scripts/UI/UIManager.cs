@@ -450,9 +450,9 @@ namespace ATCJourneyJapan.UI
 
             CreateMiniMapSpots();
             CreateText("Mini Map Runway A Label", minimapContent, "A RWY", 12, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(3f, 0f, 1.8f)), new Vector2(54f, 18f));
-            CreateText("Mini Map Runway A 18L Threshold", minimapContent, "18L THR", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(-13.25f, 0f, 1.8f)), new Vector2(62f, 18f));
-            CreateText("Mini Map Runway A 36R Threshold", minimapContent, "36R THR", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(19.25f, 0f, 1.8f)), new Vector2(62f, 18f));
-            CreateText("Mini Map Runway B Label", minimapContent, "18R", 12, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(3f, 0f, 12.2f)), new Vector2(54f, 18f));
+            CreateText("Mini Map Runway A 36R Threshold", minimapContent, "36R THR", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(-13.25f, 0f, 1.8f)), new Vector2(62f, 18f));
+            CreateText("Mini Map Runway A 18L Threshold", minimapContent, "18L THR", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(19.25f, 0f, 1.8f)), new Vector2(62f, 18f));
+            CreateText("Mini Map Runway B Label", minimapContent, "B RWY 18R / 36L", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(3f, 0f, 12.2f)), new Vector2(110f, 18f));
         }
 
         private void CreateMiniMapSpots()

@@ -2,11 +2,19 @@
 
 ## Current Phase
 
-Phase 3.9-5H-2 Fix selected runway route usage
+Phase 3.9-5H-3 Fix minimap runway labels
 
 ## Previous Phase
 
-Phase 3.9-5H QA Correct Naha runway movement directions
+Phase 3.9-5H-2 Fix selected runway route usage
+
+## Phase 3.9-5H-3で修正したこと
+
+- Unity Play確認で、A滑走路ミニマップ端点ラベルが左右逆に見える問題をQA対象にした
+- ミニマップ上のA滑走路端点ラベルを `left = 36R THR`、`right = 18L THR` に入れ替えた
+- A滑走路中央ラベルは `A RWY 18L / 36R` を維持し、端点確認用の `THR` 表記も残した
+- B滑走路には将来確認用の中央ラベル `B RWY 18R / 36L` を追加した
+- B滑走路運用、B滑走路route、複数滑走路運用はまだ開始しない
 
 ## Phase 3.9-5H-2で修正したこと
 
