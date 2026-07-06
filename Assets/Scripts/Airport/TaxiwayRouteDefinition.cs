@@ -10,6 +10,57 @@ namespace ATCJourneyJapan.Airport
         Both
     }
 
+    public enum TaxiwaySegmentType
+    {
+        Parallel,
+        Connector,
+        Exit,
+        Apron,
+        StandEntry
+    }
+
+    public enum TaxiwayAxisType
+    {
+        NorthSouth,
+        EastWest,
+        Diagonal,
+        ApronFront
+    }
+
+    public class TaxiwaySegment
+    {
+        private readonly List<Vector3> waypoints;
+
+        public TaxiwaySegment(
+            string segmentId,
+            string displayName,
+            string realWorldName,
+            TaxiwaySegmentType segmentType,
+            TaxiwayAxisType axisType,
+            IEnumerable<Vector3> segmentWaypoints,
+            string description,
+            bool isProvisional)
+        {
+            SegmentId = segmentId;
+            DisplayName = displayName;
+            RealWorldName = realWorldName;
+            SegmentType = segmentType;
+            AxisType = axisType;
+            waypoints = new List<Vector3>(segmentWaypoints);
+            Description = description;
+            IsProvisional = isProvisional;
+        }
+
+        public string SegmentId { get; private set; }
+        public string DisplayName { get; private set; }
+        public string RealWorldName { get; private set; }
+        public TaxiwaySegmentType SegmentType { get; private set; }
+        public TaxiwayAxisType AxisType { get; private set; }
+        public IReadOnlyList<Vector3> Waypoints => waypoints;
+        public string Description { get; private set; }
+        public bool IsProvisional { get; private set; }
+    }
+
     public class TaxiwayRouteDefinition
     {
         private readonly List<Vector3> waypoints;
@@ -41,6 +92,7 @@ namespace ATCJourneyJapan.Airport
     public class TaxiRouteCandidate
     {
         private readonly List<Vector3> waypoints;
+        private readonly List<string> segmentIds;
 
         public TaxiRouteCandidate(
             string routeId,
@@ -50,6 +102,20 @@ namespace ATCJourneyJapan.Airport
             string runwayDesignator,
             IEnumerable<Vector3> routeWaypoints,
             bool isDefault)
+            : this(routeId, displayName, description, spotId, runwayDesignator, routeWaypoints, null, string.Empty, isDefault)
+        {
+        }
+
+        public TaxiRouteCandidate(
+            string routeId,
+            string displayName,
+            string description,
+            string spotId,
+            string runwayDesignator,
+            IEnumerable<Vector3> routeWaypoints,
+            IEnumerable<string> routeSegmentIds,
+            string routeInstructionText,
+            bool isDefault)
         {
             RouteId = routeId;
             DisplayName = displayName;
@@ -57,6 +123,8 @@ namespace ATCJourneyJapan.Airport
             SpotId = spotId;
             RunwayDesignator = runwayDesignator;
             waypoints = new List<Vector3>(routeWaypoints);
+            segmentIds = routeSegmentIds != null ? new List<string>(routeSegmentIds) : new List<string>();
+            RouteInstructionText = routeInstructionText;
             IsDefault = isDefault;
         }
 
@@ -66,6 +134,8 @@ namespace ATCJourneyJapan.Airport
         public string SpotId { get; private set; }
         public string RunwayDesignator { get; private set; }
         public IReadOnlyList<Vector3> Waypoints => waypoints;
+        public IReadOnlyList<string> SegmentIds => segmentIds;
+        public string RouteInstructionText { get; private set; }
         public bool IsDefault { get; private set; }
     }
 }

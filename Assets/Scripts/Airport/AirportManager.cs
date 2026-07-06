@@ -12,6 +12,7 @@ namespace ATCJourneyJapan.Airport
         private readonly List<RunwayController> runways = new List<RunwayController>();
         private readonly List<RunwayData> runwayData = new List<RunwayData>();
         private readonly List<RunwayGeometry> runwayGeometries = new List<RunwayGeometry>();
+        private readonly List<TaxiwaySegment> taxiwaySegments = new List<TaxiwaySegment>();
         private readonly List<TaxiwayRouteDefinition> taxiwayRoutes = new List<TaxiwayRouteDefinition>();
         private readonly List<TaxiRouteCandidate> departureTaxiRouteCandidates = new List<TaxiRouteCandidate>();
         private readonly List<Vector3> gatePositions = new List<Vector3>();
@@ -42,6 +43,7 @@ namespace ATCJourneyJapan.Airport
         public IReadOnlyList<RunwayController> Runways => runways;
         public IReadOnlyList<RunwayData> RunwayData => runwayData;
         public IReadOnlyList<RunwayGeometry> RunwayGeometries => runwayGeometries;
+        public IReadOnlyList<TaxiwaySegment> TaxiwaySegments => taxiwaySegments;
         public IReadOnlyList<TaxiwayRouteDefinition> TaxiwayRoutes => taxiwayRoutes;
         public IReadOnlyList<TaxiRouteCandidate> DepartureTaxiRouteCandidates => departureTaxiRouteCandidates;
         public IReadOnlyList<AirportSpotDefinition> SpotDefinitions => spotDefinitions;
@@ -98,6 +100,19 @@ namespace ATCJourneyJapan.Airport
                 if (taxiwayRoute.TaxiwayId == taxiwayId)
                 {
                     return taxiwayRoute;
+                }
+            }
+
+            return null;
+        }
+
+        public TaxiwaySegment GetTaxiwaySegment(string segmentId)
+        {
+            foreach (var taxiwaySegment in taxiwaySegments)
+            {
+                if (taxiwaySegment.SegmentId == segmentId)
+                {
+                    return taxiwaySegment;
                 }
             }
 
@@ -499,6 +514,8 @@ namespace ATCJourneyJapan.Airport
                 Vector3.right,
                 Vector3.left));
 
+            CreateTaxiwaySegmentData();
+
             taxiwayRoutes.Clear();
             taxiwayRoutes.Add(new TaxiwayRouteDefinition(
                 "TWY_MAIN",
@@ -537,6 +554,133 @@ namespace ATCJourneyJapan.Airport
                 TaxiwayRoutePurpose.Arrival));
 
             CreateDepartureTaxiRouteCandidateData();
+        }
+
+        private void CreateTaxiwaySegmentData()
+        {
+            taxiwaySegments.Clear();
+
+            AddTaxiwaySegment(
+                "A_MAIN_PARALLEL_01",
+                "TWY A",
+                "Provisional A parallel taxiway",
+                TaxiwaySegmentType.Parallel,
+                TaxiwayAxisType.NorthSouth,
+                "A滑走路前の主誘導路として使う暫定parallel segment",
+                true,
+                new Vector3(-13f, 0.6f, -5f),
+                new Vector3(12f, 0.6f, -5f));
+            AddTaxiwaySegment(
+                "A_CONNECTOR_18L_01",
+                "TWY A1",
+                "Provisional RWY 18L connector",
+                TaxiwaySegmentType.Connector,
+                TaxiwayAxisType.EastWest,
+                "RWY 18L側holding pointへ接続する暫定connector",
+                true,
+                new Vector3(12f, 0.6f, -5f),
+                new Vector3(12f, 0.6f, 0f));
+            AddTaxiwaySegment(
+                "A_CONNECTOR_MID_01",
+                "TWY A5",
+                "Provisional mid-field connector",
+                TaxiwaySegmentType.Connector,
+                TaxiwayAxisType.EastWest,
+                "将来の中間接続に使うための暫定connector",
+                true,
+                new Vector3(4.8f, 0.6f, -5f),
+                new Vector3(4.8f, 0.6f, 0f));
+            AddTaxiwaySegment(
+                "A_CONNECTOR_36R_01",
+                "TWY A9",
+                "Provisional RWY 36R connector",
+                TaxiwaySegmentType.Connector,
+                TaxiwayAxisType.EastWest,
+                "RWY 36R側holding pointへ接続する暫定connector",
+                true,
+                new Vector3(-7f, 0.6f, -5f),
+                new Vector3(-7f, 0.6f, 0f));
+            AddTaxiwaySegment(
+                "APRON_FRONT_01",
+                "APRON TWY",
+                "Provisional passenger apron frontage taxiway",
+                TaxiwaySegmentType.Apron,
+                TaxiwayAxisType.ApronFront,
+                "旅客エプロン前面を横方向につなぐ暫定apron segment",
+                true,
+                new Vector3(4f, 0.6f, -6.45f),
+                new Vector3(26.2f, 0.6f, -6.2f));
+            AddTaxiwaySegment(
+                "STAND_ENTRY_01",
+                "SPOT 01 ENTRY",
+                "Provisional SPOT 01 stand entry",
+                TaxiwaySegmentType.StandEntry,
+                TaxiwayAxisType.ApronFront,
+                "SPOT 01からapron frontへ出る暫定stand entry",
+                true,
+                new Vector3(6.3f, 0.6f, -8.35f),
+                new Vector3(6.3f, 0.6f, -6.45f));
+            AddTaxiwaySegment(
+                "STAND_ENTRY_02",
+                "SPOT 02 ENTRY",
+                "Provisional SPOT 02 stand entry",
+                TaxiwaySegmentType.StandEntry,
+                TaxiwayAxisType.ApronFront,
+                "SPOT 02からapron frontへ出る暫定stand entry",
+                true,
+                new Vector3(10.8f, 0.6f, -7.95f),
+                new Vector3(10.8f, 0.6f, -6.45f));
+            AddTaxiwaySegment(
+                "STAND_ENTRY_03",
+                "SPOT 03 ENTRY",
+                "Provisional SPOT 03 stand entry",
+                TaxiwaySegmentType.StandEntry,
+                TaxiwayAxisType.ApronFront,
+                "SPOT 03からapron frontへ出る暫定stand entry",
+                true,
+                new Vector3(17.1f, 0.6f, -8.15f),
+                new Vector3(17.1f, 0.6f, -6.2f));
+            AddTaxiwaySegment(
+                "STAND_ENTRY_04",
+                "SPOT 04 ENTRY",
+                "Provisional SPOT 04 stand entry",
+                TaxiwaySegmentType.StandEntry,
+                TaxiwayAxisType.ApronFront,
+                "SPOT 04からapron frontへ出る暫定stand entry",
+                true,
+                new Vector3(26.2f, 0.6f, -8.65f),
+                new Vector3(26.2f, 0.6f, -6.2f));
+            AddTaxiwaySegment(
+                "B_MAIN_PARALLEL_01",
+                "TWY B",
+                "Provisional future B runway parallel taxiway",
+                TaxiwaySegmentType.Parallel,
+                TaxiwayAxisType.NorthSouth,
+                "将来B滑走路運用を検討するための暫定segment。現Phaseでは運用しない",
+                true,
+                new Vector3(-11.6f, 0.6f, 7.6f),
+                new Vector3(17.6f, 0.6f, 7.6f));
+        }
+
+        private void AddTaxiwaySegment(
+            string segmentId,
+            string displayName,
+            string realWorldName,
+            TaxiwaySegmentType segmentType,
+            TaxiwayAxisType axisType,
+            string description,
+            bool isProvisional,
+            params Vector3[] waypoints)
+        {
+            taxiwaySegments.Add(new TaxiwaySegment(
+                segmentId,
+                displayName,
+                realWorldName,
+                segmentType,
+                axisType,
+                waypoints,
+                description,
+                isProvisional));
         }
 
         private void CreateDepartureTaxiRouteCandidateData()
@@ -653,6 +797,7 @@ namespace ATCJourneyJapan.Airport
             bool isDefault,
             params Vector3[] waypoints)
         {
+            var segmentIds = BuildDepartureTaxiSegmentIds(routeId, spotId, runwayDesignator);
             departureTaxiRouteCandidates.Add(new TaxiRouteCandidate(
                 routeId,
                 displayName,
@@ -660,7 +805,66 @@ namespace ATCJourneyJapan.Airport
                 spotId,
                 runwayDesignator,
                 waypoints,
+                segmentIds,
+                BuildRouteInstructionText(segmentIds),
                 isDefault));
+        }
+
+        private IEnumerable<string> BuildDepartureTaxiSegmentIds(string routeId, string spotId, string runwayDesignator)
+        {
+            var segmentIds = new List<string>();
+            var standEntrySegmentId = GetStandEntrySegmentId(spotId);
+            if (!string.IsNullOrEmpty(standEntrySegmentId))
+            {
+                segmentIds.Add(standEntrySegmentId);
+            }
+
+            segmentIds.Add("APRON_FRONT_01");
+
+            if (!routeId.Contains("_B"))
+            {
+                segmentIds.Add("A_MAIN_PARALLEL_01");
+            }
+
+            if (NormalizeRunwayDesignator(runwayDesignator) == "36R")
+            {
+                segmentIds.Add(routeId.Contains("_B") ? "A_CONNECTOR_MID_01" : "A_CONNECTOR_36R_01");
+            }
+            else
+            {
+                segmentIds.Add("A_CONNECTOR_18L_01");
+            }
+
+            return segmentIds;
+        }
+
+        private string GetStandEntrySegmentId(string spotId)
+        {
+            switch (NormalizeSpotId(spotId))
+            {
+                case "SPOT01":
+                    return "STAND_ENTRY_01";
+                case "SPOT02":
+                    return "STAND_ENTRY_02";
+                case "SPOT03":
+                    return "STAND_ENTRY_03";
+                case "SPOT04":
+                    return "STAND_ENTRY_04";
+                default:
+                    return string.Empty;
+            }
+        }
+
+        private string BuildRouteInstructionText(IEnumerable<string> segmentIds)
+        {
+            var displayNames = new List<string>();
+            foreach (var segmentId in segmentIds)
+            {
+                var segment = GetTaxiwaySegment(segmentId);
+                displayNames.Add(segment != null ? segment.DisplayName : segmentId);
+            }
+
+            return displayNames.Count > 0 ? $"Taxi via {string.Join(", ", displayNames.ToArray())}" : string.Empty;
         }
 
         private void CreateEnvironment()

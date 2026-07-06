@@ -2,11 +2,20 @@
 
 ## Current Phase
 
-Phase 3.9-5I Selectable provisional taxi route candidates
+Phase 3.9-5J Stable taxiway segment data
 
 ## Previous Phase
 
-Phase 3.9-5H-4 Fix aircraft runway movement direction
+Phase 3.9-5I Selectable provisional taxi route candidates
+
+## Phase 3.9-5Jで修正したこと
+
+- 誘導路routeを単なるwaypoint列だけでなく、将来のRoute選択UIや誘導路追加に使える `TaxiwaySegment` データとして整理した
+- `segmentId` / `displayName` / `realWorldName` を分離し、ロジックは安定IDである `segmentId` を参照する方針にした
+- 現在の `displayName` と `realWorldName` はprovisionalであり、将来AIP準拠名へ寄せてもroute logicを壊しにくい
+- `TaxiRouteCandidate` に `segmentIds` と表示用 `routeInstructionText` を追加し、既存waypointsとdefault candidate運用は維持した
+- 暫定segmentとして `A_MAIN_PARALLEL_01`、`A_CONNECTOR_18L_01`、`A_CONNECTOR_MID_01`、`A_CONNECTOR_36R_01`、`APRON_FRONT_01`、`STAND_ENTRY_01`〜`04`、将来用 `B_MAIN_PARALLEL_01` を追加した
+- 今回はRoute選択UI本実装、AIP完全準拠名の確定、B滑走路運用、空港3D変更は行わない
 
 ## Phase 3.9-5Iで修正したこと
 
