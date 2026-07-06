@@ -2,11 +2,19 @@
 
 ## Current Phase
 
-Phase 3.9-5J Stable taxiway segment data
+Phase 3.9-5J-2 Validate taxiway segment routes
 
 ## Previous Phase
 
-Phase 3.9-5I Selectable provisional taxi route candidates
+Phase 3.9-5J Stable taxiway segment data
+
+## Phase 3.9-5J-2で修正したこと
+
+- `TaxiwaySegment` / `TaxiRouteCandidate.segmentIds` の参照整合性を、生成時に一度だけ検証する処理を追加した
+- 検証では、duplicate segmentId、存在しないsegment参照、空の `routeInstructionText`、SPOT+RWYごとのdefault candidate不足を `Debug.LogWarning` で確認できる
+- `routeInstructionText` は `segmentIds` から `TaxiwaySegment.displayName` を引いて生成し、表示用として使う。ロジック判定には使わない
+- `Taxi to RWY` 実行時に、callsign / spotId / runwayDesignator / routeId / displayName / routeInstructionText / segmentIds を `Debug.Log` で確認できるようにした
+- 今回はRoute選択UI本実装、誘導路完全再現、ATC Log表示の本格更新は行わない
 
 ## Phase 3.9-5Jで修正したこと
 

@@ -249,12 +249,38 @@ namespace ATCJourneyJapan.Aircraft
             var routePoints = routeCandidate != null
                 ? routeCandidate.Waypoints
                 : airportManager.GetTaxiToHoldRoute(transform.position, operationDirection);
+            LogSelectedTaxiRoute(routeCandidate, spotId, operationDirection);
 
             SetState(AircraftState.TaxiToHold);
             StartRouteWithHeading(routePoints, groundSpeed, () =>
             {
                 SetState(AircraftState.HoldingPoint);
             });
+        }
+
+        private void LogSelectedTaxiRoute(TaxiRouteCandidate routeCandidate, string spotId, string runwayDesignator)
+        {
+            if (routeCandidate == null)
+            {
+                Debug.LogWarning($"Selected taxi route fallback: {flightNumber} {spotId} RWY {runwayDesignator} using direct waypoint fallback.");
+                return;
+            }
+
+            Debug.Log(
+                $"Selected taxi route: {flightNumber} {spotId} RWY {runwayDesignator} "
+                + $"{routeCandidate.RouteId} {routeCandidate.DisplayName} | "
+                + $"{routeCandidate.RouteInstructionText} | segments: {JoinSegmentIds(routeCandidate.SegmentIds)}");
+        }
+
+        private string JoinSegmentIds(IReadOnlyList<string> segmentIds)
+        {
+            var values = new List<string>();
+            foreach (var segmentId in segmentIds)
+            {
+                values.Add(segmentId);
+            }
+
+            return values.Count > 0 ? string.Join(", ", values.ToArray()) : "none";
         }
 
         private TaxiRouteCandidate SelectDefaultTaxiRouteCandidate(IReadOnlyList<TaxiRouteCandidate> routeCandidates)

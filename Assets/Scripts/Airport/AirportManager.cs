@@ -554,6 +554,7 @@ namespace ATCJourneyJapan.Airport
                 TaxiwayRoutePurpose.Arrival));
 
             CreateDepartureTaxiRouteCandidateData();
+            ValidateTaxiwaySegmentRouteData();
         }
 
         private void CreateTaxiwaySegmentData()
@@ -865,6 +866,81 @@ namespace ATCJourneyJapan.Airport
             }
 
             return displayNames.Count > 0 ? $"Taxi via {string.Join(", ", displayNames.ToArray())}" : string.Empty;
+        }
+
+        private void ValidateTaxiwaySegmentRouteData()
+        {
+            var segmentIds = new HashSet<string>();
+            foreach (var segment in taxiwaySegments)
+            {
+                if (string.IsNullOrEmpty(segment.SegmentId))
+                {
+                    Debug.LogWarning("TaxiwaySegment has an empty segmentId.");
+                    continue;
+                }
+
+                if (!segmentIds.Add(segment.SegmentId))
+                {
+                    Debug.LogWarning($"Duplicate TaxiwaySegment segmentId detected: {segment.SegmentId}");
+                }
+            }
+
+            var defaultCandidateKeys = new HashSet<string>();
+            var candidateKeys = new HashSet<string>();
+            foreach (var candidate in departureTaxiRouteCandidates)
+            {
+                var candidateKey = $"{NormalizeSpotId(candidate.SpotId)}_{NormalizeRunwayDesignator(candidate.RunwayDesignator)}";
+                candidateKeys.Add(candidateKey);
+                if (candidate.IsDefault)
+                {
+                    defaultCandidateKeys.Add(candidateKey);
+                }
+
+                if (string.IsNullOrEmpty(candidate.RouteInstructionText))
+                {
+                    Debug.LogWarning($"TaxiRouteCandidate {candidate.RouteId} has an empty routeInstructionText.");
+                }
+
+                var candidateSegmentIds = new HashSet<string>();
+                foreach (var segmentId in candidate.SegmentIds)
+                {
+                    if (!candidateSegmentIds.Add(segmentId))
+                    {
+                        Debug.LogWarning($"TaxiRouteCandidate {candidate.RouteId} contains duplicate segmentId: {segmentId}");
+                    }
+
+                    if (!segmentIds.Contains(segmentId))
+                    {
+                        Debug.LogWarning($"TaxiRouteCandidate {candidate.RouteId} references missing segmentId: {segmentId}");
+                    }
+                }
+            }
+
+            foreach (var candidateKey in candidateKeys)
+            {
+                if (!defaultCandidateKeys.Contains(candidateKey))
+                {
+                    Debug.LogWarning($"No default TaxiRouteCandidate found for {candidateKey}.");
+                }
+            }
+
+            ValidateExpectedDefaultDepartureTaxiCandidates(defaultCandidateKeys);
+        }
+
+        private void ValidateExpectedDefaultDepartureTaxiCandidates(HashSet<string> defaultCandidateKeys)
+        {
+            var expectedSpotIds = new[] { "SPOT 01", "SPOT 02", "SPOT 03", "SPOT 04" };
+            foreach (var spotId in expectedSpotIds)
+            {
+                foreach (var runwayDesignator in GetPrimaryRunwayDirectionOptions())
+                {
+                    var candidateKey = $"{NormalizeSpotId(spotId)}_{NormalizeRunwayDesignator(runwayDesignator)}";
+                    if (!defaultCandidateKeys.Contains(candidateKey))
+                    {
+                        Debug.LogWarning($"Expected default TaxiRouteCandidate is missing for {spotId} RWY {runwayDesignator}.");
+                    }
+                }
+            }
         }
 
         private void CreateEnvironment()
