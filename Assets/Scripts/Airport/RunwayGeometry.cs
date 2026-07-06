@@ -159,7 +159,40 @@ namespace ATCJourneyJapan.Airport
 
         private bool IsOppositeDesignator(string operationDirection)
         {
-            return operationDirection == DesignatorBOppositeEnd;
+            return ResolveDesignator(operationDirection) == DesignatorBOppositeEnd;
+        }
+
+        private string ResolveDesignator(string operationDirection)
+        {
+            var normalized = NormalizeDesignator(operationDirection);
+            if (normalized == DesignatorAEnd || normalized == DesignatorBOppositeEnd)
+            {
+                return normalized;
+            }
+
+            Debug.LogWarning($"Unknown runway designator '{operationDirection}' for {RunwayId}. Falling back to {DesignatorAEnd}.");
+            return DesignatorAEnd;
+        }
+
+        private string NormalizeDesignator(string operationDirection)
+        {
+            if (string.IsNullOrEmpty(operationDirection))
+            {
+                return DesignatorAEnd;
+            }
+
+            var normalized = operationDirection.Trim().ToUpperInvariant();
+            if (normalized.StartsWith("RUNWAY "))
+            {
+                normalized = normalized.Substring("RUNWAY ".Length).Trim();
+            }
+
+            if (normalized.StartsWith("RWY "))
+            {
+                normalized = normalized.Substring("RWY ".Length).Trim();
+            }
+
+            return normalized;
         }
     }
 }

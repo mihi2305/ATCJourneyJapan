@@ -14,6 +14,7 @@ Phase 3.9-5I Arrival final approach route binding
 - Unity座標では、A/B滑走路の `-X側 = 北端`、`+X側 = 南端` と定義する
 - `RunwayGeometry` に `DesignatorNorthEnd` / `DesignatorSouthEnd`、`NorthEndPoint` / `SouthEndPoint`、`NorthToSouthDirection` / `SouthToNorthDirection` を追加し、方向定義を読み取りやすくした
 - A滑走路は `18L threshold = NorthEndPoint`、`36R threshold = SouthEndPoint` として扱う
+- `RWY 18L` / `Runway 18L` / `18L` のような滑走路表記ゆれは、`RunwayGeometry` 内でdesignatorへ正規化して扱う
 - B滑走路は将来用に `18R = 北→南`、`36L = 南→北` として残すが、現Phaseでは運用しない
 
 ## Phase 3.9-5Iで行うこと
