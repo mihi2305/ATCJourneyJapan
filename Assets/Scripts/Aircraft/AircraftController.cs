@@ -243,11 +243,37 @@ namespace ATCJourneyJapan.Aircraft
         private void TaxiToHold()
         {
             var operationDirection = GetOperationRunwayDirection();
+            var spotId = flightData != null ? flightData.SpotId : string.Empty;
+            var routeCandidates = airportManager.GetDepartureTaxiRouteCandidates(spotId, operationDirection);
+            var routeCandidate = SelectDefaultTaxiRouteCandidate(routeCandidates);
+            var routePoints = routeCandidate != null
+                ? routeCandidate.Waypoints
+                : airportManager.GetTaxiToHoldRoute(transform.position, operationDirection);
+
             SetState(AircraftState.TaxiToHold);
-            StartRouteWithHeading(airportManager.GetTaxiToHoldRoute(transform.position, operationDirection), groundSpeed, () =>
+            StartRouteWithHeading(routePoints, groundSpeed, () =>
             {
                 SetState(AircraftState.HoldingPoint);
             });
+        }
+
+        private TaxiRouteCandidate SelectDefaultTaxiRouteCandidate(IReadOnlyList<TaxiRouteCandidate> routeCandidates)
+        {
+            TaxiRouteCandidate fallbackCandidate = null;
+            foreach (var routeCandidate in routeCandidates)
+            {
+                if (fallbackCandidate == null)
+                {
+                    fallbackCandidate = routeCandidate;
+                }
+
+                if (routeCandidate.IsDefault)
+                {
+                    return routeCandidate;
+                }
+            }
+
+            return fallbackCandidate;
         }
 
         private void HoldTaxi()

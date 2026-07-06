@@ -2,11 +2,20 @@
 
 ## Current Phase
 
-Phase 3.9-5H-4 Fix aircraft runway movement direction
+Phase 3.9-5I Selectable provisional taxi route candidates
 
 ## Previous Phase
 
-Phase 3.9-5H-3 Fix minimap runway labels
+Phase 3.9-5H-4 Fix aircraft runway movement direction
+
+## Phase 3.9-5Iで修正したこと
+
+- 出発Taxi routeは現時点ではprovisionalであり、那覇空港の実誘導路を完全再現したものではない
+- SPOT + RWYに対して、複数のTaxi route candidateを持てる構造を追加した
+- 各candidateは `routeId`、`displayName`、`description`、`spotId`、`runwayDesignator`、`waypoints`、`isDefault` を持つ
+- 現時点のTaxi to RWY 18L / 36Rは、該当SPOT + RWYのdefault candidateを使う
+- 将来はコマンドUIで `Taxi via Route A / Route B` のようにcandidateを選択できるようにする
+- 今回はRoute選択UI、那覇空港AIPどおりのTaxiway完全再現、B滑走路運用、Smooth Turn、速度差・加減速は実装しない
 
 ## Phase 3.9-5H-4で修正したこと
 
@@ -43,7 +52,7 @@ Phase 3.9-5H-3 Fix minimap runway labels
 - `RWY 18L` / `Runway 18L` / `18L` のような滑走路表記ゆれは、`RunwayGeometry` 内でdesignatorへ正規化して扱う
 - B滑走路は将来用に `18R = 北→南`、`36L = 南→北` として残すが、現Phaseでは運用しない
 
-## Phase 3.9-5Iで行うこと
+## Phase 3.9-5I前段で整理した到着route方針
 
 - 到着機の `Clear to Land RWY 18L / RWY 36R` で、指定designatorに応じたFinal Approach Start / Final Approach Fix / threshold / touchdown / rollout endを `RunwayGeometry` から取得する
 - Clear Landing時に到着機を滑走路中心線延長上のFinal Approach Startへ載せ、そこからFAF、threshold、touchdownへ進入させる

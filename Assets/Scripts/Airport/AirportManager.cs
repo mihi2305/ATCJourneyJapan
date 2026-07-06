@@ -13,6 +13,7 @@ namespace ATCJourneyJapan.Airport
         private readonly List<RunwayData> runwayData = new List<RunwayData>();
         private readonly List<RunwayGeometry> runwayGeometries = new List<RunwayGeometry>();
         private readonly List<TaxiwayRouteDefinition> taxiwayRoutes = new List<TaxiwayRouteDefinition>();
+        private readonly List<TaxiRouteCandidate> departureTaxiRouteCandidates = new List<TaxiRouteCandidate>();
         private readonly List<Vector3> gatePositions = new List<Vector3>();
         private readonly List<AirportSpotDefinition> spotDefinitions = new List<AirportSpotDefinition>();
         private Material runwayMaterial;
@@ -42,6 +43,7 @@ namespace ATCJourneyJapan.Airport
         public IReadOnlyList<RunwayData> RunwayData => runwayData;
         public IReadOnlyList<RunwayGeometry> RunwayGeometries => runwayGeometries;
         public IReadOnlyList<TaxiwayRouteDefinition> TaxiwayRoutes => taxiwayRoutes;
+        public IReadOnlyList<TaxiRouteCandidate> DepartureTaxiRouteCandidates => departureTaxiRouteCandidates;
         public IReadOnlyList<AirportSpotDefinition> SpotDefinitions => spotDefinitions;
         public RunwayData PrimaryRunwayData => runwayData.Count > 0 ? runwayData[0] : null;
         public RunwayGeometry PrimaryRunwayGeometry => runwayGeometries.Count > 0 ? runwayGeometries[0] : null;
@@ -100,6 +102,45 @@ namespace ATCJourneyJapan.Airport
             }
 
             return null;
+        }
+
+        public IReadOnlyList<TaxiRouteCandidate> GetDepartureTaxiRouteCandidates(string spotId, string runwayDesignator)
+        {
+            var normalizedSpotId = NormalizeSpotId(spotId);
+            var normalizedRunwayDesignator = NormalizeRunwayDesignator(runwayDesignator);
+            var matches = new List<TaxiRouteCandidate>();
+
+            foreach (var candidate in departureTaxiRouteCandidates)
+            {
+                if (NormalizeSpotId(candidate.SpotId) == normalizedSpotId
+                    && NormalizeRunwayDesignator(candidate.RunwayDesignator) == normalizedRunwayDesignator)
+                {
+                    matches.Add(candidate);
+                }
+            }
+
+            return matches;
+        }
+
+        public TaxiRouteCandidate GetDefaultDepartureTaxiRouteCandidate(string spotId, string runwayDesignator)
+        {
+            var candidates = GetDepartureTaxiRouteCandidates(spotId, runwayDesignator);
+            TaxiRouteCandidate fallbackCandidate = null;
+
+            foreach (var candidate in candidates)
+            {
+                if (fallbackCandidate == null)
+                {
+                    fallbackCandidate = candidate;
+                }
+
+                if (candidate.IsDefault)
+                {
+                    return candidate;
+                }
+            }
+
+            return fallbackCandidate;
         }
 
         public IEnumerable<Vector3> GetArrivalFinalRoute()
@@ -197,6 +238,11 @@ namespace ATCJourneyJapan.Airport
             }
 
             return normalized;
+        }
+
+        private string NormalizeSpotId(string spotId)
+        {
+            return string.IsNullOrEmpty(spotId) ? string.Empty : spotId.Trim().ToUpperInvariant().Replace(" ", "_");
         }
 
         public IEnumerable<Vector3> GetLandingRollRoute()
@@ -305,6 +351,17 @@ namespace ATCJourneyJapan.Airport
                 new Vector3(runwayLinkX, 0.6f, -5f),
                 GetHoldShortPosition(operationDirection)
             };
+        }
+
+        public IEnumerable<Vector3> GetTaxiToHoldRoute(string spotId, string operationDirection)
+        {
+            var defaultCandidate = GetDefaultDepartureTaxiRouteCandidate(spotId, operationDirection);
+            if (defaultCandidate != null)
+            {
+                return defaultCandidate.Waypoints;
+            }
+
+            return GetTaxiToHoldRoute(DepartureSpawnPosition, operationDirection);
         }
 
         public IEnumerable<Vector3> GetLineUpRoute()
@@ -478,6 +535,132 @@ namespace ATCJourneyJapan.Airport
                 "TWY_MAIN",
                 "SPOT 01",
                 TaxiwayRoutePurpose.Arrival));
+
+            CreateDepartureTaxiRouteCandidateData();
+        }
+
+        private void CreateDepartureTaxiRouteCandidateData()
+        {
+            departureTaxiRouteCandidates.Clear();
+
+            // Provisional route candidates: these are not a full ROAH taxiway reproduction.
+            // Current commands use the default candidate; future UI can expose Route A / Route B choices.
+            AddDepartureTaxiRouteCandidate(
+                "DEP_SPOT01_18L_A",
+                "Route A / East Link",
+                "SPOT 01から東側接続誘導路経由でRWY 18L手前へ向かう暫定経路",
+                "SPOT 01",
+                "18L",
+                true,
+                new Vector3(6.3f, 0.6f, -6.45f),
+                new Vector3(12f, 0.6f, -5f),
+                GetHoldShortPosition("18L"));
+            AddDepartureTaxiRouteCandidate(
+                "DEP_SPOT01_36R_A",
+                "Route A / Main West",
+                "SPOT 01から主誘導路を西側へ進みRWY 36R手前へ向かう暫定経路",
+                "SPOT 01",
+                "36R",
+                true,
+                new Vector3(6.3f, 0.6f, -6.45f),
+                new Vector3(0f, 0.6f, -5f),
+                new Vector3(-7f, 0.6f, -5f),
+                GetHoldShortPosition("36R"));
+            AddDepartureTaxiRouteCandidate(
+                "DEP_SPOT02_18L_A",
+                "Route A / East Link",
+                "SPOT 02から東側接続誘導路経由でRWY 18L手前へ向かう暫定経路",
+                "SPOT 02",
+                "18L",
+                true,
+                new Vector3(10.8f, 0.6f, -6.45f),
+                new Vector3(12f, 0.6f, -5f),
+                GetHoldShortPosition("18L"));
+            AddDepartureTaxiRouteCandidate(
+                "DEP_SPOT02_36R_A",
+                "Route A / Main West",
+                "SPOT 02から主誘導路を西側へ進みRWY 36R手前へ向かう暫定経路",
+                "SPOT 02",
+                "36R",
+                true,
+                new Vector3(10.8f, 0.6f, -6.45f),
+                new Vector3(4.8f, 0.6f, -5f),
+                new Vector3(-7f, 0.6f, -5f),
+                GetHoldShortPosition("36R"));
+            AddDepartureTaxiRouteCandidate(
+                "DEP_SPOT02_36R_B",
+                "Route B / Apron Bypass",
+                "SPOT 02からエプロン側の余白を使いRWY 36R手前へ向かう将来選択用の暫定経路",
+                "SPOT 02",
+                "36R",
+                false,
+                new Vector3(10.8f, 0.6f, -6.45f),
+                new Vector3(10.8f, 0.6f, -7.35f),
+                new Vector3(0f, 0.6f, -7.35f),
+                new Vector3(-7f, 0.6f, -5f),
+                GetHoldShortPosition("36R"));
+            AddDepartureTaxiRouteCandidate(
+                "DEP_SPOT03_18L_A",
+                "Route A / East Link",
+                "SPOT 03から東側接続誘導路経由でRWY 18L手前へ向かう暫定経路",
+                "SPOT 03",
+                "18L",
+                true,
+                new Vector3(17.1f, 0.6f, -6.2f),
+                new Vector3(12f, 0.6f, -5f),
+                GetHoldShortPosition("18L"));
+            AddDepartureTaxiRouteCandidate(
+                "DEP_SPOT03_36R_A",
+                "Route A / Main West",
+                "SPOT 03から主誘導路を西側へ進みRWY 36R手前へ向かう暫定経路",
+                "SPOT 03",
+                "36R",
+                true,
+                new Vector3(17.1f, 0.6f, -6.2f),
+                new Vector3(4.8f, 0.6f, -5f),
+                new Vector3(-7f, 0.6f, -5f),
+                GetHoldShortPosition("36R"));
+            AddDepartureTaxiRouteCandidate(
+                "DEP_SPOT04_18L_A",
+                "Route A / East Link",
+                "SPOT 04から東側接続誘導路経由でRWY 18L手前へ向かう暫定経路",
+                "SPOT 04",
+                "18L",
+                true,
+                new Vector3(26.2f, 0.6f, -6.2f),
+                new Vector3(18f, 0.6f, -5f),
+                new Vector3(12f, 0.6f, -5f),
+                GetHoldShortPosition("18L"));
+            AddDepartureTaxiRouteCandidate(
+                "DEP_SPOT04_36R_A",
+                "Route A / Main West",
+                "SPOT 04から主誘導路を西側へ進みRWY 36R手前へ向かう暫定経路",
+                "SPOT 04",
+                "36R",
+                true,
+                new Vector3(26.2f, 0.6f, -6.2f),
+                new Vector3(12f, 0.6f, -5f),
+                new Vector3(-7f, 0.6f, -5f),
+                GetHoldShortPosition("36R"));
+        }
+
+        private void AddDepartureTaxiRouteCandidate(
+            string routeId,
+            string displayName,
+            string description,
+            string spotId,
+            string runwayDesignator,
+            bool isDefault,
+            params Vector3[] waypoints)
+        {
+            departureTaxiRouteCandidates.Add(new TaxiRouteCandidate(
+                routeId,
+                displayName,
+                description,
+                spotId,
+                runwayDesignator,
+                waypoints,
+                isDefault));
         }
 
         private void CreateEnvironment()
