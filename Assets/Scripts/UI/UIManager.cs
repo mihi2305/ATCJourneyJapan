@@ -414,7 +414,7 @@ namespace ATCJourneyJapan.UI
             minimapPanel.GetComponent<Image>().color = new Color(0.015f, 0.025f, 0.032f, 0.82f);
             minimapPanel.GetComponent<Image>().raycastTarget = false;
             CreateText("Mini Map Title", minimapPanel.transform, "AIRPORT MAP", 20, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-114f, 116f), new Vector2(170f, 30f));
-            CreateText("Mini Map Runway Header", minimapPanel.transform, "RWY 18L / 18R", 15, FontStyle.Bold, TextAnchor.MiddleRight, new Vector2(118f, 116f), new Vector2(140f, 28f));
+            CreateText("Mini Map Runway Header", minimapPanel.transform, "A RWY 18L / 36R", 15, FontStyle.Bold, TextAnchor.MiddleRight, new Vector2(112f, 116f), new Vector2(160f, 28f));
 
             var contentObject = new GameObject("Mini Map Content");
             contentObject.transform.SetParent(minimapPanel.transform, false);
@@ -449,7 +449,9 @@ namespace ATCJourneyJapan.UI
             CreateMiniMapBlock("Mini Map Hold A 36R", WorldToMiniMap(new Vector3(12f, 0f, -3f)), new Vector2(18f, 12f), new Color(0.92f, 0.72f, 0.16f, 0.68f));
 
             CreateMiniMapSpots();
-            CreateText("Mini Map Runway A Label", minimapContent, "18L", 12, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(3f, 0f, 1.8f)), new Vector2(54f, 18f));
+            CreateText("Mini Map Runway A Label", minimapContent, "A RWY", 12, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(3f, 0f, 1.8f)), new Vector2(54f, 18f));
+            CreateText("Mini Map Runway A 18L Threshold", minimapContent, "18L THR", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(-13.25f, 0f, 1.8f)), new Vector2(62f, 18f));
+            CreateText("Mini Map Runway A 36R Threshold", minimapContent, "36R THR", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(19.25f, 0f, 1.8f)), new Vector2(62f, 18f));
             CreateText("Mini Map Runway B Label", minimapContent, "18R", 12, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(3f, 0f, 12.2f)), new Vector2(54f, 18f));
         }
 

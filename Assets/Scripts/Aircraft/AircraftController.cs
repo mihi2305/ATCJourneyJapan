@@ -200,11 +200,12 @@ namespace ATCJourneyJapan.Aircraft
             var operationDirection = GetOperationRunwayDirection();
             transform.position = airportManager.GetArrivalFinalApproachStart(operationDirection);
             SetState(AircraftState.FinalApproach);
-            SetRunwayLandingHeading();
+            SetRunwayLandingHeading(operationDirection);
             gameManager.OccupyPrimaryRunway(this, "着陸中");
             StartRouteWithHeading(airportManager.GetArrivalFinalRoute(operationDirection), airborneSpeed, () =>
             {
                 SetState(AircraftState.LandingRoll);
+                SetRunwayLandingHeading(operationDirection);
                 gameManager.OccupyPrimaryRunway(this, "着陸滑走中");
                 StartRouteWithHeading(airportManager.GetLandingRollRoute(operationDirection), groundSpeed + 1f, () =>
                 {
@@ -287,14 +288,15 @@ namespace ATCJourneyJapan.Aircraft
 
         private void ClearTakeoff()
         {
+            var operationDirection = GetOperationRunwayDirection();
             SetState(AircraftState.TakeoffRoll, false);
-            SetRunwayTakeoffHeading();
+            SetRunwayTakeoffHeading(operationDirection);
             gameManager.OccupyPrimaryRunway(this, "離陸滑走中");
-            StartRouteWithHeading(airportManager.GetTakeoffRoute(GetOperationRunwayDirection()), airborneSpeed, () =>
+            StartRouteWithHeading(airportManager.GetTakeoffRoute(operationDirection), airborneSpeed, () =>
             {
                 gameManager.ReleasePrimaryRunway(this);
                 SetState(AircraftState.AirborneDeparture, false);
-                SetRunwayTakeoffHeading();
+                SetRunwayTakeoffHeading(operationDirection);
                 gameManager.NotifyAircraftHandled(this);
             }, false);
         }
@@ -371,9 +373,19 @@ namespace ATCJourneyJapan.Aircraft
             SetHeadingFromWorldDirection(GetRunwayTakeoffDirection());
         }
 
+        private void SetRunwayTakeoffHeading(string operationDirection)
+        {
+            SetHeadingFromWorldDirection(GetRunwayTakeoffDirection(operationDirection));
+        }
+
         private void SetRunwayLandingHeading()
         {
             SetHeadingFromWorldDirection(GetRunwayLandingDirection());
+        }
+
+        private void SetRunwayLandingHeading(string operationDirection)
+        {
+            SetHeadingFromWorldDirection(GetRunwayLandingDirection(operationDirection));
         }
 
         private void SetDepartureParkingHeading()
@@ -383,12 +395,22 @@ namespace ATCJourneyJapan.Aircraft
 
         private Vector3 GetRunwayTakeoffDirection()
         {
-            return airportManager != null ? airportManager.GetPrimaryRunwayTakeoffDirection(GetOperationRunwayDirection()) : Vector3.right;
+            return GetRunwayTakeoffDirection(GetOperationRunwayDirection());
+        }
+
+        private Vector3 GetRunwayTakeoffDirection(string operationDirection)
+        {
+            return airportManager != null ? airportManager.GetPrimaryRunwayTakeoffDirection(operationDirection) : Vector3.right;
         }
 
         private Vector3 GetRunwayLandingDirection()
         {
-            return airportManager != null ? airportManager.GetPrimaryRunwayLandingDirection(GetOperationRunwayDirection()) : Vector3.right;
+            return GetRunwayLandingDirection(GetOperationRunwayDirection());
+        }
+
+        private Vector3 GetRunwayLandingDirection(string operationDirection)
+        {
+            return airportManager != null ? airportManager.GetPrimaryRunwayLandingDirection(operationDirection) : Vector3.right;
         }
 
         private string GetOperationRunwayDirection()

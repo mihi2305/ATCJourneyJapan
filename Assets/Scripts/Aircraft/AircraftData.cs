@@ -26,7 +26,9 @@ namespace ATCJourneyJapan.Aircraft
             OperationType = operationType;
             AssignedRunwayId = assignedRunwayId;
             AssignedRunwayDisplayName = assignedRunwayDisplayName;
-            ActiveRunwayDesignator = activeRunwayDesignator;
+            ActiveRunwayDesignator = string.IsNullOrEmpty(activeRunwayDesignator)
+                ? activeRunwayDesignator
+                : NormalizeRunwayDesignator(activeRunwayDesignator);
             SpotId = spotId;
             SpotDisplayName = spotDisplayName;
             Origin = origin;
@@ -84,7 +86,7 @@ namespace ATCJourneyJapan.Aircraft
 
             if (!string.IsNullOrEmpty(activeRunwayDesignator))
             {
-                ActiveRunwayDesignator = activeRunwayDesignator;
+                ActiveRunwayDesignator = NormalizeRunwayDesignator(activeRunwayDesignator);
             }
         }
 
@@ -106,6 +108,22 @@ namespace ATCJourneyJapan.Aircraft
             NextTargetDisplayName = nextTargetDisplayName;
             HeadingDegrees = headingDegrees;
             FacingDirection = facingDirection;
+        }
+
+        private static string NormalizeRunwayDesignator(string activeRunwayDesignator)
+        {
+            var normalized = activeRunwayDesignator.Trim().ToUpperInvariant();
+            if (normalized.StartsWith("RUNWAY "))
+            {
+                normalized = normalized.Substring("RUNWAY ".Length).Trim();
+            }
+
+            if (normalized.StartsWith("RWY "))
+            {
+                normalized = normalized.Substring("RWY ".Length).Trim();
+            }
+
+            return normalized;
         }
     }
 }

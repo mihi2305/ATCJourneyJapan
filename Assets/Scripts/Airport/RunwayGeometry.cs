@@ -147,6 +147,26 @@ namespace ATCJourneyJapan.Airport
             return GetRolloutEndPoint(operationDirection);
         }
 
+        public IEnumerable<Vector3> GetFinalApproachRoute(string operationDirection)
+        {
+            return new[]
+            {
+                GetFinalApproachStart(operationDirection),
+                GetFinalApproachFix(operationDirection),
+                GetArrivalThresholdPoint(operationDirection),
+                GetTouchdownPoint(operationDirection)
+            };
+        }
+
+        public IEnumerable<Vector3> GetLandingRolloutRoute(string operationDirection)
+        {
+            return new[]
+            {
+                GetTouchdownPoint(operationDirection),
+                GetRolloutEndPoint(operationDirection)
+            };
+        }
+
         public Vector3 GetDepartureEndPoint(string operationDirection)
         {
             return IsOppositeDesignator(operationDirection) ? DesignatorAThresholdPoint : DesignatorBThresholdPoint;

@@ -110,13 +110,19 @@ namespace ATCJourneyJapan.Airport
         public IEnumerable<Vector3> GetArrivalFinalRoute(string operationDirection)
         {
             var runway = PrimaryRunwayGeometry;
+            if (runway != null)
+            {
+                return runway.GetFinalApproachRoute(operationDirection);
+            }
+
             var landingDirection = GetPrimaryRunwayLandingDirection(operationDirection);
-            var threshold = runway != null ? runway.GetArrivalThresholdPoint(operationDirection) : new Vector3(-13.25f, 0.6f, 0f);
+            var threshold = new Vector3(-13.25f, 0.6f, 0f);
             return new[]
             {
-                runway != null ? runway.GetFinalApproachFix(operationDirection) : threshold - landingDirection * 6f,
+                threshold - landingDirection * 12f,
+                threshold - landingDirection * 6f,
                 threshold,
-                runway != null ? runway.GetTouchdownPoint(operationDirection) : threshold + landingDirection * 2.25f
+                threshold + landingDirection * 2.25f
             };
         }
 
@@ -169,7 +175,28 @@ namespace ATCJourneyJapan.Airport
 
         private bool Is36R(string operationDirection)
         {
-            return operationDirection == "36R";
+            return NormalizeRunwayDesignator(operationDirection) == "36R";
+        }
+
+        private string NormalizeRunwayDesignator(string operationDirection)
+        {
+            if (string.IsNullOrEmpty(operationDirection))
+            {
+                return GetPrimaryRunwayDirection();
+            }
+
+            var normalized = operationDirection.Trim().ToUpperInvariant();
+            if (normalized.StartsWith("RUNWAY "))
+            {
+                normalized = normalized.Substring("RUNWAY ".Length).Trim();
+            }
+
+            if (normalized.StartsWith("RWY "))
+            {
+                normalized = normalized.Substring("RWY ".Length).Trim();
+            }
+
+            return normalized;
         }
 
         public IEnumerable<Vector3> GetLandingRollRoute()
@@ -180,13 +207,17 @@ namespace ATCJourneyJapan.Airport
         public IEnumerable<Vector3> GetLandingRollRoute(string operationDirection)
         {
             var runway = PrimaryRunwayGeometry;
+            if (runway != null)
+            {
+                return runway.GetLandingRolloutRoute(operationDirection);
+            }
+
             var landingDirection = GetPrimaryRunwayLandingDirection(operationDirection);
-            var touchdownPoint = runway != null ? runway.GetTouchdownPoint(operationDirection) : new Vector3(-11f, 0.6f, 0f);
-            var rolloutEndPoint = runway != null ? runway.GetRolloutEndPoint(operationDirection) : touchdownPoint + landingDirection * 14f;
+            var touchdownPoint = new Vector3(-11f, 0.6f, 0f);
             return new[]
             {
                 touchdownPoint,
-                rolloutEndPoint
+                touchdownPoint + landingDirection * 14f
             };
         }
 

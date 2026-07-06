@@ -2,11 +2,20 @@
 
 ## Current Phase
 
-Phase 3.9-5H QA Correct Naha runway movement directions
+Phase 3.9-5H-2 Fix selected runway route usage
 
 ## Previous Phase
 
-Phase 3.9-5I Arrival final approach route binding
+Phase 3.9-5H QA Correct Naha runway movement directions
+
+## Phase 3.9-5H-2で修正したこと
+
+- Unity Play確認で、表示上は `RWY 36R` でも到着routeが `18L` 相当の北側外方 -> 南向きに見える問題をQA対象にした
+- A滑走路は `18L threshold = -X側北端`、`36R threshold = +X側南端` とし、`18L = 北端から南向き`、`36R = 南端から北向き` の航空ルールを維持する
+- `RunwayGeometry` にdesignator別のFinal Approach route / Landing Rollout routeを持たせ、`AirportManager` の到着route生成をそのsource of truthへ寄せた
+- `RWY 36R` / `Runway 36R` / `36R` の表記ゆれで36R側routeが18L扱いへ落ちないよう、空港route側と航空機データ側でdesignatorを正規化する
+- ミニマップのA滑走路表示を `A RWY 18L / 36R` とし、北端に `18L THR`、南端に `36R THR` の確認ラベルを追加した
+- Unity Editorでは、AJJ101の `Clear to Land RWY 36R` が南側外方 -> 36R threshold -> 北向きrolloutになるかを重点確認する
 
 ## Phase 3.9-5H QAで修正したこと
 
