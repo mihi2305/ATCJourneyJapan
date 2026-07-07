@@ -21,11 +21,13 @@ namespace ATCJourneyJapan.Aircraft
         [SerializeField] private float taxiSpeed = 3f;
         [SerializeField] private float takeoffInitialSpeed = 2.2f;
         [SerializeField] private float takeoffMaxSpeed = 7.5f;
-        [SerializeField] private float landingInitialSpeed = 6.5f;
-        [SerializeField] private float landingRolloutEndSpeed = 3f;
-        [SerializeField] private float takeoffAccelerationTime = 7f;
-        [SerializeField] private float landingDecelerationTime = 9f;
-        [SerializeField] private float routeHeadingTurnSpeed = 240f;
+        [SerializeField] private float landingInitialSpeed = 7f;
+        [SerializeField] private float landingRolloutEndSpeed = 2.4f;
+        [SerializeField] private float takeoffAccelerationTime = 6f;
+        [SerializeField] private float landingDecelerationTime = 6f;
+        [SerializeField] private float routeHeadingTurnSpeed = 110f;
+        [SerializeField] private float turnAngleThreshold = 25f;
+        [SerializeField] private float taxiTurnSpeedMultiplier = 0.35f;
         [SerializeField] private float headingDegrees;
 
         private readonly SimpleRoute route = new SimpleRoute();
@@ -682,13 +684,34 @@ namespace ATCJourneyJapan.Aircraft
             }
 
             var normalized = worldDirection.normalized;
+            var targetRotation = Quaternion.LookRotation(normalized, Vector3.up);
+            var angleToTarget = Quaternion.Angle(transform.rotation, targetRotation);
             facingDirection = new Vector2(normalized.x, normalized.z);
             headingDegrees = -Mathf.Atan2(facingDirection.x, facingDirection.y) * Mathf.Rad2Deg;
-            var targetRotation = Quaternion.LookRotation(normalized, Vector3.up);
             transform.rotation = smooth
                 ? Quaternion.RotateTowards(transform.rotation, targetRotation, routeHeadingTurnSpeed * deltaTime)
                 : targetRotation;
+            UpdateTaxiTurnSpeed(angleToTarget);
             SyncFlightData();
+        }
+
+        private void UpdateTaxiTurnSpeed(float angleToTarget)
+        {
+            if (!ShouldApplyTaxiTurnSpeed())
+            {
+                return;
+            }
+
+            route.Speed = angleToTarget >= turnAngleThreshold ? taxiSpeed * taxiTurnSpeedMultiplier : taxiSpeed;
+        }
+
+        private bool ShouldApplyTaxiTurnSpeed()
+        {
+            return route.IsMoving
+                   && (currentState == AircraftState.TaxiToGate
+                       || currentState == AircraftState.TaxiToHold
+                       || currentState == AircraftState.VacatingRunway
+                       || currentState == AircraftState.LiningUp);
         }
 
         private void ApplyDefaultHeadingForState(AircraftState state)

@@ -2,11 +2,20 @@
 
 ## Current Phase
 
-Phase 3.9-5N-3 Fix aircraft heading during taxi
+Phase 3.9-5N-4 Add taxi turn phase
 
 ## Previous Phase
 
-Phase 3.9-5N-2 Tune visible speed profiles
+Phase 3.9-5N-3 Fix aircraft heading during taxi
+
+## Phase 3.9-5N-4で修正したこと
+
+- Taxi / Taxi-to-Spot / Departure taxi / Vacate connector / LineUpで、次waypoint方向とのheading差が大きい間はturn phaseとして低速化するようにした
+- `turnAngleThreshold` と `taxiTurnSpeedMultiplier` を追加し、旋回中は通常taxi速度より落としてから進む見え方にした
+- route headingの回転速度を下げ、一瞬で向きが変わりすぎないようにした
+- Landing Rolloutは初速と終了速度の差を広げ、減速時間を調整して、減速がより目視しやすいようにした
+- Takeoff加速時間を少し短くし、前Phaseより離陸加速が遅すぎないようにした
+- 今回は本格Smooth Turn、曲線誘導路生成、pitch / bank / liftoff animationは行わない
 
 ## Phase 3.9-5N-3で修正したこと
 
