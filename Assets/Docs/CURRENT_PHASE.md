@@ -2,11 +2,19 @@
 
 ## Current Phase
 
-Phase 3.9-5O-3 Clean apron lead-in visuals
+Phase 3.9-5O-4 Update minimap taxiway layout
 
 ## Previous Phase
 
-Phase 3.9-5O-2 Simplify apron routing using existing dataset and ROAH AIP chart
+Phase 3.9-5O-3 Clean apron lead-in visuals
+
+## Phase 3.9-5O-4で修正したこと
+
+- ミニマップのA滑走路側誘導路表示を、現在のメイン画面に合わせて `A_MAIN_PARALLEL_01` 相当の主平行誘導路1本へ寄せた
+- 追加済みのA滑走路端connector 2本と既存connector 2本をミニマップに反映した
+- SPOT 01〜04は、長いapron-front taxiwayではなく短いstand lead-inで主平行誘導路へ接続して見えるようにした
+- WorldToMiniMapの座標変換、aircraft marker、heading矢印回転、route datasetは変更していない
+- Route選択UIと本格ミニマップ整理は次Phase以降に回す
 
 ## Phase 3.9-5O-3で修正したこと
 

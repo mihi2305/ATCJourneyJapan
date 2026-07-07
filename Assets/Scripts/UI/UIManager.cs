@@ -441,9 +441,11 @@ namespace ATCJourneyJapan.UI
 
             minimapRunwayImage = CreateMiniMapBlock("Mini Map Runway A", WorldToMiniMap(new Vector3(3f, 0f, 0f)), WorldSizeToMiniMap(new Vector2(32.5f, 2.35f)), new Color(0.38f, 0.4f, 0.42f, 0.98f));
             CreateMiniMapBlock("Mini Map Runway B", WorldToMiniMap(new Vector3(3f, 0f, 10.2f)), WorldSizeToMiniMap(new Vector2(29.2f, 2.8f)), new Color(0.31f, 0.34f, 0.35f, 0.78f));
-            CreateMiniMapBlock("Mini Map Taxiway Main", WorldToMiniMap(new Vector3(0f, 0f, -5f)), WorldSizeToMiniMap(new Vector2(26f, 1.24f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
+            CreateMiniMapBlock("Mini Map Taxiway Main", WorldToMiniMap(new Vector3(6.6f, 0f, -5f)), WorldSizeToMiniMap(new Vector2(39.2f, 1.24f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
+            CreateMiniMapBlock("Mini Map Taxiway 36R End", WorldToMiniMap(new Vector3(-10.8f, 0f, -2.5f)), WorldSizeToMiniMap(new Vector2(1.7f, 5f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
             CreateMiniMapBlock("Mini Map Taxiway West", WorldToMiniMap(new Vector3(-7f, 0f, -2.5f)), WorldSizeToMiniMap(new Vector2(1.7f, 5f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
             CreateMiniMapBlock("Mini Map Taxiway East", WorldToMiniMap(new Vector3(12f, 0f, -2.5f)), WorldSizeToMiniMap(new Vector2(1.7f, 5f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
+            CreateMiniMapBlock("Mini Map Taxiway 18L End", WorldToMiniMap(new Vector3(15.2f, 0f, -2.5f)), WorldSizeToMiniMap(new Vector2(1.7f, 5f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
             CreateMiniMapBlock("Mini Map Taxiway E Right", WorldToMiniMap(new Vector3(17.1f, 0f, 5.1f)), WorldSizeToMiniMap(new Vector2(1.25f, 10.2f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
             CreateMiniMapBlock("Mini Map Hold A 36R", WorldToMiniMap(new Vector3(-7f, 0f, -3f)), new Vector2(18f, 12f), new Color(0.92f, 0.72f, 0.16f, 0.98f));
             CreateMiniMapBlock("Mini Map Hold A 18L", WorldToMiniMap(new Vector3(12f, 0f, -3f)), new Vector2(18f, 12f), new Color(0.92f, 0.72f, 0.16f, 0.68f));
@@ -482,11 +484,30 @@ namespace ATCJourneyJapan.UI
 
         private void CreateMiniMapSpot(string label, AirportSpotArea area, AircraftSizeClass aircraftSizeClass, Vector3 worldPosition, Vector3 standScale)
         {
+            CreateMiniMapStandLeadIn(label, worldPosition);
+
             var position = WorldToMiniMap(worldPosition);
             var size = WorldSizeToMiniMap(new Vector2(standScale.x, standScale.z));
             size = new Vector2(Mathf.Max(size.x, aircraftSizeClass == AircraftSizeClass.Widebody ? 22f : 18f), Mathf.Max(size.y, aircraftSizeClass == AircraftSizeClass.Widebody ? 18f : 14f));
             CreateMiniMapBlock($"Mini Map {label}", position, size, GetMiniMapSpotColor(area, aircraftSizeClass));
             CreateText($"Mini Map {label} Label", minimapContent, label.Replace("SPOT ", "S"), 11, FontStyle.Bold, TextAnchor.MiddleCenter, position + new Vector2(0f, -20f), new Vector2(50f, 16f));
+        }
+
+        private void CreateMiniMapStandLeadIn(string label, Vector3 spotWorldPosition)
+        {
+            var taxiwayZ = -5f;
+            var leadInDepth = Mathf.Abs(spotWorldPosition.z - taxiwayZ);
+            if (leadInDepth <= 0.1f)
+            {
+                return;
+            }
+
+            var leadInCenter = new Vector3(spotWorldPosition.x, 0f, (spotWorldPosition.z + taxiwayZ) * 0.5f);
+            CreateMiniMapBlock(
+                $"Mini Map {label} Lead In",
+                WorldToMiniMap(leadInCenter),
+                WorldSizeToMiniMap(new Vector2(0.55f, leadInDepth)),
+                new Color(0.24f, 0.42f, 0.48f, 0.96f));
         }
 
         private Color GetMiniMapSpotColor(AirportSpotArea area, AircraftSizeClass aircraftSizeClass)
