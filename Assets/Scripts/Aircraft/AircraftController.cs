@@ -17,7 +17,13 @@ namespace ATCJourneyJapan.Aircraft
         [SerializeField] private bool arrivalAircraft;
         [SerializeField] private AircraftState currentState = AircraftState.Waiting;
         [SerializeField] private float airborneSpeed = 8f;
-        [SerializeField] private float groundSpeed = 4f;
+        [SerializeField] private float taxiSpeed = 4f;
+        [SerializeField] private float takeoffInitialSpeed = 4f;
+        [SerializeField] private float takeoffMaxSpeed = 10f;
+        [SerializeField] private float landingInitialSpeed = 7f;
+        [SerializeField] private float landingRolloutEndSpeed = 4f;
+        [SerializeField] private float takeoffAccelerationTime = 5f;
+        [SerializeField] private float landingDecelerationTime = 5f;
         [SerializeField] private float headingDegrees;
 
         private readonly SimpleRoute route = new SimpleRoute();
@@ -36,6 +42,8 @@ namespace ATCJourneyJapan.Aircraft
         private string lastLandingRunwayDesignator = string.Empty;
         private string activeDepartureRouteId = string.Empty;
         private string activeRunwayEntryUsageId = string.Empty;
+        private float takeoffSpeedProfileElapsed;
+        private float landingSpeedProfileElapsed;
 
         public string FlightNumber => flightNumber;
         public AircraftData FlightData => flightData;
@@ -80,6 +88,7 @@ namespace ATCJourneyJapan.Aircraft
             if (gameManager == null || !gameManager.IsGameplayPaused)
             {
                 var previousPosition = transform.position;
+                UpdateActiveSpeedProfile(Time.deltaTime);
                 route.Tick(transform, Time.deltaTime);
                 if (ShouldLockPushbackHeading())
                 {
@@ -211,11 +220,12 @@ namespace ATCJourneyJapan.Aircraft
                 SetState(AircraftState.LandingRoll);
                 SetRunwayLandingHeading(operationDirection);
                 gameManager.OccupyPrimaryRunway(this, "着陸滑走中");
-                StartRouteWithHeading(airportManager.GetLandingRollRoute(operationDirection), groundSpeed + 1f, () =>
+                StartLandingSpeedProfile(operationDirection);
+                StartRouteWithHeading(airportManager.GetLandingRollRoute(operationDirection), landingInitialSpeed, () =>
                 {
                     SetState(AircraftState.VacatingRunway);
                     gameManager.OccupyPrimaryRunway(this, "滑走路離脱中");
-                    StartRouteWithHeading(airportManager.GetVacateRunwayRoute(operationDirection), groundSpeed, () =>
+                    StartRouteWithHeading(airportManager.GetVacateRunwayRoute(operationDirection), taxiSpeed, () =>
                     {
                         gameManager.ReleasePrimaryRunway(this);
                         SetState(AircraftState.Waiting);
@@ -235,7 +245,7 @@ namespace ATCJourneyJapan.Aircraft
             LogSelectedArrivalTaxiRoute(routeCandidate, spotId, operationDirection);
 
             SetState(AircraftState.TaxiToGate);
-            StartRouteWithHeading(routePoints, groundSpeed, () =>
+            StartRouteWithHeading(routePoints, taxiSpeed, () =>
             {
                 SetState(AircraftState.AtGate);
                 gameManager.NotifyAircraftHandled(this);
@@ -246,7 +256,7 @@ namespace ATCJourneyJapan.Aircraft
         {
             SetState(AircraftState.Pushbacking, false);
             SetDepartureParkingHeading();
-            StartRouteWithHeading(airportManager.GetPushbackRoute(transform.position), groundSpeed * 0.65f, () =>
+            StartRouteWithHeading(airportManager.GetPushbackRoute(transform.position), taxiSpeed * 0.65f, () =>
             {
                 SetState(AircraftState.PushbackReady);
             }, false);
@@ -266,7 +276,7 @@ namespace ATCJourneyJapan.Aircraft
             LogSelectedTaxiRoute(routeCandidate, spotId, operationDirection);
 
             SetState(AircraftState.TaxiToHold);
-            StartRouteWithHeading(routePoints, groundSpeed, () =>
+            StartRouteWithHeading(routePoints, taxiSpeed, () =>
             {
                 SetState(AircraftState.HoldingPoint);
             });
@@ -327,6 +337,20 @@ namespace ATCJourneyJapan.Aircraft
                 + $"routeId={(string.IsNullOrEmpty(activeDepartureRouteId) ? "fallback" : activeDepartureRouteId)} "
                 + $"runwayEntryUsageId={(string.IsNullOrEmpty(activeRunwayEntryUsageId) ? "none" : activeRunwayEntryUsageId)} "
                 + $"mode={mode} start={FormatVector3(transform.position)} direction={FormatVector3(direction)}");
+        }
+
+        private void LogTakeoffSpeedProfile(string runwayDesignator)
+        {
+            Debug.Log(
+                $"Takeoff speed profile: {flightNumber} RWY {runwayDesignator} "
+                + $"initial={takeoffInitialSpeed:0.##} max={takeoffMaxSpeed:0.##} accelerationTime={takeoffAccelerationTime:0.##}");
+        }
+
+        private void LogLandingSpeedProfile(string runwayDesignator)
+        {
+            Debug.Log(
+                $"Landing rollout speed profile: {flightNumber} RWY {runwayDesignator} "
+                + $"initial={landingInitialSpeed:0.##} rolloutEnd={landingRolloutEndSpeed:0.##} decelerationTime={landingDecelerationTime:0.##}");
         }
 
         private string GetConnectorSegmentId(TaxiRouteCandidate routeCandidate)
@@ -408,7 +432,7 @@ namespace ATCJourneyJapan.Aircraft
             var operationDirection = GetOperationRunwayDirection();
             SetState(AircraftState.LiningUp, false);
             gameManager.OccupyPrimaryRunway(this, "滑走路上待機");
-            StartRouteWithHeading(airportManager.GetLineUpRoute(transform.position, operationDirection, activeRunwayEntryUsageId), groundSpeed, () =>
+            StartRouteWithHeading(airportManager.GetLineUpRoute(transform.position, operationDirection, activeRunwayEntryUsageId), taxiSpeed, () =>
             {
                 transform.position = GetLineupCompletionPoint(operationDirection);
                 SetState(AircraftState.LiningUp, false);
@@ -425,8 +449,9 @@ namespace ATCJourneyJapan.Aircraft
             SetState(AircraftState.TakeoffRoll, false);
             SetRunwayTakeoffHeading(operationDirection);
             LogSelectedTakeoffRoute(operationDirection);
+            StartTakeoffSpeedProfile(operationDirection);
             gameManager.OccupyPrimaryRunway(this, "離陸滑走中");
-            StartRouteWithHeading(takeoffRoute, airborneSpeed, () =>
+            StartRouteWithHeading(takeoffRoute, takeoffInitialSpeed, () =>
             {
                 gameManager.ReleasePrimaryRunway(this);
                 SetState(AircraftState.AirborneDeparture, false);
@@ -451,6 +476,44 @@ namespace ATCJourneyJapan.Aircraft
         private bool HasRunwayEntryUsage()
         {
             return !string.IsNullOrEmpty(activeRunwayEntryUsageId);
+        }
+
+        private void StartTakeoffSpeedProfile(string operationDirection)
+        {
+            takeoffSpeedProfileElapsed = 0f;
+            route.Speed = takeoffInitialSpeed;
+            LogTakeoffSpeedProfile(operationDirection);
+        }
+
+        private void StartLandingSpeedProfile(string operationDirection)
+        {
+            landingSpeedProfileElapsed = 0f;
+            route.Speed = landingInitialSpeed;
+            LogLandingSpeedProfile(operationDirection);
+        }
+
+        private void UpdateActiveSpeedProfile(float deltaTime)
+        {
+            if (currentState == AircraftState.TakeoffRoll)
+            {
+                takeoffSpeedProfileElapsed += deltaTime;
+                route.Speed = InterpolateSpeed(takeoffInitialSpeed, takeoffMaxSpeed, takeoffSpeedProfileElapsed, takeoffAccelerationTime);
+            }
+            else if (currentState == AircraftState.LandingRoll)
+            {
+                landingSpeedProfileElapsed += deltaTime;
+                route.Speed = InterpolateSpeed(landingInitialSpeed, landingRolloutEndSpeed, landingSpeedProfileElapsed, landingDecelerationTime);
+            }
+        }
+
+        private float InterpolateSpeed(float fromSpeed, float toSpeed, float elapsed, float duration)
+        {
+            if (duration <= 0.01f)
+            {
+                return toSpeed;
+            }
+
+            return Mathf.Lerp(fromSpeed, toSpeed, Mathf.Clamp01(elapsed / duration));
         }
 
         private void SetState(AircraftState state, bool applyDefaultHeading = true)

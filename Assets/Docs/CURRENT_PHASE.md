@@ -2,11 +2,19 @@
 
 ## Current Phase
 
-Phase 3.9-5M Prevent takeoff backtrack
+Phase 3.9-5N Add simple speed profiles
 
 ## Previous Phase
 
-Phase 3.9-5L Add directional runway access usage
+Phase 3.9-5M Prevent takeoff backtrack
+
+## Phase 3.9-5Nで修正したこと
+
+- Takeoff Roll中は一定速度ではなく、`takeoffInitialSpeed` から `takeoffMaxSpeed` へ簡易的に補間して加速するようにした
+- Landing Rollout中は `landingInitialSpeed` から `landingRolloutEndSpeed` へ簡易的に補間して減速するようにした
+- 地上走行速度を `taxiSpeed` として分け、Takeoff / Landing用の速度定数と補間時間を `AircraftController` に分離した
+- Takeoff開始時とLanding Rollout開始時に、callsign / runway / speed profileを `Debug.Log` で1回だけ確認できるようにした
+- 今回は見た目の自然さを上げる簡易モデルであり、機種別性能、正確な離着陸距離、加減速距離計算は今後のPhaseに回す
 
 ## Phase 3.9-5Mで修正したこと
 
