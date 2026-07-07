@@ -2,11 +2,18 @@
 
 ## Current Phase
 
-Phase 3.9-5O-2 Simplify apron routing using existing dataset and ROAH AIP chart
+Phase 3.9-5O-3 Clean apron lead-in visuals
 
 ## Previous Phase
 
-Phase 3.9-5O Add runway-end connectors using existing dataset
+Phase 3.9-5O-2 Simplify apron routing using existing dataset and ROAH AIP chart
+
+## Phase 3.9-5O-3で修正したこと
+
+- エプロン周辺で2本目の誘導路に見えていた長い黄色のpushback line visualを削除した
+- Spot周辺の見た目は、主平行誘導路1本と `STAND_ENTRY_01`〜`04` の短いstand lead-in lineに寄せた
+- TaxiwaySegment / RunwayAccessPoint / RunwayAccessUsage / TaxiRouteCandidate のdatasetやroute生成は変更していない
+- ミニマップ本格整理は次Phase以降に回す
 
 ## Phase 3.9-5O-2で修正したこと
 

@@ -1816,8 +1816,6 @@ namespace ATCJourneyJapan.Airport
             CreateBox("Passenger Apron Blockout", new Vector3(17.1f, -0.01f, -10.1f), new Vector3(29.2f, 0.12f, 9.35f), passengerApronMaterial, parent);
             CreateBox("DOM Apron Depth Reserve", new Vector3(12.2f, 0.035f, -8.2f), new Vector3(18.5f, 0.035f, 5.7f), secondaryApronMaterial, parent);
             CreateBox("INTL Widebody Apron Depth Reserve", new Vector3(26.2f, 0.04f, -8.5f), new Vector3(7.6f, 0.04f, 6.95f), secondaryApronMaterial, parent);
-            CreateBox("DOM Finger Pushback Line", new Vector3(13.6f, 0.072f, -6.45f), new Vector3(11.6f, 0.035f, 0.08f), taxiwayMarkingMaterial, parent);
-            CreateBox("INTL Pushback Line", new Vector3(25.8f, 0.074f, -6.2f), new Vector3(6.9f, 0.035f, 0.08f), taxiwayMarkingMaterial, parent);
             CreateBox("Base Passenger Area Divider", new Vector3(2.7f, 0.04f, -10.2f), new Vector3(0.16f, 0.08f, 9.4f), areaDividerMaterial, parent);
 
             CreateBox("Fighter Shelter 01", new Vector3(-17.5f, 0.55f, -13.3f), new Vector3(2.2f, 1.1f, 2f), hangarMaterial, parent);
