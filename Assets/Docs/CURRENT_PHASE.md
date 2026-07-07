@@ -2,11 +2,19 @@
 
 ## Current Phase
 
-Phase 3.9-5N-5 Stronger landing deceleration and taxi turn phase
+Phase 3.9-5N-6 Slow taxi speed
 
 ## Previous Phase
 
-Phase 3.9-5N-4 Add taxi turn phase
+Phase 3.9-5N-5 Stronger landing deceleration and taxi turn phase
+
+## Phase 3.9-5N-6で修正したこと
+
+- 通常Taxi速度をさらに下げ、Departure taxi / Arrival taxi-to-spot / Apron taxi / Vacate後taxiの体感速度を抑えた
+- Pushback速度を独立定数化し、`pushbackSpeed < taxiTurnSpeed < taxiSpeed` の速度階層を明確にした
+- Taxi turn phaseの速度倍率をさらに下げ、90度旋回で減速して曲がる見え方を強めた
+- `landingRolloutEndSpeed` を新しいTaxi速度付近に合わせ、Landing Rollout後の速度差が不自然になりすぎないようにした
+- Takeoff / Landing route、heading固定、逆走防止の構造は変更しない
 
 ## Phase 3.9-5N-5で修正したこと
 

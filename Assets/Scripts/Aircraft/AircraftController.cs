@@ -18,17 +18,18 @@ namespace ATCJourneyJapan.Aircraft
         [SerializeField] private AircraftState currentState = AircraftState.Waiting;
         [SerializeField] private float airborneSpeed = 8f;
         // Game-tuned speeds: intentionally slower and more exaggerated than real-time scale for readability.
-        [SerializeField] private float taxiSpeed = 3f;
+        [SerializeField] private float pushbackSpeed = 0.35f;
+        [SerializeField] private float taxiSpeed = 2.4f;
         [SerializeField] private float takeoffInitialSpeed = 2.2f;
         [SerializeField] private float takeoffMaxSpeed = 7.8f;
         [SerializeField] private float landingInitialSpeed = 8f;
-        [SerializeField] private float landingRolloutEndSpeed = 2.2f;
+        [SerializeField] private float landingRolloutEndSpeed = 2.3f;
         [SerializeField] private float takeoffAccelerationTime = 5f;
         [SerializeField] private float landingDecelerationTime = 6f;
         [SerializeField] private float landingDecelerationCompletionProgress = 0.75f;
         [SerializeField] private float routeHeadingTurnSpeed = 75f;
         [SerializeField] private float turnAngleThreshold = 22f;
-        [SerializeField] private float taxiTurnSpeedMultiplier = 0.2f;
+        [SerializeField] private float taxiTurnSpeedMultiplier = 0.18f;
         [SerializeField] private float headingDegrees;
 
         private readonly SimpleRoute route = new SimpleRoute();
@@ -269,7 +270,7 @@ namespace ATCJourneyJapan.Aircraft
         {
             SetState(AircraftState.Pushbacking, false);
             SetDepartureParkingHeading();
-            StartRouteWithHeading(airportManager.GetPushbackRoute(transform.position), taxiSpeed * 0.65f, () =>
+            StartRouteWithHeading(airportManager.GetPushbackRoute(transform.position), pushbackSpeed, () =>
             {
                 SetState(AircraftState.PushbackReady);
             }, false);
