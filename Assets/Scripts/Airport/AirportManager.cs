@@ -709,7 +709,7 @@ namespace ATCJourneyJapan.Airport
                 "A滑走路前の主誘導路として使う暫定parallel segment",
                 true,
                 new Vector3(-13f, 0.6f, -5f),
-                new Vector3(15.2f, 0.6f, -5f));
+                new Vector3(26.2f, 0.6f, -5f));
             AddTaxiwaySegment(
                 "A_CONNECTOR_18L_END_01",
                 "TWY A0",
@@ -766,7 +766,7 @@ namespace ATCJourneyJapan.Airport
                 "Provisional passenger apron frontage taxiway",
                 TaxiwaySegmentType.Apron,
                 TaxiwayAxisType.ApronFront,
-                "旅客エプロンとstand entryをつなぐ暫定apron-side segment。主平行誘導路ではなくstand/apron connection寄りに扱う",
+                "Legacy provisional apron-side connection。通常routeでは使わず、主平行誘導路はA_MAIN_PARALLEL_01に集約する",
                 true,
                 new Vector3(4f, 0.6f, -6.45f),
                 new Vector3(26.2f, 0.6f, -6.2f));
@@ -776,40 +776,40 @@ namespace ATCJourneyJapan.Airport
                 "Provisional SPOT 01 stand entry",
                 TaxiwaySegmentType.StandEntry,
                 TaxiwayAxisType.ApronFront,
-                "SPOT 01からapron frontへ出る暫定stand entry",
+                "SPOT 01からA_MAIN_PARALLEL_01へ短く接続する暫定stand entry",
                 true,
                 new Vector3(6.3f, 0.6f, -8.35f),
-                new Vector3(6.3f, 0.6f, -6.45f));
+                new Vector3(6.3f, 0.6f, -5f));
             AddTaxiwaySegment(
                 "STAND_ENTRY_02",
                 "SPOT 02 ENTRY",
                 "Provisional SPOT 02 stand entry",
                 TaxiwaySegmentType.StandEntry,
                 TaxiwayAxisType.ApronFront,
-                "SPOT 02からapron frontへ出る暫定stand entry",
+                "SPOT 02からA_MAIN_PARALLEL_01へ短く接続する暫定stand entry",
                 true,
                 new Vector3(10.8f, 0.6f, -7.95f),
-                new Vector3(10.8f, 0.6f, -6.45f));
+                new Vector3(10.8f, 0.6f, -5f));
             AddTaxiwaySegment(
                 "STAND_ENTRY_03",
                 "SPOT 03 ENTRY",
                 "Provisional SPOT 03 stand entry",
                 TaxiwaySegmentType.StandEntry,
                 TaxiwayAxisType.ApronFront,
-                "SPOT 03からapron frontへ出る暫定stand entry",
+                "SPOT 03からA_MAIN_PARALLEL_01へ短く接続する暫定stand entry",
                 true,
                 new Vector3(17.1f, 0.6f, -8.15f),
-                new Vector3(17.1f, 0.6f, -6.2f));
+                new Vector3(17.1f, 0.6f, -5f));
             AddTaxiwaySegment(
                 "STAND_ENTRY_04",
                 "SPOT 04 ENTRY",
                 "Provisional SPOT 04 stand entry",
                 TaxiwaySegmentType.StandEntry,
                 TaxiwayAxisType.ApronFront,
-                "SPOT 04からapron frontへ出る暫定stand entry",
+                "SPOT 04からA_MAIN_PARALLEL_01へ短く接続する暫定stand entry",
                 true,
                 new Vector3(26.2f, 0.6f, -8.65f),
-                new Vector3(26.2f, 0.6f, -6.2f));
+                new Vector3(26.2f, 0.6f, -5f));
             AddTaxiwaySegment(
                 "B_MAIN_PARALLEL_01",
                 "TWY B",
@@ -1085,7 +1085,7 @@ namespace ATCJourneyJapan.Airport
                 "SPOT 01",
                 "18L",
                 true,
-                new Vector3(6.3f, 0.6f, -6.45f),
+                new Vector3(6.3f, 0.6f, -5f),
                 new Vector3(12f, 0.6f, -5f),
                 GetHoldShortPosition("18L"));
             AddDepartureTaxiRouteCandidate(
@@ -1095,7 +1095,7 @@ namespace ATCJourneyJapan.Airport
                 "SPOT 01",
                 "36R",
                 true,
-                new Vector3(6.3f, 0.6f, -6.45f),
+                new Vector3(6.3f, 0.6f, -5f),
                 new Vector3(0f, 0.6f, -5f),
                 new Vector3(-7f, 0.6f, -5f),
                 GetHoldShortPosition("36R"));
@@ -1106,7 +1106,7 @@ namespace ATCJourneyJapan.Airport
                 "SPOT 02",
                 "18L",
                 true,
-                new Vector3(10.8f, 0.6f, -6.45f),
+                new Vector3(10.8f, 0.6f, -5f),
                 new Vector3(12f, 0.6f, -5f),
                 GetHoldShortPosition("18L"));
             AddDepartureTaxiRouteCandidate(
@@ -1116,7 +1116,7 @@ namespace ATCJourneyJapan.Airport
                 "SPOT 02",
                 "36R",
                 true,
-                new Vector3(10.8f, 0.6f, -6.45f),
+                new Vector3(10.8f, 0.6f, -5f),
                 new Vector3(4.8f, 0.6f, -5f),
                 new Vector3(-7f, 0.6f, -5f),
                 GetHoldShortPosition("36R"));
@@ -1127,7 +1127,7 @@ namespace ATCJourneyJapan.Airport
                 "SPOT 02",
                 "36R",
                 false,
-                new Vector3(10.8f, 0.6f, -6.45f),
+                new Vector3(10.8f, 0.6f, -5f),
                 new Vector3(10.8f, 0.6f, -7.35f),
                 new Vector3(0f, 0.6f, -7.35f),
                 new Vector3(-7f, 0.6f, -5f),
@@ -1140,7 +1140,7 @@ namespace ATCJourneyJapan.Airport
                 "18L",
                 false,
                 "RWY18L_ENTRY_END",
-                new Vector3(10.8f, 0.6f, -6.45f),
+                new Vector3(10.8f, 0.6f, -5f),
                 new Vector3(15.2f, 0.6f, -5f),
                 new Vector3(15.2f, 0.6f, -3f));
             AddDepartureTaxiRouteCandidate(
@@ -1151,7 +1151,7 @@ namespace ATCJourneyJapan.Airport
                 "36R",
                 false,
                 "RWY36R_ENTRY_END",
-                new Vector3(10.8f, 0.6f, -6.45f),
+                new Vector3(10.8f, 0.6f, -5f),
                 new Vector3(4.8f, 0.6f, -5f),
                 new Vector3(-10.8f, 0.6f, -5f),
                 new Vector3(-10.8f, 0.6f, -3f));
@@ -1162,7 +1162,7 @@ namespace ATCJourneyJapan.Airport
                 "SPOT 03",
                 "18L",
                 true,
-                new Vector3(17.1f, 0.6f, -6.2f),
+                new Vector3(17.1f, 0.6f, -5f),
                 new Vector3(12f, 0.6f, -5f),
                 GetHoldShortPosition("18L"));
             AddDepartureTaxiRouteCandidate(
@@ -1172,7 +1172,7 @@ namespace ATCJourneyJapan.Airport
                 "SPOT 03",
                 "36R",
                 true,
-                new Vector3(17.1f, 0.6f, -6.2f),
+                new Vector3(17.1f, 0.6f, -5f),
                 new Vector3(4.8f, 0.6f, -5f),
                 new Vector3(-7f, 0.6f, -5f),
                 GetHoldShortPosition("36R"));
@@ -1183,7 +1183,7 @@ namespace ATCJourneyJapan.Airport
                 "SPOT 04",
                 "18L",
                 true,
-                new Vector3(26.2f, 0.6f, -6.2f),
+                new Vector3(26.2f, 0.6f, -5f),
                 new Vector3(18f, 0.6f, -5f),
                 new Vector3(12f, 0.6f, -5f),
                 GetHoldShortPosition("18L"));
@@ -1194,7 +1194,7 @@ namespace ATCJourneyJapan.Airport
                 "SPOT 04",
                 "36R",
                 true,
-                new Vector3(26.2f, 0.6f, -6.2f),
+                new Vector3(26.2f, 0.6f, -5f),
                 new Vector3(12f, 0.6f, -5f),
                 new Vector3(-7f, 0.6f, -5f),
                 GetHoldShortPosition("36R"));
@@ -1309,8 +1309,6 @@ namespace ATCJourneyJapan.Airport
                 segmentIds.Add(standEntrySegmentId);
             }
 
-            segmentIds.Add("APRON_FRONT_01");
-
             if (!routeId.Contains("_B"))
             {
                 segmentIds.Add("A_MAIN_PARALLEL_01");
@@ -1333,7 +1331,6 @@ namespace ATCJourneyJapan.Airport
             var segmentIds = new List<string>();
             segmentIds.Add(GetConnectedSegmentIdForUsage(runwayExitUsageId));
             segmentIds.Add("A_MAIN_PARALLEL_01");
-            segmentIds.Add("APRON_FRONT_01");
 
             var standEntrySegmentId = GetStandEntrySegmentId(spotId);
             if (!string.IsNullOrEmpty(standEntrySegmentId))
@@ -1347,7 +1344,6 @@ namespace ATCJourneyJapan.Airport
         private IEnumerable<Vector3> BuildArrivalTaxiWaypoints(string spotId, string runwayDesignator, string runwayExitUsageId)
         {
             var destination = GetSpotPosition(spotId);
-            var apronZ = destination.x >= 17f ? -6.2f : -6.45f;
             var connectorTaxiwayPoint = GetTaxiwayPointForUsage(runwayExitUsageId);
             var connectorX = connectorTaxiwayPoint.x;
             var apronEntryDirection = destination.x >= connectorX ? 1f : -1f;
@@ -1356,8 +1352,7 @@ namespace ATCJourneyJapan.Airport
             {
                 connectorTaxiwayPoint,
                 new Vector3(apronEntryX, 0.6f, -5f),
-                new Vector3(apronEntryX, 0.6f, apronZ),
-                new Vector3(destination.x, 0.6f, apronZ),
+                new Vector3(destination.x, 0.6f, -5f),
                 destination
             };
         }
@@ -1874,23 +1869,25 @@ namespace ATCJourneyJapan.Airport
 
         private void CreateTaxiways(Transform parent)
         {
-            CreateBox("Taxiway Main", new Vector3(1.1f, 0.02f, -5f), new Vector3(28.4f, 0.14f, 1.24f), taxiwayMaterial, parent);
+            CreateBox("Taxiway Main", new Vector3(6.6f, 0.02f, -5f), new Vector3(39.2f, 0.14f, 1.24f), taxiwayMaterial, parent);
             CreateBox("Taxiway Runway Link 18L End", new Vector3(15.2f, 0.03f, -2.5f), new Vector3(1.12f, 0.14f, 5f), taxiwayMaterial, parent);
             CreateBox("Taxiway Runway Link 36R End", new Vector3(-10.8f, 0.03f, -2.5f), new Vector3(1.12f, 0.14f, 5f), taxiwayMaterial, parent);
             CreateBox("Taxiway Runway Link West", new Vector3(-7f, 0.03f, -2.5f), new Vector3(1.12f, 0.14f, 5f), taxiwayMaterial, parent);
             CreateBox("Taxiway Runway Link East", new Vector3(12f, 0.03f, -2.5f), new Vector3(1.12f, 0.14f, 5f), taxiwayMaterial, parent);
-            CreateBox("Taxiway W Apron Spur", new Vector3(-11f, 0.025f, -7.1f), new Vector3(1f, 0.13f, 4.2f), taxiwayMaterial, parent);
-            CreateBox("Taxiway T Terminal Spur", new Vector3(5.5f, 0.025f, -7.1f), new Vector3(1f, 0.13f, 4.2f), taxiwayMaterial, parent);
-            CreateBox("Taxiway D Intl Spur", new Vector3(15f, 0.025f, -7.2f), new Vector3(1f, 0.13f, 4.4f), taxiwayMaterial, parent);
+            CreateBox("SPOT 01 Stand Link", new Vector3(6.3f, 0.025f, -6.68f), new Vector3(0.76f, 0.13f, 3.35f), taxiwayMaterial, parent);
+            CreateBox("SPOT 02 Stand Link", new Vector3(10.8f, 0.025f, -6.48f), new Vector3(0.76f, 0.13f, 2.95f), taxiwayMaterial, parent);
+            CreateBox("SPOT 03 Stand Link", new Vector3(17.1f, 0.025f, -6.58f), new Vector3(0.76f, 0.13f, 3.15f), taxiwayMaterial, parent);
+            CreateBox("SPOT 04 Stand Link", new Vector3(26.2f, 0.025f, -6.83f), new Vector3(0.76f, 0.13f, 3.65f), taxiwayMaterial, parent);
             CreateBox("Taxiway C Diagonal Connector", new Vector3(2.5f, 0.028f, -2.5f), new Vector3(1.05f, 0.13f, 6f), taxiwayMaterial, Quaternion.Euler(0f, 28f, 0f), parent);
-            CreateBox("Taxiway Main Centerline", new Vector3(1.1f, 0.12f, -5f), new Vector3(27.6f, 0.035f, 0.055f), taxiwayMarkingMaterial, parent);
+            CreateBox("Taxiway Main Centerline", new Vector3(6.6f, 0.12f, -5f), new Vector3(38.4f, 0.035f, 0.055f), taxiwayMarkingMaterial, parent);
             CreateBox("Taxiway 18L End Centerline", new Vector3(15.2f, 0.13f, -2.5f), new Vector3(0.055f, 0.035f, 4.7f), taxiwayMarkingMaterial, parent);
             CreateBox("Taxiway 36R End Centerline", new Vector3(-10.8f, 0.13f, -2.5f), new Vector3(0.055f, 0.035f, 4.7f), taxiwayMarkingMaterial, parent);
             CreateBox("Taxiway West Centerline", new Vector3(-7f, 0.13f, -2.5f), new Vector3(0.055f, 0.035f, 4.7f), taxiwayMarkingMaterial, parent);
             CreateBox("Taxiway East Centerline", new Vector3(12f, 0.13f, -2.5f), new Vector3(0.055f, 0.035f, 4.7f), taxiwayMarkingMaterial, parent);
-            CreateBox("Taxiway W Spur Centerline", new Vector3(-11f, 0.12f, -7.1f), new Vector3(0.055f, 0.035f, 3.8f), taxiwayMarkingMaterial, parent);
-            CreateBox("Taxiway T Spur Centerline", new Vector3(5.5f, 0.12f, -7.1f), new Vector3(0.055f, 0.035f, 3.8f), taxiwayMarkingMaterial, parent);
-            CreateBox("Taxiway D Spur Centerline", new Vector3(15f, 0.12f, -7.2f), new Vector3(0.055f, 0.035f, 4f), taxiwayMarkingMaterial, parent);
+            CreateBox("SPOT 01 Stand Link Centerline", new Vector3(6.3f, 0.12f, -6.68f), new Vector3(0.055f, 0.035f, 3.05f), taxiwayMarkingMaterial, parent);
+            CreateBox("SPOT 02 Stand Link Centerline", new Vector3(10.8f, 0.12f, -6.48f), new Vector3(0.055f, 0.035f, 2.65f), taxiwayMarkingMaterial, parent);
+            CreateBox("SPOT 03 Stand Link Centerline", new Vector3(17.1f, 0.12f, -6.58f), new Vector3(0.055f, 0.035f, 2.85f), taxiwayMarkingMaterial, parent);
+            CreateBox("SPOT 04 Stand Link Centerline", new Vector3(26.2f, 0.12f, -6.83f), new Vector3(0.055f, 0.035f, 3.35f), taxiwayMarkingMaterial, parent);
             CreateBox("Taxiway C Diagonal Centerline", new Vector3(2.5f, 0.12f, -2.5f), new Vector3(0.055f, 0.035f, 5.6f), taxiwayMarkingMaterial, Quaternion.Euler(0f, 28f, 0f), parent);
         }
 

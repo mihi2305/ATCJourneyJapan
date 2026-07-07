@@ -2,11 +2,19 @@
 
 ## Current Phase
 
-Phase 3.9-5O Add runway-end connectors using existing dataset
+Phase 3.9-5O-2 Simplify apron routing using existing dataset and ROAH AIP chart
 
 ## Previous Phase
 
-Phase 3.9-5N-6 Slow taxi speed
+Phase 3.9-5O Add runway-end connectors using existing dataset
+
+## Phase 3.9-5O-2で修正したこと
+
+- ROAH AIP Aerodrome Chartを参考に、ゲーム用簡略化としてA滑走路側の主平行誘導路を `A_MAIN_PARALLEL_01` へ集約した
+- `APRON_FRONT_01` はlegacy/provisional apron-side connectionとして残しつつ、通常Departure / Arrival routeのsegmentIdsから外した
+- `STAND_ENTRY_01`〜`04` は各SPOTから `A_MAIN_PARALLEL_01` へ短く接続するstand linkとしてwaypointと見た目を調整した
+- Departure routeは `STAND_ENTRY_x -> A_MAIN_PARALLEL_01 -> connector`、Arrival routeは `connector -> A_MAIN_PARALLEL_01 -> STAND_ENTRY_x` の構造へ寄せた
+- 新しいデータ設計、new enum、new field、Route選択UIは追加していない
 
 ## Phase 3.9-5Oで修正したこと
 
