@@ -2,11 +2,18 @@
 
 ## Current Phase
 
-Phase 3.9-5N Add simple speed profiles
+Phase 3.9-5N-2 Tune visible speed profiles
 
 ## Previous Phase
 
-Phase 3.9-5M Prevent takeoff backtrack
+Phase 3.9-5N Add simple speed profiles
+
+## Phase 3.9-5N-2で修正したこと
+
+- Taxi / Pushback / Taxi-to-Spotの速度を少し下げ、地上走行が速すぎないようにした
+- Takeoff Rollは初速を低め、最高速を少し抑えめ、加速時間を長めにして、滑走路上で徐々に速くなる見え方を強めた
+- Landing Rolloutは減速時間を長めにし、接地後にすぐTaxi速度へ落ちず、滑走路上で減速していることが見えやすいようにした
+- 今回の値はゲーム用の視認性チューニングであり、現実精密な機種別性能や離着陸距離計算ではない
 
 ## Phase 3.9-5Nで修正したこと
 

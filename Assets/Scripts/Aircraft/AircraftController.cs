@@ -17,13 +17,14 @@ namespace ATCJourneyJapan.Aircraft
         [SerializeField] private bool arrivalAircraft;
         [SerializeField] private AircraftState currentState = AircraftState.Waiting;
         [SerializeField] private float airborneSpeed = 8f;
-        [SerializeField] private float taxiSpeed = 4f;
-        [SerializeField] private float takeoffInitialSpeed = 4f;
-        [SerializeField] private float takeoffMaxSpeed = 10f;
-        [SerializeField] private float landingInitialSpeed = 7f;
-        [SerializeField] private float landingRolloutEndSpeed = 4f;
-        [SerializeField] private float takeoffAccelerationTime = 5f;
-        [SerializeField] private float landingDecelerationTime = 5f;
+        // Game-tuned speeds: intentionally slower and more exaggerated than real-time scale for readability.
+        [SerializeField] private float taxiSpeed = 3f;
+        [SerializeField] private float takeoffInitialSpeed = 2.2f;
+        [SerializeField] private float takeoffMaxSpeed = 7.5f;
+        [SerializeField] private float landingInitialSpeed = 6.5f;
+        [SerializeField] private float landingRolloutEndSpeed = 3f;
+        [SerializeField] private float takeoffAccelerationTime = 9f;
+        [SerializeField] private float landingDecelerationTime = 8f;
         [SerializeField] private float headingDegrees;
 
         private readonly SimpleRoute route = new SimpleRoute();
