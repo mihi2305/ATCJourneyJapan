@@ -2,11 +2,19 @@
 
 ## Current Phase
 
-Phase 3.9-5N-6 Slow taxi speed
+Phase 3.9-5O Add runway-end connectors using existing dataset
 
 ## Previous Phase
 
-Phase 3.9-5N-5 Stronger landing deceleration and taxi turn phase
+Phase 3.9-5N-6 Slow taxi speed
+
+## Phase 3.9-5Oで修正したこと
+
+- 既存の `TaxiwaySegment` / `RunwayAccessPoint` / `RunwayAccessUsage` / `TaxiRouteCandidate` datasetに沿って、A滑走路端connectorを2本追加した
+- 追加connectorは `segmentId` / `accessPointId` / `usageId` / `routeId` をロジックキーとし、displayName / realWorldName / routeInstructionTextは表示用に留めた
+- 端connector用のRunwayAccessPoint / RunwayAccessUsageを追加し、Departure entry / Arrival exitの将来候補として非default route candidateへ紐づけた
+- エプロン前に新しい太い平行誘導路は追加せず、既存 `A_MAIN_PARALLEL_01` を主平行誘導路として少し延長した
+- Route選択UI、本格ATCメニュー、高速脱出誘導路の本実装、B滑走路運用は次Phase以降に回す
 
 ## Phase 3.9-5N-6で修正したこと
 
