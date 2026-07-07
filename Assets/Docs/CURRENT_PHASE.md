@@ -2,11 +2,21 @@
 
 ## Current Phase
 
-Phase 3.9-5K-2 Fix 36R arrival connector mismatch
+Phase 3.9-5L Add directional runway access usage
 
 ## Previous Phase
 
-Phase 3.9-5K Apply arrival taxi segments
+Phase 3.9-5K-2 Fix 36R arrival connector mismatch
+
+## Phase 3.9-5Lで修正したこと
+
+- 滑走路と誘導路の物理接続地点を `RunwayAccessPoint` として追加し、`accessPointId` を安定IDにした
+- `RunwayAccessUsage` で、同じ物理接続地点をRWY 18L / 36RそれぞれのEntry / Exitとしてどう使うかを分離した
+- 36R arrivalは36R側から18L側へ進むため、18L側寄りExitを使うのが自然な場合がある。18L arrivalも同様に36R側寄りExitを使うのが自然な場合がある
+- 問題は「runwayDesignatorと反対側のExitを使うこと」ではなく、滑走路上を逆走してExitへ向かうこととして整理した
+- `TaxiRouteCandidate` に `runwayEntryUsageId` / `runwayExitUsageId` を追加し、Departure candidateはEntry usage、Arrival candidateはExit usageを参照するようにした
+- AccessPoint / Usage / candidate usage参照 / arrival default exitの妥当性を生成時に `Debug.LogWarning` で検証する
+- 滑走路上の逆走防止、Intersection departure、加速・減速モデル、Route選択UIは次Phase以降に回す
 
 ## Phase 3.9-5K-2で修正したこと
 

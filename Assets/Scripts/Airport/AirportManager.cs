@@ -13,6 +13,8 @@ namespace ATCJourneyJapan.Airport
         private readonly List<RunwayData> runwayData = new List<RunwayData>();
         private readonly List<RunwayGeometry> runwayGeometries = new List<RunwayGeometry>();
         private readonly List<TaxiwaySegment> taxiwaySegments = new List<TaxiwaySegment>();
+        private readonly List<RunwayAccessPoint> runwayAccessPoints = new List<RunwayAccessPoint>();
+        private readonly List<RunwayAccessUsage> runwayAccessUsages = new List<RunwayAccessUsage>();
         private readonly List<TaxiwayRouteDefinition> taxiwayRoutes = new List<TaxiwayRouteDefinition>();
         private readonly List<TaxiRouteCandidate> departureTaxiRouteCandidates = new List<TaxiRouteCandidate>();
         private readonly List<TaxiRouteCandidate> arrivalTaxiRouteCandidates = new List<TaxiRouteCandidate>();
@@ -45,6 +47,8 @@ namespace ATCJourneyJapan.Airport
         public IReadOnlyList<RunwayData> RunwayData => runwayData;
         public IReadOnlyList<RunwayGeometry> RunwayGeometries => runwayGeometries;
         public IReadOnlyList<TaxiwaySegment> TaxiwaySegments => taxiwaySegments;
+        public IReadOnlyList<RunwayAccessPoint> RunwayAccessPoints => runwayAccessPoints;
+        public IReadOnlyList<RunwayAccessUsage> RunwayAccessUsages => runwayAccessUsages;
         public IReadOnlyList<TaxiwayRouteDefinition> TaxiwayRoutes => taxiwayRoutes;
         public IReadOnlyList<TaxiRouteCandidate> DepartureTaxiRouteCandidates => departureTaxiRouteCandidates;
         public IReadOnlyList<TaxiRouteCandidate> ArrivalTaxiRouteCandidates => arrivalTaxiRouteCandidates;
@@ -115,6 +119,32 @@ namespace ATCJourneyJapan.Airport
                 if (taxiwaySegment.SegmentId == segmentId)
                 {
                     return taxiwaySegment;
+                }
+            }
+
+            return null;
+        }
+
+        public RunwayAccessPoint GetRunwayAccessPoint(string accessPointId)
+        {
+            foreach (var accessPoint in runwayAccessPoints)
+            {
+                if (accessPoint.AccessPointId == accessPointId)
+                {
+                    return accessPoint;
+                }
+            }
+
+            return null;
+        }
+
+        public RunwayAccessUsage GetRunwayAccessUsage(string usageId)
+        {
+            foreach (var usage in runwayAccessUsages)
+            {
+                if (usage.UsageId == usageId)
+                {
+                    return usage;
                 }
             }
 
@@ -332,7 +362,7 @@ namespace ATCJourneyJapan.Airport
         {
             var runway = PrimaryRunwayGeometry;
             var vacateStart = runway != null ? runway.GetVacateStartPoint(operationDirection) : (Is36R(operationDirection) ? new Vector3(-7f, 0.6f, 0f) : new Vector3(12f, 0.6f, 0f));
-            var connectorSegment = GetTaxiwaySegment(GetRunwayConnectorSegmentId(operationDirection));
+            var connectorSegment = GetTaxiwaySegment(GetConnectedSegmentIdForUsage(GetDefaultArrivalExitUsageId(operationDirection)));
             if (connectorSegment != null && connectorSegment.Waypoints.Count >= 2)
             {
                 return new[]
@@ -343,7 +373,7 @@ namespace ATCJourneyJapan.Airport
                 };
             }
 
-            var exitX = Is36R(operationDirection) ? -7f : 12f;
+            var exitX = Is36R(operationDirection) ? 12f : -7f;
             return new[]
             {
                 vacateStart,
@@ -400,7 +430,7 @@ namespace ATCJourneyJapan.Airport
         public IEnumerable<Vector3> GetTaxiToHoldRoute(Vector3 startPosition, string operationDirection)
         {
             var taxiwayMainEntry = new Vector3(startPosition.x, 0.6f, -5f);
-            var runwayLinkX = Is36R(operationDirection) ? -7f : 12f;
+            var runwayLinkX = GetTaxiwayPointForUsage(GetDefaultDepartureEntryUsageId(operationDirection)).x;
             return new[]
             {
                 taxiwayMainEntry,
@@ -432,7 +462,7 @@ namespace ATCJourneyJapan.Airport
 
         public IEnumerable<Vector3> GetLineUpRoute(Vector3 startPosition, string operationDirection)
         {
-            var entryX = Is36R(operationDirection) ? -7f : 12f;
+            var entryX = GetRunwayPointForUsage(GetDefaultDepartureEntryUsageId(operationDirection)).x;
             return new[]
             {
                 new Vector3(entryX, 0.6f, -1.05f),
@@ -556,6 +586,7 @@ namespace ATCJourneyJapan.Airport
                 Vector3.left));
 
             CreateTaxiwaySegmentData();
+            CreateRunwayAccessData();
 
             taxiwayRoutes.Clear();
             taxiwayRoutes.Add(new TaxiwayRouteDefinition(
@@ -726,6 +757,177 @@ namespace ATCJourneyJapan.Airport
                 isProvisional));
         }
 
+        private void CreateRunwayAccessData()
+        {
+            runwayAccessPoints.Clear();
+            runwayAccessUsages.Clear();
+
+            AddRunwayAccessPoint(
+                "A_ACCESS_NEAR_18L_01",
+                "A Access Near 18L",
+                "Provisional A runway access near 18L end",
+                RunwayAccessPhysicalSide.Near18L,
+                "A_CONNECTOR_18L_01",
+                GetRunwaySideConnectorPoint("A_CONNECTOR_18L_01", new Vector3(12f, 0.6f, 0f)),
+                "A滑走路18L側寄りの物理接続地点。displayNameではなくaccessPointIdをロジックキーにする",
+                true);
+            AddRunwayAccessPoint(
+                "A_ACCESS_MID_01",
+                "A Access Mid",
+                "Provisional A runway mid access",
+                RunwayAccessPhysicalSide.MidRunway,
+                "A_CONNECTOR_MID_01",
+                GetRunwaySideConnectorPoint("A_CONNECTOR_MID_01", new Vector3(4.8f, 0.6f, 0f)),
+                "A滑走路中間付近の暫定接続地点。将来のrapid exit / intersection departure候補",
+                true);
+            AddRunwayAccessPoint(
+                "A_ACCESS_NEAR_36R_01",
+                "A Access Near 36R",
+                "Provisional A runway access near 36R end",
+                RunwayAccessPhysicalSide.Near36R,
+                "A_CONNECTOR_36R_01",
+                GetRunwaySideConnectorPoint("A_CONNECTOR_36R_01", new Vector3(-7f, 0.6f, 0f)),
+                "A滑走路36R側寄りの物理接続地点。displayNameではなくaccessPointIdをロジックキーにする",
+                true);
+
+            AddRunwayAccessUsage(
+                "RWY36R_EXIT_NEAR_18L",
+                "36R",
+                "A_ACCESS_NEAR_18L_01",
+                RunwayAccessType.Exit,
+                RunwayAccessPreferredFor.Arrival,
+                0.92f,
+                RunwayExitSpeedLevel.Low,
+                true,
+                "RWY 36R着陸後、進行方向前方の18L側寄りで離脱する暫定exit");
+            AddRunwayAccessUsage(
+                "RWY36R_EXIT_MID",
+                "36R",
+                "A_ACCESS_MID_01",
+                RunwayAccessType.RapidExit,
+                RunwayAccessPreferredFor.Arrival,
+                0.55f,
+                RunwayExitSpeedLevel.Medium,
+                true,
+                "RWY 36R着陸後の中間離脱候補。現Phaseではdefaultにはしない");
+            AddRunwayAccessUsage(
+                "RWY18L_EXIT_NEAR_36R",
+                "18L",
+                "A_ACCESS_NEAR_36R_01",
+                RunwayAccessType.Exit,
+                RunwayAccessPreferredFor.Arrival,
+                0.92f,
+                RunwayExitSpeedLevel.Low,
+                true,
+                "RWY 18L着陸後、進行方向前方の36R側寄りで離脱する暫定exit");
+            AddRunwayAccessUsage(
+                "RWY18L_EXIT_MID",
+                "18L",
+                "A_ACCESS_MID_01",
+                RunwayAccessType.RapidExit,
+                RunwayAccessPreferredFor.Arrival,
+                0.55f,
+                RunwayExitSpeedLevel.Medium,
+                true,
+                "RWY 18L着陸後の中間離脱候補。現Phaseではdefaultにはしない");
+
+            AddRunwayAccessUsage(
+                "RWY36R_ENTRY_NEAR_36R",
+                "36R",
+                "A_ACCESS_NEAR_36R_01",
+                RunwayAccessType.Entry,
+                RunwayAccessPreferredFor.Departure,
+                0.02f,
+                RunwayExitSpeedLevel.NotApplicable,
+                true,
+                "RWY 36R出発で36R側からline upする暫定entry");
+            AddRunwayAccessUsage(
+                "RWY18L_ENTRY_NEAR_18L",
+                "18L",
+                "A_ACCESS_NEAR_18L_01",
+                RunwayAccessType.Entry,
+                RunwayAccessPreferredFor.Departure,
+                0.02f,
+                RunwayExitSpeedLevel.NotApplicable,
+                true,
+                "RWY 18L出発で18L側からline upする暫定entry");
+            AddRunwayAccessUsage(
+                "RWY36R_ENTRY_MID",
+                "36R",
+                "A_ACCESS_MID_01",
+                RunwayAccessType.Entry,
+                RunwayAccessPreferredFor.Departure,
+                0.48f,
+                RunwayExitSpeedLevel.NotApplicable,
+                true,
+                "RWY 36R intersection departureの将来候補。現Phaseでは挙動変更しない");
+            AddRunwayAccessUsage(
+                "RWY18L_ENTRY_MID",
+                "18L",
+                "A_ACCESS_MID_01",
+                RunwayAccessType.Entry,
+                RunwayAccessPreferredFor.Departure,
+                0.48f,
+                RunwayExitSpeedLevel.NotApplicable,
+                true,
+                "RWY 18L intersection departureの将来候補。現Phaseでは挙動変更しない");
+        }
+
+        private void AddRunwayAccessPoint(
+            string accessPointId,
+            string displayName,
+            string realWorldName,
+            RunwayAccessPhysicalSide physicalSide,
+            string connectedSegmentId,
+            Vector3 position,
+            string description,
+            bool isProvisional)
+        {
+            runwayAccessPoints.Add(new RunwayAccessPoint(
+                accessPointId,
+                displayName,
+                realWorldName,
+                physicalSide,
+                connectedSegmentId,
+                position,
+                description,
+                isProvisional));
+        }
+
+        private void AddRunwayAccessUsage(
+            string usageId,
+            string runwayDesignator,
+            string accessPointId,
+            RunwayAccessType accessType,
+            RunwayAccessPreferredFor preferredFor,
+            float runwayPositionRatio,
+            RunwayExitSpeedLevel maxExitSpeedLevel,
+            bool isProvisional,
+            string description)
+        {
+            runwayAccessUsages.Add(new RunwayAccessUsage(
+                usageId,
+                runwayDesignator,
+                accessPointId,
+                accessType,
+                preferredFor,
+                runwayPositionRatio,
+                maxExitSpeedLevel,
+                isProvisional,
+                description));
+        }
+
+        private Vector3 GetRunwaySideConnectorPoint(string connectedSegmentId, Vector3 fallback)
+        {
+            var segment = GetTaxiwaySegment(connectedSegmentId);
+            if (segment != null && segment.Waypoints.Count > 0)
+            {
+                return segment.Waypoints[segment.Waypoints.Count - 1];
+            }
+
+            return fallback;
+        }
+
         private void CreateDepartureTaxiRouteCandidateData()
         {
             departureTaxiRouteCandidates.Clear();
@@ -841,6 +1043,7 @@ namespace ATCJourneyJapan.Airport
             params Vector3[] waypoints)
         {
             var segmentIds = BuildDepartureTaxiSegmentIds(routeId, spotId, runwayDesignator);
+            var entryUsageId = GetDefaultDepartureEntryUsageId(runwayDesignator);
             departureTaxiRouteCandidates.Add(new TaxiRouteCandidate(
                 routeId,
                 displayName,
@@ -850,7 +1053,9 @@ namespace ATCJourneyJapan.Airport
                 waypoints,
                 segmentIds,
                 BuildRouteInstructionText(segmentIds),
-                isDefault));
+                isDefault,
+                entryUsageId,
+                string.Empty));
         }
 
         private void CreateArrivalTaxiRouteCandidateData()
@@ -874,17 +1079,20 @@ namespace ATCJourneyJapan.Airport
             string spotId,
             bool isDefault)
         {
-            var segmentIds = BuildArrivalTaxiSegmentIds(spotId, runwayDesignator);
+            var exitUsageId = GetDefaultArrivalExitUsageId(runwayDesignator);
+            var segmentIds = BuildArrivalTaxiSegmentIds(spotId, runwayDesignator, exitUsageId);
             arrivalTaxiRouteCandidates.Add(new TaxiRouteCandidate(
                 routeId,
                 displayName,
                 $"{runwayDesignator}着陸後に{spotId}へ戻る暫定arrival taxi route",
                 spotId,
                 runwayDesignator,
-                BuildArrivalTaxiWaypoints(spotId, runwayDesignator),
+                BuildArrivalTaxiWaypoints(spotId, runwayDesignator, exitUsageId),
                 segmentIds,
                 BuildRouteInstructionText(segmentIds),
-                isDefault));
+                isDefault,
+                string.Empty,
+                exitUsageId));
         }
 
         private IEnumerable<string> BuildDepartureTaxiSegmentIds(string routeId, string spotId, string runwayDesignator)
@@ -905,20 +1113,20 @@ namespace ATCJourneyJapan.Airport
 
             if (NormalizeRunwayDesignator(runwayDesignator) == "36R")
             {
-                segmentIds.Add(routeId.Contains("_B") ? "A_CONNECTOR_MID_01" : "A_CONNECTOR_36R_01");
+                segmentIds.Add(routeId.Contains("_B") ? "A_CONNECTOR_MID_01" : GetConnectedSegmentIdForUsage(GetDefaultDepartureEntryUsageId(runwayDesignator)));
             }
             else
             {
-                segmentIds.Add("A_CONNECTOR_18L_01");
+                segmentIds.Add(GetConnectedSegmentIdForUsage(GetDefaultDepartureEntryUsageId(runwayDesignator)));
             }
 
             return segmentIds;
         }
 
-        private IEnumerable<string> BuildArrivalTaxiSegmentIds(string spotId, string runwayDesignator)
+        private IEnumerable<string> BuildArrivalTaxiSegmentIds(string spotId, string runwayDesignator, string runwayExitUsageId)
         {
             var segmentIds = new List<string>();
-            segmentIds.Add(GetRunwayConnectorSegmentId(runwayDesignator));
+            segmentIds.Add(GetConnectedSegmentIdForUsage(runwayExitUsageId));
             segmentIds.Add("A_MAIN_PARALLEL_01");
             segmentIds.Add("APRON_FRONT_01");
 
@@ -931,11 +1139,11 @@ namespace ATCJourneyJapan.Airport
             return segmentIds;
         }
 
-        private IEnumerable<Vector3> BuildArrivalTaxiWaypoints(string spotId, string runwayDesignator)
+        private IEnumerable<Vector3> BuildArrivalTaxiWaypoints(string spotId, string runwayDesignator, string runwayExitUsageId)
         {
             var destination = GetSpotPosition(spotId);
             var apronZ = destination.x >= 17f ? -6.2f : -6.45f;
-            var connectorTaxiwayPoint = GetRunwayConnectorTaxiwayPoint(runwayDesignator);
+            var connectorTaxiwayPoint = GetTaxiwayPointForUsage(runwayExitUsageId);
             var connectorX = connectorTaxiwayPoint.x;
             var apronEntryDirection = destination.x >= connectorX ? 1f : -1f;
             var apronEntryX = Mathf.Clamp(destination.x - apronEntryDirection * 2f, 4f, 26.2f);
@@ -949,20 +1157,45 @@ namespace ATCJourneyJapan.Airport
             };
         }
 
-        private string GetRunwayConnectorSegmentId(string operationDirection)
+        private string GetDefaultDepartureEntryUsageId(string operationDirection)
         {
-            return Is36R(operationDirection) ? "A_CONNECTOR_36R_01" : "A_CONNECTOR_18L_01";
+            return Is36R(operationDirection) ? "RWY36R_ENTRY_NEAR_36R" : "RWY18L_ENTRY_NEAR_18L";
         }
 
-        private Vector3 GetRunwayConnectorTaxiwayPoint(string operationDirection)
+        private string GetDefaultArrivalExitUsageId(string operationDirection)
         {
-            var connectorSegment = GetTaxiwaySegment(GetRunwayConnectorSegmentId(operationDirection));
+            return Is36R(operationDirection) ? "RWY36R_EXIT_NEAR_18L" : "RWY18L_EXIT_NEAR_36R";
+        }
+
+        private string GetConnectedSegmentIdForUsage(string usageId)
+        {
+            var usage = GetRunwayAccessUsage(usageId);
+            var accessPoint = usage != null ? GetRunwayAccessPoint(usage.AccessPointId) : null;
+            return accessPoint != null ? accessPoint.ConnectedSegmentId : string.Empty;
+        }
+
+        private Vector3 GetTaxiwayPointForUsage(string usageId)
+        {
+            var connectedSegmentId = GetConnectedSegmentIdForUsage(usageId);
+            var connectorSegment = GetTaxiwaySegment(connectedSegmentId);
             if (connectorSegment != null && connectorSegment.Waypoints.Count > 0)
             {
                 return connectorSegment.Waypoints[0];
             }
 
-            return Is36R(operationDirection) ? new Vector3(-7f, 0.6f, -5f) : new Vector3(12f, 0.6f, -5f);
+            return usageId.Contains("36R") ? new Vector3(-7f, 0.6f, -5f) : new Vector3(12f, 0.6f, -5f);
+        }
+
+        private Vector3 GetRunwayPointForUsage(string usageId)
+        {
+            var accessPoint = GetAccessPointForUsage(usageId);
+            return accessPoint != null ? accessPoint.Position : (usageId.Contains("36R") ? new Vector3(-7f, 0.6f, 0f) : new Vector3(12f, 0.6f, 0f));
+        }
+
+        private RunwayAccessPoint GetAccessPointForUsage(string usageId)
+        {
+            var usage = GetRunwayAccessUsage(usageId);
+            return usage != null ? GetRunwayAccessPoint(usage.AccessPointId) : null;
         }
 
         private Vector3 GetSpotPosition(string spotId)
@@ -1037,13 +1270,17 @@ namespace ATCJourneyJapan.Airport
                 }
             }
 
+            var accessPointIds = ValidateRunwayAccessPoints(segmentIds);
+            var usageIds = ValidateRunwayAccessUsages(accessPointIds);
             var defaultDepartureCandidateKeys = ValidateTaxiRouteCandidates(
                 departureTaxiRouteCandidates,
                 segmentIds,
+                usageIds,
                 "departure");
             var defaultArrivalCandidateKeys = ValidateTaxiRouteCandidates(
                 arrivalTaxiRouteCandidates,
                 segmentIds,
+                usageIds,
                 "arrival");
 
             ValidateExpectedDefaultTaxiCandidates(defaultDepartureCandidateKeys, "departure");
@@ -1053,6 +1290,7 @@ namespace ATCJourneyJapan.Airport
         private HashSet<string> ValidateTaxiRouteCandidates(
             IEnumerable<TaxiRouteCandidate> candidates,
             HashSet<string> segmentIds,
+            HashSet<string> usageIds,
             string routeKind)
         {
             var defaultCandidateKeys = new HashSet<string>();
@@ -1084,6 +1322,19 @@ namespace ATCJourneyJapan.Airport
                         Debug.LogWarning($"{routeKind} TaxiRouteCandidate {candidate.RouteId} references missing segmentId: {segmentId}");
                     }
                 }
+
+                if (routeKind == "departure")
+                {
+                    ValidateCandidateUsageReference(candidate.RouteId, "runwayEntryUsageId", candidate.RunwayEntryUsageId, usageIds);
+                }
+                else if (routeKind == "arrival")
+                {
+                    ValidateCandidateUsageReference(candidate.RouteId, "runwayExitUsageId", candidate.RunwayExitUsageId, usageIds);
+                    if (candidate.IsDefault)
+                    {
+                        ValidateArrivalDefaultExit(candidate);
+                    }
+                }
             }
 
             foreach (var candidateKey in candidateKeys)
@@ -1095,6 +1346,101 @@ namespace ATCJourneyJapan.Airport
             }
 
             return defaultCandidateKeys;
+        }
+
+        private HashSet<string> ValidateRunwayAccessPoints(HashSet<string> segmentIds)
+        {
+            var accessPointIds = new HashSet<string>();
+            foreach (var accessPoint in runwayAccessPoints)
+            {
+                if (string.IsNullOrEmpty(accessPoint.AccessPointId))
+                {
+                    Debug.LogWarning("RunwayAccessPoint has an empty accessPointId.");
+                    continue;
+                }
+
+                if (!accessPointIds.Add(accessPoint.AccessPointId))
+                {
+                    Debug.LogWarning($"Duplicate RunwayAccessPoint accessPointId detected: {accessPoint.AccessPointId}");
+                }
+
+                if (!segmentIds.Contains(accessPoint.ConnectedSegmentId))
+                {
+                    Debug.LogWarning($"RunwayAccessPoint {accessPoint.AccessPointId} references missing connectedSegmentId: {accessPoint.ConnectedSegmentId}");
+                }
+            }
+
+            return accessPointIds;
+        }
+
+        private HashSet<string> ValidateRunwayAccessUsages(HashSet<string> accessPointIds)
+        {
+            var usageIds = new HashSet<string>();
+            foreach (var usage in runwayAccessUsages)
+            {
+                if (string.IsNullOrEmpty(usage.UsageId))
+                {
+                    Debug.LogWarning("RunwayAccessUsage has an empty usageId.");
+                    continue;
+                }
+
+                if (!usageIds.Add(usage.UsageId))
+                {
+                    Debug.LogWarning($"Duplicate RunwayAccessUsage usageId detected: {usage.UsageId}");
+                }
+
+                if (!accessPointIds.Contains(usage.AccessPointId))
+                {
+                    Debug.LogWarning($"RunwayAccessUsage {usage.UsageId} references missing accessPointId: {usage.AccessPointId}");
+                }
+
+                if (usage.RunwayPositionRatio < 0f || usage.RunwayPositionRatio > 1f)
+                {
+                    Debug.LogWarning($"RunwayAccessUsage {usage.UsageId} has invalid runwayPositionRatio: {usage.RunwayPositionRatio}");
+                }
+            }
+
+            return usageIds;
+        }
+
+        private void ValidateCandidateUsageReference(string routeId, string fieldName, string usageId, HashSet<string> usageIds)
+        {
+            if (string.IsNullOrEmpty(usageId))
+            {
+                Debug.LogWarning($"TaxiRouteCandidate {routeId} has an empty {fieldName}.");
+                return;
+            }
+
+            if (!usageIds.Contains(usageId))
+            {
+                Debug.LogWarning($"TaxiRouteCandidate {routeId} references missing {fieldName}: {usageId}");
+            }
+        }
+
+        private void ValidateArrivalDefaultExit(TaxiRouteCandidate candidate)
+        {
+            var usage = GetRunwayAccessUsage(candidate.RunwayExitUsageId);
+            if (usage == null)
+            {
+                return;
+            }
+
+            if (usage.PreferredFor != RunwayAccessPreferredFor.Arrival && usage.PreferredFor != RunwayAccessPreferredFor.Both)
+            {
+                Debug.LogWarning($"Arrival TaxiRouteCandidate {candidate.RouteId} uses non-arrival runwayExitUsageId: {candidate.RunwayExitUsageId}");
+            }
+
+            if (usage.AccessType != RunwayAccessType.Exit
+                && usage.AccessType != RunwayAccessType.EntryExit
+                && usage.AccessType != RunwayAccessType.RapidExit)
+            {
+                Debug.LogWarning($"Arrival TaxiRouteCandidate {candidate.RouteId} uses non-exit runwayExitUsageId: {candidate.RunwayExitUsageId}");
+            }
+
+            if (usage.RunwayPositionRatio < 0.4f)
+            {
+                Debug.LogWarning($"Arrival TaxiRouteCandidate {candidate.RouteId} default exit is behind the arrival direction: {candidate.RunwayExitUsageId} ratio {usage.RunwayPositionRatio}");
+            }
         }
 
         private void ValidateExpectedDefaultTaxiCandidates(HashSet<string> defaultCandidateKeys, string routeKind)
