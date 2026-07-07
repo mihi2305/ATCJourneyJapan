@@ -222,8 +222,16 @@ namespace ATCJourneyJapan.Aircraft
 
         private void TaxiToGate()
         {
+            var operationDirection = GetOperationRunwayDirection();
+            var spotId = flightData != null ? flightData.SpotId : string.Empty;
+            var routeCandidate = airportManager.GetDefaultArrivalTaxiRouteCandidate(spotId, operationDirection);
+            var routePoints = routeCandidate != null
+                ? routeCandidate.Waypoints
+                : airportManager.GetTaxiToAvailableGateRoute();
+            LogSelectedArrivalTaxiRoute(routeCandidate, spotId, operationDirection);
+
             SetState(AircraftState.TaxiToGate);
-            StartRouteWithHeading(airportManager.GetTaxiToAvailableGateRoute(), groundSpeed, () =>
+            StartRouteWithHeading(routePoints, groundSpeed, () =>
             {
                 SetState(AircraftState.AtGate);
                 gameManager.NotifyAircraftHandled(this);
@@ -270,6 +278,20 @@ namespace ATCJourneyJapan.Aircraft
                 $"Selected taxi route: {flightNumber} {spotId} RWY {runwayDesignator} "
                 + $"{routeCandidate.RouteId} {routeCandidate.DisplayName} | "
                 + $"{routeCandidate.RouteInstructionText} | segments: {JoinSegmentIds(routeCandidate.SegmentIds)}");
+        }
+
+        private void LogSelectedArrivalTaxiRoute(TaxiRouteCandidate routeCandidate, string spotId, string runwayDesignator)
+        {
+            if (routeCandidate == null)
+            {
+                Debug.LogWarning($"Selected arrival taxi route fallback: {flightNumber} RWY {runwayDesignator} to {spotId} using direct waypoint fallback.");
+                return;
+            }
+
+            Debug.Log(
+                $"Selected arrival taxi route: {flightNumber} RWY {runwayDesignator} to {spotId} "
+                + $"{routeCandidate.RouteId} | {routeCandidate.RouteInstructionText} | "
+                + $"segments: {JoinSegmentIds(routeCandidate.SegmentIds)}");
         }
 
         private string JoinSegmentIds(IReadOnlyList<string> segmentIds)

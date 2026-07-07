@@ -2,11 +2,19 @@
 
 ## Current Phase
 
-Phase 3.9-5J-2 Validate taxiway segment routes
+Phase 3.9-5K Apply arrival taxi segments
 
 ## Previous Phase
 
-Phase 3.9-5J Stable taxiway segment data
+Phase 3.9-5J-2 Validate taxiway segment routes
+
+## Phase 3.9-5Kで修正したこと
+
+- Arrival taxi-to-spotにも `TaxiwaySegment` / `TaxiRouteCandidate` を適用した
+- RWY 18L / 36Rごとに到着後routeを分岐し、36R着陸後に18L側connectorを使う逆マッチングを避ける構造にした
+- 到着後routeは `A_CONNECTOR_18L_01` / `A_CONNECTOR_36R_01` -> `A_MAIN_PARALLEL_01` -> `APRON_FRONT_01` -> `STAND_ENTRY_01`〜`04` のprovisional routeとした
+- Taxi-to-Spot route選択時に、routeId / routeInstructionText / segmentIdsを `Debug.Log` で確認できるようにした
+- 今回はRoute選択UI本実装、AIP完全再現、B滑走路運用、空港3D変更は行わない
 
 ## Phase 3.9-5J-2で修正したこと
 

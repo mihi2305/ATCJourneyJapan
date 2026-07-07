@@ -15,6 +15,7 @@ namespace ATCJourneyJapan.Airport
         private readonly List<TaxiwaySegment> taxiwaySegments = new List<TaxiwaySegment>();
         private readonly List<TaxiwayRouteDefinition> taxiwayRoutes = new List<TaxiwayRouteDefinition>();
         private readonly List<TaxiRouteCandidate> departureTaxiRouteCandidates = new List<TaxiRouteCandidate>();
+        private readonly List<TaxiRouteCandidate> arrivalTaxiRouteCandidates = new List<TaxiRouteCandidate>();
         private readonly List<Vector3> gatePositions = new List<Vector3>();
         private readonly List<AirportSpotDefinition> spotDefinitions = new List<AirportSpotDefinition>();
         private Material runwayMaterial;
@@ -46,6 +47,7 @@ namespace ATCJourneyJapan.Airport
         public IReadOnlyList<TaxiwaySegment> TaxiwaySegments => taxiwaySegments;
         public IReadOnlyList<TaxiwayRouteDefinition> TaxiwayRoutes => taxiwayRoutes;
         public IReadOnlyList<TaxiRouteCandidate> DepartureTaxiRouteCandidates => departureTaxiRouteCandidates;
+        public IReadOnlyList<TaxiRouteCandidate> ArrivalTaxiRouteCandidates => arrivalTaxiRouteCandidates;
         public IReadOnlyList<AirportSpotDefinition> SpotDefinitions => spotDefinitions;
         public RunwayData PrimaryRunwayData => runwayData.Count > 0 ? runwayData[0] : null;
         public RunwayGeometry PrimaryRunwayGeometry => runwayGeometries.Count > 0 ? runwayGeometries[0] : null;
@@ -140,6 +142,45 @@ namespace ATCJourneyJapan.Airport
         public TaxiRouteCandidate GetDefaultDepartureTaxiRouteCandidate(string spotId, string runwayDesignator)
         {
             var candidates = GetDepartureTaxiRouteCandidates(spotId, runwayDesignator);
+            TaxiRouteCandidate fallbackCandidate = null;
+
+            foreach (var candidate in candidates)
+            {
+                if (fallbackCandidate == null)
+                {
+                    fallbackCandidate = candidate;
+                }
+
+                if (candidate.IsDefault)
+                {
+                    return candidate;
+                }
+            }
+
+            return fallbackCandidate;
+        }
+
+        public IReadOnlyList<TaxiRouteCandidate> GetArrivalTaxiRouteCandidates(string spotId, string runwayDesignator)
+        {
+            var normalizedSpotId = NormalizeSpotId(spotId);
+            var normalizedRunwayDesignator = NormalizeRunwayDesignator(runwayDesignator);
+            var matches = new List<TaxiRouteCandidate>();
+
+            foreach (var candidate in arrivalTaxiRouteCandidates)
+            {
+                if (NormalizeSpotId(candidate.SpotId) == normalizedSpotId
+                    && NormalizeRunwayDesignator(candidate.RunwayDesignator) == normalizedRunwayDesignator)
+                {
+                    matches.Add(candidate);
+                }
+            }
+
+            return matches;
+        }
+
+        public TaxiRouteCandidate GetDefaultArrivalTaxiRouteCandidate(string spotId, string runwayDesignator)
+        {
+            var candidates = GetArrivalTaxiRouteCandidates(spotId, runwayDesignator);
             TaxiRouteCandidate fallbackCandidate = null;
 
             foreach (var candidate in candidates)
@@ -554,6 +595,7 @@ namespace ATCJourneyJapan.Airport
                 TaxiwayRoutePurpose.Arrival));
 
             CreateDepartureTaxiRouteCandidateData();
+            CreateArrivalTaxiRouteCandidateData();
             ValidateTaxiwaySegmentRouteData();
         }
 
@@ -811,6 +853,40 @@ namespace ATCJourneyJapan.Airport
                 isDefault));
         }
 
+        private void CreateArrivalTaxiRouteCandidateData()
+        {
+            arrivalTaxiRouteCandidates.Clear();
+
+            AddArrivalTaxiRouteCandidate("ARR_18L_SPOT01_A", "Arrival Route A / 18L to SPOT 01", "18L", "SPOT 01", true);
+            AddArrivalTaxiRouteCandidate("ARR_36R_SPOT01_A", "Arrival Route A / 36R to SPOT 01", "36R", "SPOT 01", true);
+            AddArrivalTaxiRouteCandidate("ARR_18L_SPOT02_A", "Arrival Route A / 18L to SPOT 02", "18L", "SPOT 02", true);
+            AddArrivalTaxiRouteCandidate("ARR_36R_SPOT02_A", "Arrival Route A / 36R to SPOT 02", "36R", "SPOT 02", true);
+            AddArrivalTaxiRouteCandidate("ARR_18L_SPOT03_A", "Arrival Route A / 18L to SPOT 03", "18L", "SPOT 03", true);
+            AddArrivalTaxiRouteCandidate("ARR_36R_SPOT03_A", "Arrival Route A / 36R to SPOT 03", "36R", "SPOT 03", true);
+            AddArrivalTaxiRouteCandidate("ARR_18L_SPOT04_A", "Arrival Route A / 18L to SPOT 04", "18L", "SPOT 04", true);
+            AddArrivalTaxiRouteCandidate("ARR_36R_SPOT04_A", "Arrival Route A / 36R to SPOT 04", "36R", "SPOT 04", true);
+        }
+
+        private void AddArrivalTaxiRouteCandidate(
+            string routeId,
+            string displayName,
+            string runwayDesignator,
+            string spotId,
+            bool isDefault)
+        {
+            var segmentIds = BuildArrivalTaxiSegmentIds(spotId, runwayDesignator);
+            arrivalTaxiRouteCandidates.Add(new TaxiRouteCandidate(
+                routeId,
+                displayName,
+                $"{runwayDesignator}着陸後に{spotId}へ戻る暫定arrival taxi route",
+                spotId,
+                runwayDesignator,
+                BuildArrivalTaxiWaypoints(spotId, runwayDesignator),
+                segmentIds,
+                BuildRouteInstructionText(segmentIds),
+                isDefault));
+        }
+
         private IEnumerable<string> BuildDepartureTaxiSegmentIds(string routeId, string spotId, string runwayDesignator)
         {
             var segmentIds = new List<string>();
@@ -839,17 +915,76 @@ namespace ATCJourneyJapan.Airport
             return segmentIds;
         }
 
+        private IEnumerable<string> BuildArrivalTaxiSegmentIds(string spotId, string runwayDesignator)
+        {
+            var segmentIds = new List<string>();
+            segmentIds.Add(NormalizeRunwayDesignator(runwayDesignator) == "36R" ? "A_CONNECTOR_36R_01" : "A_CONNECTOR_18L_01");
+            segmentIds.Add("A_MAIN_PARALLEL_01");
+            segmentIds.Add("APRON_FRONT_01");
+
+            var standEntrySegmentId = GetStandEntrySegmentId(spotId);
+            if (!string.IsNullOrEmpty(standEntrySegmentId))
+            {
+                segmentIds.Add(standEntrySegmentId);
+            }
+
+            return segmentIds;
+        }
+
+        private IEnumerable<Vector3> BuildArrivalTaxiWaypoints(string spotId, string runwayDesignator)
+        {
+            var destination = GetSpotPosition(spotId);
+            var apronZ = destination.x >= 17f ? -6.2f : -6.45f;
+            var connectorX = NormalizeRunwayDesignator(runwayDesignator) == "36R" ? -7f : 12f;
+            var apronEntryDirection = destination.x >= connectorX ? 1f : -1f;
+            var apronEntryX = Mathf.Clamp(destination.x - apronEntryDirection * 2f, 4f, 26.2f);
+            return new[]
+            {
+                new Vector3(connectorX, 0.6f, -5f),
+                new Vector3(apronEntryX, 0.6f, -5f),
+                new Vector3(apronEntryX, 0.6f, apronZ),
+                new Vector3(destination.x, 0.6f, apronZ),
+                destination
+            };
+        }
+
+        private Vector3 GetSpotPosition(string spotId)
+        {
+            var normalizedSpotId = NormalizeSpotId(spotId);
+            foreach (var spotDefinition in spotDefinitions)
+            {
+                if (NormalizeSpotId(spotDefinition.TutorialId) == normalizedSpotId)
+                {
+                    return spotDefinition.Position;
+                }
+            }
+
+            switch (normalizedSpotId)
+            {
+                case "SPOT_01":
+                    return new Vector3(6.3f, 0.6f, -8.35f);
+                case "SPOT_02":
+                    return new Vector3(10.8f, 0.6f, -7.95f);
+                case "SPOT_03":
+                    return new Vector3(17.1f, 0.6f, -8.15f);
+                case "SPOT_04":
+                    return new Vector3(26.2f, 0.6f, -8.65f);
+                default:
+                    return gatePositions.Count > 0 ? gatePositions[0] : new Vector3(6.3f, 0.6f, -8.35f);
+            }
+        }
+
         private string GetStandEntrySegmentId(string spotId)
         {
             switch (NormalizeSpotId(spotId))
             {
-                case "SPOT01":
+                case "SPOT_01":
                     return "STAND_ENTRY_01";
-                case "SPOT02":
+                case "SPOT_02":
                     return "STAND_ENTRY_02";
-                case "SPOT03":
+                case "SPOT_03":
                     return "STAND_ENTRY_03";
-                case "SPOT04":
+                case "SPOT_04":
                     return "STAND_ENTRY_04";
                 default:
                     return string.Empty;
@@ -885,9 +1020,27 @@ namespace ATCJourneyJapan.Airport
                 }
             }
 
+            var defaultDepartureCandidateKeys = ValidateTaxiRouteCandidates(
+                departureTaxiRouteCandidates,
+                segmentIds,
+                "departure");
+            var defaultArrivalCandidateKeys = ValidateTaxiRouteCandidates(
+                arrivalTaxiRouteCandidates,
+                segmentIds,
+                "arrival");
+
+            ValidateExpectedDefaultTaxiCandidates(defaultDepartureCandidateKeys, "departure");
+            ValidateExpectedDefaultTaxiCandidates(defaultArrivalCandidateKeys, "arrival");
+        }
+
+        private HashSet<string> ValidateTaxiRouteCandidates(
+            IEnumerable<TaxiRouteCandidate> candidates,
+            HashSet<string> segmentIds,
+            string routeKind)
+        {
             var defaultCandidateKeys = new HashSet<string>();
             var candidateKeys = new HashSet<string>();
-            foreach (var candidate in departureTaxiRouteCandidates)
+            foreach (var candidate in candidates)
             {
                 var candidateKey = $"{NormalizeSpotId(candidate.SpotId)}_{NormalizeRunwayDesignator(candidate.RunwayDesignator)}";
                 candidateKeys.Add(candidateKey);
@@ -898,7 +1051,7 @@ namespace ATCJourneyJapan.Airport
 
                 if (string.IsNullOrEmpty(candidate.RouteInstructionText))
                 {
-                    Debug.LogWarning($"TaxiRouteCandidate {candidate.RouteId} has an empty routeInstructionText.");
+                    Debug.LogWarning($"{routeKind} TaxiRouteCandidate {candidate.RouteId} has an empty routeInstructionText.");
                 }
 
                 var candidateSegmentIds = new HashSet<string>();
@@ -906,12 +1059,12 @@ namespace ATCJourneyJapan.Airport
                 {
                     if (!candidateSegmentIds.Add(segmentId))
                     {
-                        Debug.LogWarning($"TaxiRouteCandidate {candidate.RouteId} contains duplicate segmentId: {segmentId}");
+                        Debug.LogWarning($"{routeKind} TaxiRouteCandidate {candidate.RouteId} contains duplicate segmentId: {segmentId}");
                     }
 
                     if (!segmentIds.Contains(segmentId))
                     {
-                        Debug.LogWarning($"TaxiRouteCandidate {candidate.RouteId} references missing segmentId: {segmentId}");
+                        Debug.LogWarning($"{routeKind} TaxiRouteCandidate {candidate.RouteId} references missing segmentId: {segmentId}");
                     }
                 }
             }
@@ -920,14 +1073,14 @@ namespace ATCJourneyJapan.Airport
             {
                 if (!defaultCandidateKeys.Contains(candidateKey))
                 {
-                    Debug.LogWarning($"No default TaxiRouteCandidate found for {candidateKey}.");
+                    Debug.LogWarning($"No default {routeKind} TaxiRouteCandidate found for {candidateKey}.");
                 }
             }
 
-            ValidateExpectedDefaultDepartureTaxiCandidates(defaultCandidateKeys);
+            return defaultCandidateKeys;
         }
 
-        private void ValidateExpectedDefaultDepartureTaxiCandidates(HashSet<string> defaultCandidateKeys)
+        private void ValidateExpectedDefaultTaxiCandidates(HashSet<string> defaultCandidateKeys, string routeKind)
         {
             var expectedSpotIds = new[] { "SPOT 01", "SPOT 02", "SPOT 03", "SPOT 04" };
             foreach (var spotId in expectedSpotIds)
@@ -937,7 +1090,7 @@ namespace ATCJourneyJapan.Airport
                     var candidateKey = $"{NormalizeSpotId(spotId)}_{NormalizeRunwayDesignator(runwayDesignator)}";
                     if (!defaultCandidateKeys.Contains(candidateKey))
                     {
-                        Debug.LogWarning($"Expected default TaxiRouteCandidate is missing for {spotId} RWY {runwayDesignator}.");
+                        Debug.LogWarning($"Expected default {routeKind} TaxiRouteCandidate is missing for {spotId} RWY {runwayDesignator}.");
                     }
                 }
             }
