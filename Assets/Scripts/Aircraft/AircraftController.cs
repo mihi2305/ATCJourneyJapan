@@ -20,14 +20,15 @@ namespace ATCJourneyJapan.Aircraft
         // Game-tuned speeds: intentionally slower and more exaggerated than real-time scale for readability.
         [SerializeField] private float taxiSpeed = 3f;
         [SerializeField] private float takeoffInitialSpeed = 2.2f;
-        [SerializeField] private float takeoffMaxSpeed = 7.5f;
-        [SerializeField] private float landingInitialSpeed = 7f;
-        [SerializeField] private float landingRolloutEndSpeed = 2.4f;
-        [SerializeField] private float takeoffAccelerationTime = 6f;
+        [SerializeField] private float takeoffMaxSpeed = 7.8f;
+        [SerializeField] private float landingInitialSpeed = 8f;
+        [SerializeField] private float landingRolloutEndSpeed = 2.2f;
+        [SerializeField] private float takeoffAccelerationTime = 5f;
         [SerializeField] private float landingDecelerationTime = 6f;
-        [SerializeField] private float routeHeadingTurnSpeed = 110f;
-        [SerializeField] private float turnAngleThreshold = 25f;
-        [SerializeField] private float taxiTurnSpeedMultiplier = 0.35f;
+        [SerializeField] private float landingDecelerationCompletionProgress = 0.75f;
+        [SerializeField] private float routeHeadingTurnSpeed = 75f;
+        [SerializeField] private float turnAngleThreshold = 22f;
+        [SerializeField] private float taxiTurnSpeedMultiplier = 0.2f;
         [SerializeField] private float headingDegrees;
 
         private readonly SimpleRoute route = new SimpleRoute();
@@ -48,6 +49,9 @@ namespace ATCJourneyJapan.Aircraft
         private string activeRunwayEntryUsageId = string.Empty;
         private float takeoffSpeedProfileElapsed;
         private float landingSpeedProfileElapsed;
+        private Vector3 landingRolloutStartPosition;
+        private Vector3 landingRolloutEndPosition;
+        private float landingRolloutDistance;
 
         public string FlightNumber => flightNumber;
         public AircraftData FlightData => flightData;
@@ -228,8 +232,9 @@ namespace ATCJourneyJapan.Aircraft
                 SetState(AircraftState.LandingRoll);
                 SetRunwayLandingHeading(operationDirection);
                 gameManager.OccupyPrimaryRunway(this, "着陸滑走中");
-                StartLandingSpeedProfile(operationDirection);
-                StartRouteWithHeading(airportManager.GetLandingRollRoute(operationDirection), landingInitialSpeed, () =>
+                var landingRollRoute = new List<Vector3>(airportManager.GetLandingRollRoute(operationDirection));
+                StartLandingSpeedProfile(operationDirection, landingRollRoute);
+                StartRouteWithHeading(landingRollRoute, landingInitialSpeed, () =>
                 {
                     SetState(AircraftState.VacatingRunway);
                     gameManager.OccupyPrimaryRunway(this, "滑走路離脱中");
@@ -358,7 +363,8 @@ namespace ATCJourneyJapan.Aircraft
         {
             Debug.Log(
                 $"Landing rollout speed profile: {flightNumber} RWY {runwayDesignator} "
-                + $"initial={landingInitialSpeed:0.##} rolloutEnd={landingRolloutEndSpeed:0.##} decelerationTime={landingDecelerationTime:0.##}");
+                + $"initial={landingInitialSpeed:0.##} rolloutEnd={landingRolloutEndSpeed:0.##} "
+                + $"completionProgress={landingDecelerationCompletionProgress:0.##} fallbackTime={landingDecelerationTime:0.##}");
         }
 
         private string GetConnectorSegmentId(TaxiRouteCandidate routeCandidate)
@@ -493,9 +499,12 @@ namespace ATCJourneyJapan.Aircraft
             LogTakeoffSpeedProfile(operationDirection);
         }
 
-        private void StartLandingSpeedProfile(string operationDirection)
+        private void StartLandingSpeedProfile(string operationDirection, IReadOnlyList<Vector3> landingRollRoute)
         {
             landingSpeedProfileElapsed = 0f;
+            landingRolloutStartPosition = transform.position;
+            landingRolloutEndPosition = landingRollRoute.Count > 0 ? landingRollRoute[landingRollRoute.Count - 1] : transform.position;
+            landingRolloutDistance = Vector3.Distance(landingRolloutStartPosition, landingRolloutEndPosition);
             route.Speed = landingInitialSpeed;
             LogLandingSpeedProfile(operationDirection);
         }
@@ -510,8 +519,23 @@ namespace ATCJourneyJapan.Aircraft
             else if (currentState == AircraftState.LandingRoll)
             {
                 landingSpeedProfileElapsed += deltaTime;
-                route.Speed = InterpolateSpeed(landingInitialSpeed, landingRolloutEndSpeed, landingSpeedProfileElapsed, landingDecelerationTime);
+                route.Speed = InterpolateLandingRolloutSpeed();
             }
+        }
+
+        private float InterpolateLandingRolloutSpeed()
+        {
+            if (landingRolloutDistance > 0.1f && landingDecelerationCompletionProgress > 0.01f)
+            {
+                var traveled = Vector3.Distance(landingRolloutStartPosition, transform.position);
+                var rolloutProgress = Mathf.Clamp01(traveled / landingRolloutDistance);
+                return Mathf.Lerp(
+                    landingInitialSpeed,
+                    landingRolloutEndSpeed,
+                    Mathf.Clamp01(rolloutProgress / landingDecelerationCompletionProgress));
+            }
+
+            return InterpolateSpeed(landingInitialSpeed, landingRolloutEndSpeed, landingSpeedProfileElapsed, landingDecelerationTime);
         }
 
         private float InterpolateSpeed(float fromSpeed, float toSpeed, float elapsed, float duration)

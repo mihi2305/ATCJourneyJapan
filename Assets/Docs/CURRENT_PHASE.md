@@ -2,11 +2,19 @@
 
 ## Current Phase
 
-Phase 3.9-5N-4 Add taxi turn phase
+Phase 3.9-5N-5 Stronger landing deceleration and taxi turn phase
 
 ## Previous Phase
 
-Phase 3.9-5N-3 Fix aircraft heading during taxi
+Phase 3.9-5N-4 Add taxi turn phase
+
+## Phase 3.9-5N-5で修正したこと
+
+- Landing Rolloutの減速を進捗率ベースへ寄せ、取付誘導路・Exit付近までにtaxiSpeed近くへ落ちる見え方を強めた
+- `landingInitialSpeed` / `landingRolloutEndSpeed` の差を広げ、減速完了目安を `landingDecelerationCompletionProgress` として追加した
+- Taxi turn phaseは `turnAngleThreshold` / `taxiTurnSpeedMultiplier` / `routeHeadingTurnSpeed` を再調整し、90度近い曲がりでより低速に見えるようにした
+- Takeoff加速は `takeoffAccelerationTime` を短くし、ゲームテンポが遅くなりすぎないよう微調整した
+- 今回は本格Smooth Turn、曲線誘導路生成、高速脱出速度判定、機種別性能は行わない
 
 ## Phase 3.9-5N-4で修正したこと
 
