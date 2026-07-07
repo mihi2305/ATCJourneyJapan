@@ -471,6 +471,29 @@ namespace ATCJourneyJapan.Airport
             };
         }
 
+        public IEnumerable<Vector3> GetLineUpRoute(Vector3 startPosition, string operationDirection, string runwayEntryUsageId)
+        {
+            if (string.IsNullOrEmpty(runwayEntryUsageId))
+            {
+                return GetLineUpRoute(startPosition, operationDirection);
+            }
+
+            var runwayAccessPoint = GetAccessPointForUsage(runwayEntryUsageId);
+            if (runwayAccessPoint == null)
+            {
+                return GetLineUpRoute(startPosition, operationDirection);
+            }
+
+            var entryPoint = runwayAccessPoint.Position;
+            var takeoffDirection = GetPrimaryRunwayTakeoffDirection(operationDirection);
+            return new[]
+            {
+                new Vector3(entryPoint.x, 0.6f, -1.05f),
+                entryPoint,
+                GetIntersectionLineupPoint(operationDirection, runwayEntryUsageId)
+            };
+        }
+
         public IEnumerable<Vector3> GetTakeoffRoute()
         {
             return GetTakeoffRoute(GetPrimaryRunwayDirection());
@@ -494,6 +517,49 @@ namespace ATCJourneyJapan.Airport
                 departureEnd - takeoffDirection * 0.25f,
                 new Vector3(climbPoint.x, 2.4f, climbPoint.z)
             };
+        }
+
+        public IEnumerable<Vector3> GetTakeoffRoute(string operationDirection, string runwayEntryUsageId, Vector3 currentPosition)
+        {
+            if (string.IsNullOrEmpty(runwayEntryUsageId))
+            {
+                return GetTakeoffRoute(operationDirection);
+            }
+
+            var runway = PrimaryRunwayGeometry;
+            var runwayAccessPoint = GetAccessPointForUsage(runwayEntryUsageId);
+            if (runway == null || runwayAccessPoint == null)
+            {
+                return GetTakeoffRoute(operationDirection);
+            }
+
+            var takeoffDirection = runway.GetTakeoffDirection(operationDirection);
+            var runwayStart = new Vector3(currentPosition.x, 0.6f, runwayAccessPoint.Position.z);
+            var minimumStart = runwayAccessPoint.Position + takeoffDirection * 1.5f;
+            if (Vector3.Dot(runwayStart - runwayAccessPoint.Position, takeoffDirection) < 1.25f)
+            {
+                runwayStart = minimumStart;
+            }
+
+            var departureEnd = runway.GetDepartureEndPoint(operationDirection);
+            var climbPoint = departureEnd + takeoffDirection * 6.75f;
+            return new[]
+            {
+                runwayStart,
+                departureEnd - takeoffDirection * 0.25f,
+                new Vector3(climbPoint.x, 2.4f, climbPoint.z)
+            };
+        }
+
+        public Vector3 GetIntersectionLineupPoint(string operationDirection, string runwayEntryUsageId)
+        {
+            var runwayAccessPoint = GetAccessPointForUsage(runwayEntryUsageId);
+            if (runwayAccessPoint == null)
+            {
+                return GetPrimaryRunwayLineupPoint(operationDirection);
+            }
+
+            return runwayAccessPoint.Position + GetPrimaryRunwayTakeoffDirection(operationDirection) * 1.5f;
         }
 
         private void CreateMaterials()

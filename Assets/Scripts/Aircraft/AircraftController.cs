@@ -34,6 +34,8 @@ namespace ATCJourneyJapan.Aircraft
         private Vector2 facingDirection = Vector2.up;
         private AircraftState heldTaxiState = AircraftState.Waiting;
         private string lastLandingRunwayDesignator = string.Empty;
+        private string activeDepartureRouteId = string.Empty;
+        private string activeRunwayEntryUsageId = string.Empty;
 
         public string FlightNumber => flightNumber;
         public AircraftData FlightData => flightData;
@@ -259,6 +261,8 @@ namespace ATCJourneyJapan.Aircraft
             var routePoints = routeCandidate != null
                 ? routeCandidate.Waypoints
                 : airportManager.GetTaxiToHoldRoute(transform.position, operationDirection);
+            activeDepartureRouteId = routeCandidate != null ? routeCandidate.RouteId : string.Empty;
+            activeRunwayEntryUsageId = routeCandidate != null ? routeCandidate.RunwayEntryUsageId : string.Empty;
             LogSelectedTaxiRoute(routeCandidate, spotId, operationDirection);
 
             SetState(AircraftState.TaxiToHold);
@@ -312,6 +316,17 @@ namespace ATCJourneyJapan.Aircraft
                 + $"connector={connectorSegmentId} first={connectorFirst} last={connectorLast} "
                 + $"current={FormatVector3(transform.position)} | {routeCandidate.RouteInstructionText} | "
                 + $"segments: {JoinSegmentIds(routeCandidate.SegmentIds)}");
+        }
+
+        private void LogSelectedTakeoffRoute(string runwayDesignator)
+        {
+            var mode = HasRunwayEntryUsage() ? "Intersection" : "FullLengthFallback";
+            var direction = GetRunwayTakeoffDirection(runwayDesignator);
+            Debug.Log(
+                $"Selected takeoff route: {flightNumber} RWY {runwayDesignator} "
+                + $"routeId={(string.IsNullOrEmpty(activeDepartureRouteId) ? "fallback" : activeDepartureRouteId)} "
+                + $"runwayEntryUsageId={(string.IsNullOrEmpty(activeRunwayEntryUsageId) ? "none" : activeRunwayEntryUsageId)} "
+                + $"mode={mode} start={FormatVector3(transform.position)} direction={FormatVector3(direction)}");
         }
 
         private string GetConnectorSegmentId(TaxiRouteCandidate routeCandidate)
@@ -393,9 +408,9 @@ namespace ATCJourneyJapan.Aircraft
             var operationDirection = GetOperationRunwayDirection();
             SetState(AircraftState.LiningUp, false);
             gameManager.OccupyPrimaryRunway(this, "滑走路上待機");
-            StartRouteWithHeading(airportManager.GetLineUpRoute(transform.position, operationDirection), groundSpeed, () =>
+            StartRouteWithHeading(airportManager.GetLineUpRoute(transform.position, operationDirection, activeRunwayEntryUsageId), groundSpeed, () =>
             {
-                transform.position = airportManager.GetPrimaryRunwayLineupPoint(operationDirection);
+                transform.position = GetLineupCompletionPoint(operationDirection);
                 SetState(AircraftState.LiningUp, false);
                 SetRunwayTakeoffHeading(operationDirection);
             });
@@ -404,10 +419,14 @@ namespace ATCJourneyJapan.Aircraft
         private void ClearTakeoff()
         {
             var operationDirection = GetOperationRunwayDirection();
+            var takeoffRoute = HasRunwayEntryUsage()
+                ? airportManager.GetTakeoffRoute(operationDirection, activeRunwayEntryUsageId, transform.position)
+                : airportManager.GetTakeoffRoute(operationDirection);
             SetState(AircraftState.TakeoffRoll, false);
             SetRunwayTakeoffHeading(operationDirection);
+            LogSelectedTakeoffRoute(operationDirection);
             gameManager.OccupyPrimaryRunway(this, "離陸滑走中");
-            StartRouteWithHeading(airportManager.GetTakeoffRoute(operationDirection), airborneSpeed, () =>
+            StartRouteWithHeading(takeoffRoute, airborneSpeed, () =>
             {
                 gameManager.ReleasePrimaryRunway(this);
                 SetState(AircraftState.AirborneDeparture, false);
@@ -420,6 +439,18 @@ namespace ATCJourneyJapan.Aircraft
         {
             route.Stop();
             SetState(AircraftState.Waiting, false);
+        }
+
+        private Vector3 GetLineupCompletionPoint(string operationDirection)
+        {
+            return HasRunwayEntryUsage()
+                ? airportManager.GetIntersectionLineupPoint(operationDirection, activeRunwayEntryUsageId)
+                : airportManager.GetPrimaryRunwayLineupPoint(operationDirection);
+        }
+
+        private bool HasRunwayEntryUsage()
+        {
+            return !string.IsNullOrEmpty(activeRunwayEntryUsageId);
         }
 
         private void SetState(AircraftState state, bool applyDefaultHeading = true)

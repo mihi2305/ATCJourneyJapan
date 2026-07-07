@@ -2,11 +2,19 @@
 
 ## Current Phase
 
-Phase 3.9-5L Add directional runway access usage
+Phase 3.9-5M Prevent takeoff backtrack
 
 ## Previous Phase
 
-Phase 3.9-5K-2 Fix 36R arrival connector mismatch
+Phase 3.9-5L Add directional runway access usage
+
+## Phase 3.9-5Mで修正したこと
+
+- Taxi-to-Runwayで選ばれた `TaxiRouteCandidate.runwayEntryUsageId` を、TaxiToHold -> LineUp -> Takeoffまで保持するようにした
+- Line Up時に `runwayEntryUsageId` がある場合は、対応する `RunwayAccessPoint` 付近から滑走路へ入り、滑走路端へ戻らないようにした
+- Cleared for Takeoff時に `runwayEntryUsageId` がある場合は、現在位置またはentry pointから指定RWY方向へTakeoff routeを開始するようにした
+- Takeoff開始時に、callsign / runway / routeId / runwayEntryUsageId / mode / start position / directionを `Debug.Log` で確認できるようにした
+- 加速率、離陸距離、機種別性能、Route選択UI、B滑走路運用は次Phase以降に回す
 
 ## Phase 3.9-5Lで修正したこと
 
