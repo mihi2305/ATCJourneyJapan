@@ -33,6 +33,7 @@ namespace ATCJourneyJapan.Aircraft
         private bool tutorialHighlighted;
         private Vector2 facingDirection = Vector2.up;
         private AircraftState heldTaxiState = AircraftState.Waiting;
+        private string lastLandingRunwayDesignator = string.Empty;
 
         public string FlightNumber => flightNumber;
         public AircraftData FlightData => flightData;
@@ -198,6 +199,7 @@ namespace ATCJourneyJapan.Aircraft
         private void ClearLanding()
         {
             var operationDirection = GetOperationRunwayDirection();
+            lastLandingRunwayDesignator = operationDirection;
             transform.position = airportManager.GetArrivalFinalApproachStart(operationDirection);
             SetState(AircraftState.FinalApproach);
             SetRunwayLandingHeading(operationDirection);
@@ -222,7 +224,7 @@ namespace ATCJourneyJapan.Aircraft
 
         private void TaxiToGate()
         {
-            var operationDirection = GetOperationRunwayDirection();
+            var operationDirection = GetLandingRunwayDirectionForTaxiToGate();
             var spotId = flightData != null ? flightData.SpotId : string.Empty;
             var routeCandidate = airportManager.GetDefaultArrivalTaxiRouteCandidate(spotId, operationDirection);
             var routePoints = routeCandidate != null
@@ -282,16 +284,52 @@ namespace ATCJourneyJapan.Aircraft
 
         private void LogSelectedArrivalTaxiRoute(TaxiRouteCandidate routeCandidate, string spotId, string runwayDesignator)
         {
+            var activeRunwayDesignator = flightData != null && !string.IsNullOrEmpty(flightData.ActiveRunwayDesignator)
+                ? flightData.ActiveRunwayDesignator
+                : "none";
             if (routeCandidate == null)
             {
-                Debug.LogWarning($"Selected arrival taxi route fallback: {flightNumber} RWY {runwayDesignator} to {spotId} using direct waypoint fallback.");
+                Debug.LogWarning(
+                    $"Selected arrival taxi route fallback: {flightNumber} ActiveRunway={activeRunwayDesignator} "
+                    + $"RWY {runwayDesignator} to {spotId} current={FormatVector3(transform.position)} using direct waypoint fallback.");
                 return;
             }
 
+            var connectorSegmentId = GetConnectorSegmentId(routeCandidate);
+            var connectorSegment = !string.IsNullOrEmpty(connectorSegmentId) && airportManager != null
+                ? airportManager.GetTaxiwaySegment(connectorSegmentId)
+                : null;
+            var connectorFirst = connectorSegment != null && connectorSegment.Waypoints.Count > 0
+                ? FormatVector3(connectorSegment.Waypoints[0])
+                : "none";
+            var connectorLast = connectorSegment != null && connectorSegment.Waypoints.Count > 0
+                ? FormatVector3(connectorSegment.Waypoints[connectorSegment.Waypoints.Count - 1])
+                : "none";
+
             Debug.Log(
-                $"Selected arrival taxi route: {flightNumber} RWY {runwayDesignator} to {spotId} "
-                + $"{routeCandidate.RouteId} | {routeCandidate.RouteInstructionText} | "
+                $"Selected arrival taxi route: {flightNumber} ActiveRunway={activeRunwayDesignator} "
+                + $"RWY {runwayDesignator} to {spotId} {routeCandidate.RouteId} | "
+                + $"connector={connectorSegmentId} first={connectorFirst} last={connectorLast} "
+                + $"current={FormatVector3(transform.position)} | {routeCandidate.RouteInstructionText} | "
                 + $"segments: {JoinSegmentIds(routeCandidate.SegmentIds)}");
+        }
+
+        private string GetConnectorSegmentId(TaxiRouteCandidate routeCandidate)
+        {
+            foreach (var segmentId in routeCandidate.SegmentIds)
+            {
+                if (segmentId.Contains("CONNECTOR"))
+                {
+                    return segmentId;
+                }
+            }
+
+            return string.Empty;
+        }
+
+        private string FormatVector3(Vector3 value)
+        {
+            return $"({value.x:0.##}, {value.y:0.##}, {value.z:0.##})";
         }
 
         private string JoinSegmentIds(IReadOnlyList<string> segmentIds)
@@ -493,6 +531,11 @@ namespace ATCJourneyJapan.Aircraft
         private string GetOperationRunwayDirection()
         {
             return flightData != null && !string.IsNullOrEmpty(flightData.ActiveRunwayDesignator) ? flightData.ActiveRunwayDesignator : "18L";
+        }
+
+        private string GetLandingRunwayDirectionForTaxiToGate()
+        {
+            return !string.IsNullOrEmpty(lastLandingRunwayDesignator) ? lastLandingRunwayDesignator : GetOperationRunwayDirection();
         }
 
         private bool HasBoundRunwayDirection()

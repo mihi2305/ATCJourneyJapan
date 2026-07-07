@@ -2,11 +2,19 @@
 
 ## Current Phase
 
-Phase 3.9-5K Apply arrival taxi segments
+Phase 3.9-5K-2 Fix 36R arrival connector mismatch
 
 ## Previous Phase
 
-Phase 3.9-5J-2 Validate taxiway segment routes
+Phase 3.9-5K Apply arrival taxi segments
+
+## Phase 3.9-5K-2で修正したこと
+
+- RWY 36R到着後に18L側connectorへ向かって見える問題を、connector座標、runwayDesignator保持、Vacate route固定targetの3点で切り分けた
+- `A_CONNECTOR_18L_01` / `A_CONNECTOR_36R_01` のsegmentIdは維持し、Vacate routeとArrival taxi routeがconnector segmentのwaypointを直接参照する形に寄せた
+- 着陸に使ったrunwayDesignatorを `lastLandingRunwayDesignator` として保持し、Taxi-to-Spot開始時はそれを優先してarrival route candidateを選ぶようにした
+- Taxi-to-Spot開始時に、callsign / ActiveRunwayDesignator / selected routeId / connector segmentId / connector waypoint / current positionを `Debug.Log` で確認できるようにした
+- 今回はRoute選択UI、誘導路完全再現、B滑走路運用、Smooth Turn、速度差・加減速は行わない
 
 ## Phase 3.9-5Kで修正したこと
 

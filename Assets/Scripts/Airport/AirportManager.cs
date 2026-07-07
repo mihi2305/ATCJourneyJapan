@@ -332,18 +332,18 @@ namespace ATCJourneyJapan.Airport
         {
             var runway = PrimaryRunwayGeometry;
             var vacateStart = runway != null ? runway.GetVacateStartPoint(operationDirection) : (Is36R(operationDirection) ? new Vector3(-7f, 0.6f, 0f) : new Vector3(12f, 0.6f, 0f));
-            var eastLink = GetTaxiwayRoute("TWY_EAST_RUNWAY_LINK");
-            if (!Is36R(operationDirection) && eastLink != null && eastLink.Waypoints.Count >= 2)
+            var connectorSegment = GetTaxiwaySegment(GetRunwayConnectorSegmentId(operationDirection));
+            if (connectorSegment != null && connectorSegment.Waypoints.Count >= 2)
             {
                 return new[]
                 {
                     vacateStart,
-                    eastLink.Waypoints[1],
-                    eastLink.Waypoints[0]
+                    connectorSegment.Waypoints[1],
+                    connectorSegment.Waypoints[0]
                 };
             }
 
-            var exitX = -7f;
+            var exitX = Is36R(operationDirection) ? -7f : 12f;
             return new[]
             {
                 vacateStart,
@@ -918,7 +918,7 @@ namespace ATCJourneyJapan.Airport
         private IEnumerable<string> BuildArrivalTaxiSegmentIds(string spotId, string runwayDesignator)
         {
             var segmentIds = new List<string>();
-            segmentIds.Add(NormalizeRunwayDesignator(runwayDesignator) == "36R" ? "A_CONNECTOR_36R_01" : "A_CONNECTOR_18L_01");
+            segmentIds.Add(GetRunwayConnectorSegmentId(runwayDesignator));
             segmentIds.Add("A_MAIN_PARALLEL_01");
             segmentIds.Add("APRON_FRONT_01");
 
@@ -935,17 +935,34 @@ namespace ATCJourneyJapan.Airport
         {
             var destination = GetSpotPosition(spotId);
             var apronZ = destination.x >= 17f ? -6.2f : -6.45f;
-            var connectorX = NormalizeRunwayDesignator(runwayDesignator) == "36R" ? -7f : 12f;
+            var connectorTaxiwayPoint = GetRunwayConnectorTaxiwayPoint(runwayDesignator);
+            var connectorX = connectorTaxiwayPoint.x;
             var apronEntryDirection = destination.x >= connectorX ? 1f : -1f;
             var apronEntryX = Mathf.Clamp(destination.x - apronEntryDirection * 2f, 4f, 26.2f);
             return new[]
             {
-                new Vector3(connectorX, 0.6f, -5f),
+                connectorTaxiwayPoint,
                 new Vector3(apronEntryX, 0.6f, -5f),
                 new Vector3(apronEntryX, 0.6f, apronZ),
                 new Vector3(destination.x, 0.6f, apronZ),
                 destination
             };
+        }
+
+        private string GetRunwayConnectorSegmentId(string operationDirection)
+        {
+            return Is36R(operationDirection) ? "A_CONNECTOR_36R_01" : "A_CONNECTOR_18L_01";
+        }
+
+        private Vector3 GetRunwayConnectorTaxiwayPoint(string operationDirection)
+        {
+            var connectorSegment = GetTaxiwaySegment(GetRunwayConnectorSegmentId(operationDirection));
+            if (connectorSegment != null && connectorSegment.Waypoints.Count > 0)
+            {
+                return connectorSegment.Waypoints[0];
+            }
+
+            return Is36R(operationDirection) ? new Vector3(-7f, 0.6f, -5f) : new Vector3(12f, 0.6f, -5f);
         }
 
         private Vector3 GetSpotPosition(string spotId)
