@@ -2,11 +2,19 @@
 
 ## Current Phase
 
-Phase 3.9-5N-2 Tune visible speed profiles
+Phase 3.9-5N-3 Fix aircraft heading during taxi
 
 ## Previous Phase
 
-Phase 3.9-5N Add simple speed profiles
+Phase 3.9-5N-2 Tune visible speed profiles
+
+## Phase 3.9-5N-3で修正したこと
+
+- Taxi-to-SpotやVacate connector移動中に、機体が進行方向を向かず横向きにスライドして見える問題をQA対象にした
+- Route移動中は次waypoint方向を先読みし、yaw方向だけ `Quaternion.RotateTowards` で簡易的に追従するようにした
+- Pushback中の後退姿勢とTakeoff Roll中の滑走路方向固定は維持し、Taxi / Vacate / Arrival Taxi-to-Spot / Departure Taxi / LineUp / Landing Rolloutの見た目を改善した
+- Takeoff加速時間を少し短くし、Landing減速時間を少し長めにして、速度変化の見え方を再調整した
+- 今回は本格Smooth Turn、pitch / liftoff animation、機種別性能、正確な離着陸距離計算は行わない
 
 ## Phase 3.9-5N-2で修正したこと
 

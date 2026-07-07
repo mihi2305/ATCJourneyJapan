@@ -23,8 +23,9 @@ namespace ATCJourneyJapan.Aircraft
         [SerializeField] private float takeoffMaxSpeed = 7.5f;
         [SerializeField] private float landingInitialSpeed = 6.5f;
         [SerializeField] private float landingRolloutEndSpeed = 3f;
-        [SerializeField] private float takeoffAccelerationTime = 9f;
-        [SerializeField] private float landingDecelerationTime = 8f;
+        [SerializeField] private float takeoffAccelerationTime = 7f;
+        [SerializeField] private float landingDecelerationTime = 9f;
+        [SerializeField] private float routeHeadingTurnSpeed = 240f;
         [SerializeField] private float headingDegrees;
 
         private readonly SimpleRoute route = new SimpleRoute();
@@ -90,6 +91,7 @@ namespace ATCJourneyJapan.Aircraft
             {
                 var previousPosition = transform.position;
                 UpdateActiveSpeedProfile(Time.deltaTime);
+                var routeHeadingHandled = UpdateHeadingTowardRouteWaypoint(Time.deltaTime);
                 route.Tick(transform, Time.deltaTime);
                 if (ShouldLockPushbackHeading())
                 {
@@ -101,7 +103,10 @@ namespace ATCJourneyJapan.Aircraft
                 }
                 else
                 {
-                    UpdateHeadingFromMovement(transform.position - previousPosition);
+                    if (!routeHeadingHandled)
+                    {
+                        UpdateHeadingFromMovement(transform.position - previousPosition);
+                    }
                 }
             }
 
@@ -554,6 +559,24 @@ namespace ATCJourneyJapan.Aircraft
             SetHeadingFromWorldDirection(movement);
         }
 
+        private bool UpdateHeadingTowardRouteWaypoint(float deltaTime)
+        {
+            if (!ShouldFollowRouteHeading() || !route.TryPeekNextWaypoint(out var nextWaypoint))
+            {
+                return false;
+            }
+
+            var direction = nextWaypoint - transform.position;
+            direction.y = 0f;
+            if (direction.sqrMagnitude <= MinHeadingMovementSqrMagnitude)
+            {
+                return false;
+            }
+
+            SetHeadingFromWorldDirection(direction, true, deltaTime);
+            return true;
+        }
+
         private void SetHeadingTowardNextRouteWaypoint()
         {
             if (route.TryPeekNextWaypoint(out var nextWaypoint))
@@ -576,6 +599,13 @@ namespace ATCJourneyJapan.Aircraft
         private bool ShouldLockPushbackHeading()
         {
             return currentState == AircraftState.Pushbacking;
+        }
+
+        private bool ShouldFollowRouteHeading()
+        {
+            return route.IsMoving
+                   && !ShouldLockPushbackHeading()
+                   && !ShouldLockRunwayTakeoffHeading();
         }
 
         private void SetRunwayTakeoffHeading()
@@ -640,6 +670,11 @@ namespace ATCJourneyJapan.Aircraft
 
         private void SetHeadingFromWorldDirection(Vector3 worldDirection)
         {
+            SetHeadingFromWorldDirection(worldDirection, false, 0f);
+        }
+
+        private void SetHeadingFromWorldDirection(Vector3 worldDirection, bool smooth, float deltaTime)
+        {
             worldDirection.y = 0f;
             if (worldDirection.sqrMagnitude <= 0.0001f)
             {
@@ -649,7 +684,10 @@ namespace ATCJourneyJapan.Aircraft
             var normalized = worldDirection.normalized;
             facingDirection = new Vector2(normalized.x, normalized.z);
             headingDegrees = -Mathf.Atan2(facingDirection.x, facingDirection.y) * Mathf.Rad2Deg;
-            transform.rotation = Quaternion.LookRotation(normalized, Vector3.up);
+            var targetRotation = Quaternion.LookRotation(normalized, Vector3.up);
+            transform.rotation = smooth
+                ? Quaternion.RotateTowards(transform.rotation, targetRotation, routeHeadingTurnSpeed * deltaTime)
+                : targetRotation;
             SyncFlightData();
         }
 
