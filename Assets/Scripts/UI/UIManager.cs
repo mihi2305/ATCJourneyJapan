@@ -604,6 +604,11 @@ namespace ATCJourneyJapan.UI
 
         private string GetRunwayEntryPositionDescription(TaxiRouteCandidate candidate)
         {
+            if (!string.IsNullOrEmpty(candidate.RunwayEntryUsageId) && candidate.RunwayEntryUsageId.Contains("_END"))
+            {
+                return GetAccessPhysicalSideDescription(candidate.RunwayEntryUsageId, "端取付誘導路");
+            }
+
             return GetAccessPhysicalSideDescription(candidate.RunwayEntryUsageId, "取付誘導路");
         }
 
@@ -1194,6 +1199,11 @@ namespace ATCJourneyJapan.UI
         private List<StripAction> BuildStripActions(AircraftController selected, AircraftCommand? recommended)
         {
             var actions = new List<StripAction>();
+            if (TryBuildDeparturePrePushbackActions(actions, selected))
+            {
+                return actions;
+            }
+
             AddRouteSelectionStripAction(actions, selected);
             if (!recommended.HasValue
                 || !selected.CanExecute(recommended.Value)
@@ -1223,6 +1233,80 @@ namespace ATCJourneyJapan.UI
             return actions;
         }
 
+        private bool TryBuildDeparturePrePushbackActions(List<StripAction> actions, AircraftController selected)
+        {
+            if (selected == null || selected.FlightData == null || selected.FlightData.OperationType != "Departure" || selected.CurrentState != AircraftState.AtGate)
+            {
+                return false;
+            }
+
+            if (!selected.FlightData.HasActiveRunwayDesignator)
+            {
+                AddDepartureRunwaySelectionActions(actions, selected);
+                return true;
+            }
+
+            var candidates = GetRouteSelectionCandidates(selected, RouteSelectionModeDeparture);
+            if (candidates.Count > 1 && !HasValidSelectedDepartureRoute(selected.FlightData, candidates))
+            {
+                var label = GetRouteSelectionStripLabel(RouteSelectionModeDeparture, selected);
+                actions.Add(new StripAction(label, () => OpenRouteSelectionOverlay(selected, RouteSelectionModeDeparture), true));
+                return true;
+            }
+
+            return false;
+        }
+
+        private void AddDepartureRunwaySelectionActions(List<StripAction> actions, AircraftController selected)
+        {
+            if (gameManager == null || gameManager.Airport == null)
+            {
+                return;
+            }
+
+            foreach (var runwayDesignator in gameManager.Airport.GetPrimaryRunwayDirectionOptions())
+            {
+                var capturedRunwayDesignator = runwayDesignator;
+                actions.Add(new StripAction(
+                    $"滑走路を選択 RWY {capturedRunwayDesignator}\nSelect RWY {capturedRunwayDesignator}",
+                    () => SelectDepartureRunway(selected, capturedRunwayDesignator),
+                    true));
+            }
+        }
+
+        private void SelectDepartureRunway(AircraftController selected, string runwayDesignator)
+        {
+            if (selected == null || selected.FlightData == null || gameManager == null || gameManager.Airport == null)
+            {
+                return;
+            }
+
+            selected.BindRunwayDirection(gameManager.Airport.PrimaryRunwayData, runwayDesignator);
+            selected.SetSelectedTaxiRoute("Departure", string.Empty);
+            Debug.Log(
+                $"Departure runway selected: {selected.FlightNumber} "
+                + $"selectedRunwayDesignator={runwayDesignator} selectedDepartureRouteId=none spot={selected.FlightData.SpotId}");
+            Refresh();
+        }
+
+        private bool HasValidSelectedDepartureRoute(AircraftData data, IReadOnlyList<TaxiRouteCandidate> candidates)
+        {
+            if (data == null || string.IsNullOrEmpty(data.SelectedDepartureRouteId))
+            {
+                return false;
+            }
+
+            foreach (var candidate in candidates)
+            {
+                if (candidate.RouteId == data.SelectedDepartureRouteId)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private void AddRouteSelectionStripAction(List<StripAction> actions, AircraftController selected)
         {
             var mode = GetRouteSelectionModeForStrip(selected);
@@ -1233,6 +1317,11 @@ namespace ATCJourneyJapan.UI
 
             var candidates = GetRouteSelectionCandidates(selected, mode);
             if (candidates.Count <= 1)
+            {
+                return;
+            }
+
+            if (mode == RouteSelectionModeDeparture && HasValidSelectedDepartureRoute(selected.FlightData, candidates))
             {
                 return;
             }
