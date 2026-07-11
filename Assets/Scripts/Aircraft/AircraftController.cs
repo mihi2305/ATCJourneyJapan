@@ -292,6 +292,7 @@ namespace ATCJourneyJapan.Aircraft
 
         private void Pushback()
         {
+            ConfirmDepartureRouteForPushback();
             SetState(AircraftState.Pushbacking, false);
             SetDepartureParkingHeading();
             StartRouteWithHeading(airportManager.GetPushbackRoute(transform.position), pushbackSpeed, () =>
@@ -305,7 +306,7 @@ namespace ATCJourneyJapan.Aircraft
             var operationDirection = GetOperationRunwayDirection();
             var spotId = flightData != null ? flightData.SpotId : string.Empty;
             var routeCandidates = airportManager.GetDepartureTaxiRouteCandidates(spotId, operationDirection);
-            var routeCandidate = SelectRouteCandidate(routeCandidates, selectedDepartureRouteId);
+            var routeCandidate = SelectDepartureRouteCandidate(routeCandidates, selectedDepartureRouteId, out var fallbackUsed);
             var routePoints = routeCandidate != null
                 ? routeCandidate.Waypoints
                 : airportManager.GetTaxiToHoldRoute(transform.position, operationDirection);
@@ -313,7 +314,7 @@ namespace ATCJourneyJapan.Aircraft
             activeDepartureRouteId = routeCandidate != null ? routeCandidate.RouteId : string.Empty;
             activeRunwayEntryUsageId = routeCandidate != null ? routeCandidate.RunwayEntryUsageId : string.Empty;
             SyncSelectedRouteIds();
-            LogSelectedTaxiRoute(routeCandidate, spotId, operationDirection);
+            LogSelectedTaxiRoute(routeCandidate, spotId, operationDirection, fallbackUsed);
 
             SetState(AircraftState.TaxiToHold);
             StartRouteWithHeading(routePoints, taxiSpeed, () =>
@@ -322,20 +323,47 @@ namespace ATCJourneyJapan.Aircraft
             });
         }
 
-        private void LogSelectedTaxiRoute(TaxiRouteCandidate routeCandidate, string spotId, string runwayDesignator)
+        private void ConfirmDepartureRouteForPushback()
+        {
+            if (flightData == null || airportManager == null)
+            {
+                return;
+            }
+
+            var operationDirection = GetOperationRunwayDirection();
+            var spotId = flightData.SpotId;
+            var routeCandidates = airportManager.GetDepartureTaxiRouteCandidates(spotId, operationDirection);
+            var routeCandidate = SelectDepartureRouteCandidate(routeCandidates, selectedDepartureRouteId, out var fallbackUsed);
+            selectedDepartureRouteId = routeCandidate != null ? routeCandidate.RouteId : string.Empty;
+            activeDepartureRouteId = routeCandidate != null ? routeCandidate.RouteId : string.Empty;
+            activeRunwayEntryUsageId = routeCandidate != null ? routeCandidate.RunwayEntryUsageId : string.Empty;
+            SyncSelectedRouteIds();
+            LogConfirmedDepartureRoute(routeCandidate, spotId, operationDirection, fallbackUsed);
+        }
+
+        private void LogConfirmedDepartureRoute(TaxiRouteCandidate routeCandidate, string spotId, string runwayDesignator, bool fallbackUsed)
+        {
+            Debug.Log(
+                $"Departure route confirmed: {flightNumber} purpose=DepartureRoute "
+                + $"selectedDepartureRouteId={(routeCandidate != null ? routeCandidate.RouteId : "none")} "
+                + $"runwayEntryUsageId={(routeCandidate != null ? FormatUsageId(routeCandidate.RunwayEntryUsageId) : "none")} "
+                + $"runway={runwayDesignator} spot={spotId} fallbackUsed={fallbackUsed}");
+        }
+
+        private void LogSelectedTaxiRoute(TaxiRouteCandidate routeCandidate, string spotId, string runwayDesignator, bool fallbackUsed)
         {
             if (routeCandidate == null)
             {
                 Debug.LogWarning(
                     $"Selected taxi route fallback: {flightNumber} purpose=Departure {spotId} RWY {runwayDesignator} "
-                    + "routeId=fallback displayName=Direct Waypoint | routeInstructionText=none | segments: none "
+                    + $"routeId=fallback selectedDepartureRouteId=none fallbackUsed={fallbackUsed} displayName=Direct Waypoint | routeInstructionText=none | segments: none "
                     + "runwayEntryUsageId=none runwayExitUsageId=none");
                 return;
             }
 
             Debug.Log(
                 $"Selected taxi route: {flightNumber} purpose=Departure {spotId} RWY {runwayDesignator} "
-                + $"{routeCandidate.RouteId} {routeCandidate.DisplayName} | "
+                + $"selectedDepartureRouteId={selectedDepartureRouteId} routeId={routeCandidate.RouteId} fallbackUsed={fallbackUsed} {routeCandidate.DisplayName} | "
                 + $"{routeCandidate.RouteInstructionText} | segments: {JoinSegmentIds(routeCandidate.SegmentIds)} "
                 + $"runwayEntryUsageId={FormatUsageId(routeCandidate.RunwayEntryUsageId)} runwayExitUsageId={FormatUsageId(routeCandidate.RunwayExitUsageId)}");
         }
@@ -464,6 +492,27 @@ namespace ATCJourneyJapan.Aircraft
             }
 
             return SelectDefaultTaxiRouteCandidate(routeCandidates);
+        }
+
+        private TaxiRouteCandidate SelectDepartureRouteCandidate(IReadOnlyList<TaxiRouteCandidate> routeCandidates, string selectedRouteId, out bool fallbackUsed)
+        {
+            fallbackUsed = false;
+            if (!string.IsNullOrEmpty(selectedRouteId))
+            {
+                foreach (var routeCandidate in routeCandidates)
+                {
+                    if (routeCandidate.RouteId == selectedRouteId)
+                    {
+                        return routeCandidate;
+                    }
+                }
+
+                fallbackUsed = true;
+            }
+
+            var defaultCandidate = SelectDefaultTaxiRouteCandidate(routeCandidates);
+            fallbackUsed = fallbackUsed || string.IsNullOrEmpty(selectedRouteId);
+            return defaultCandidate;
         }
 
         private TaxiRouteCandidate SelectDefaultTaxiRouteCandidate(IReadOnlyList<TaxiRouteCandidate> routeCandidates)

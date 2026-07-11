@@ -2,11 +2,20 @@
 
 ## Current Phase
 
-Phase 3.9-5Q-2 Move route selection to strips
+Phase 3.9-5R-1 Apply selected departure route
 
 ## Previous Phase
 
-Phase 3.9-5Q Add route selection map
+Phase 3.9-5Q-2 Move route selection to strips
+
+## Phase 3.9-5R-1で修正したこと
+
+- 出発機の `selectedDepartureRouteId` をPushback開始時に確定し、未選択または無効な場合は `spotId + runwayDesignator` のdefault departure routeへfallbackするようにした
+- Taxi to runway開始時に、選択済み `selectedDepartureRouteId` を優先して `TaxiRouteCandidate` を解決し、waypoints / segmentIds / runwayEntryUsageIdを使うようにした
+- 確定した `runwayEntryUsageId` を `activeRunwayEntryUsageId` として保持し、既存のLine Up / Takeoff routeへ引き継ぐ構造を明示した
+- Route確定時とTaxi適用時に、callsign / selectedDepartureRouteId / runwayEntryUsageId / runway / spot / fallbackUsedを `Debug.Log` で確認できるようにした
+- Route未選択時も従来通りdefault route fallbackで動く
+- 到着機の高速脱出 / 通常離脱UI、到着機movement同期、Spot Taxi route選択UI、UI視認性改善は次Phase以降に回す
 
 ## Phase 3.9-5Q-2で修正したこと
 
