@@ -18,6 +18,9 @@ namespace ATCJourneyJapan.UI
         private const float MiniMapWorldMaxZ = 24f;
         private const float MiniMapWidth = 376f;
         private const float MiniMapHeight = 206f;
+        private const string RouteSelectionModeDeparture = "DepartureRoute";
+        private const string RouteSelectionModeArrivalExit = "ArrivalExit";
+        private const string RouteSelectionModeArrivalSpotTaxi = "ArrivalSpotTaxi";
 
         private static readonly Dictionary<string, string> JapaneseCityNames = new Dictionary<string, string>
         {
@@ -91,17 +94,17 @@ namespace ATCJourneyJapan.UI
         private Text routeSelectionHintText;
         private Text helpText;
         private Text commandStatusText;
-        private Text routeSelectionButtonText;
         private Text stripCommandButtonText;
         private Text tutorialText;
         private Text warningText;
         private Text resultText;
         private Button commandButton;
-        private Button routeSelectionButton;
         private Button stripCommandButton;
         private Text commandButtonText;
         private Button tutorialNextButton;
         private string routeSelectionPurpose = string.Empty;
+        private string routeSelectionMode = string.Empty;
+        private AircraftController routeSelectionAircraft;
         private TutorialStep[] tutorialSteps;
         private int tutorialStepIndex = -1;
         private bool tutorialActive;
@@ -269,11 +272,8 @@ namespace ATCJourneyJapan.UI
             guidePanel = guideText.transform.parent.gameObject;
             guidePanel.GetComponent<Image>().color = new Color(0.02f, 0.03f, 0.04f, 0.7f);
 
-            selectedPanel = CreatePanel("Selected Aircraft", hudRoot.transform, new Vector2(0f, 0f), new Vector2(360f, 306f), AnchorPreset.BottomRight, new Vector2(-24f, 34f));
-            selectedText = CreateText("Selected Text", selectedPanel.transform, string.Empty, 16, FontStyle.Normal, TextAnchor.UpperLeft, new Vector2(0f, 26f), new Vector2(316f, 222f));
-            routeSelectionButton = CreateButton("Route Selection Button", selectedPanel.transform, "Route選択", new Vector2(0f, -124f), new Vector2(168f, 42f), 17);
-            routeSelectionButtonText = routeSelectionButton.GetComponentInChildren<Text>();
-            routeSelectionButton.onClick.AddListener(OpenRouteSelectionOverlay);
+            selectedPanel = CreatePanel("Selected Aircraft", hudRoot.transform, new Vector2(0f, 0f), new Vector2(360f, 256f), AnchorPreset.BottomRight, new Vector2(-24f, 34f));
+            selectedText = CreateText("Selected Text", selectedPanel.transform, string.Empty, 16, FontStyle.Normal, TextAnchor.UpperLeft, Vector2.zero, new Vector2(316f, 222f));
 
             commandPanel = CreatePanel("Command Panel", hudRoot.transform, new Vector2(0f, 0f), new Vector2(300f, 410f), AnchorPreset.MiddleRight, new Vector2(-12f, 0f));
             CreateText("Command Title", commandPanel.transform, "指示", 22, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(0f, 154f), new Vector2(250f, 34f));
@@ -331,12 +331,10 @@ namespace ATCJourneyJapan.UI
             {
                 selectedText.text = GetSelectedAircraftText(selected, recommended);
                 helpText.text = recommended.HasValue ? GetCommandDescription(recommended.Value) : commandHelpMessage;
-                UpdateRouteSelectionButton(selected);
             }
             else
             {
                 helpText.text = "航空機を選択すると、使える指示が表示されます。";
-                routeSelectionButton.gameObject.SetActive(false);
                 CloseRouteSelectionOverlay();
             }
 
@@ -348,35 +346,42 @@ namespace ATCJourneyJapan.UI
             warningText.text = warningMessage;
         }
 
-        private void UpdateRouteSelectionButton(AircraftController selected)
+        private void CloseRouteSelectionOverlay()
         {
-            var candidates = GetRouteSelectionCandidates(selected);
-            var canOpenRouteSelection = candidates.Count > 0;
-            routeSelectionButton.gameObject.SetActive(canOpenRouteSelection);
-            routeSelectionButton.interactable = canOpenRouteSelection;
-            routeSelectionButtonText.text = candidates.Count > 1 ? $"Route選択 ({candidates.Count})" : "Route確認";
+            if (routeSelectionOverlay != null)
+            {
+                routeSelectionOverlay.SetActive(false);
+            }
+
+            routeSelectionAircraft = null;
         }
 
-        private void OpenRouteSelectionOverlay()
+        private void OpenRouteSelectionOverlay(AircraftController aircraft, string mode)
         {
-            var selected = GetSelectedAircraft();
-            if (selected == null || selected.FlightData == null)
+            if (aircraft == null || aircraft.FlightData == null)
             {
                 return;
             }
 
             activeRouteSelectionCandidates.Clear();
-            activeRouteSelectionCandidates.AddRange(GetRouteSelectionCandidates(selected));
-            if (activeRouteSelectionCandidates.Count == 0)
+            var candidates = GetRouteSelectionCandidates(aircraft, mode);
+            for (var index = 0; index < candidates.Count && index < routeSelectionOptionButtons.Count; index++)
+            {
+                activeRouteSelectionCandidates.Add(candidates[index]);
+            }
+
+            if (activeRouteSelectionCandidates.Count <= 1)
             {
                 return;
             }
 
-            routeSelectionPurpose = GetRouteSelectionPurpose(selected);
-            var data = selected.FlightData;
+            routeSelectionAircraft = aircraft;
+            routeSelectionMode = mode;
+            routeSelectionPurpose = GetRouteSelectionPurpose(aircraft);
+            var data = aircraft.FlightData;
             var runwayDesignator = GetRouteSelectionRunwayDesignator(data);
-            routeSelectionTitleText.text = $"Route Selection\n{data.FlightId} / {GetOperationLabel(data.OperationType)} / RWY {runwayDesignator}";
-            routeSelectionHintText.text = "取付誘導路候補を選択します。画面上はRoute A/B/Cで表示し、内部ではTaxiRouteCandidateのrouteIdを保存します。";
+            routeSelectionTitleText.text = $"{GetRouteSelectionOverlayTitle(mode)}\n{data.FlightId} / {GetOperationLabel(data.OperationType)} / RWY {runwayDesignator}";
+            routeSelectionHintText.text = GetRouteSelectionHint(mode);
 
             var selectedRouteId = GetSelectedRouteId(data, routeSelectionPurpose);
             for (var index = 0; index < routeSelectionOptionButtons.Count; index++)
@@ -389,41 +394,32 @@ namespace ATCJourneyJapan.UI
                 }
 
                 var candidate = activeRouteSelectionCandidates[index];
-                routeSelectionOptionTexts[index].text = GetPlayerRouteOptionText(candidate, index);
+                routeSelectionOptionTexts[index].text = GetPlayerRouteOptionText(candidate, index, mode);
                 ApplyRouteSelectionOptionStyle(routeSelectionOptionButtons[index], IsRouteSelectionCandidateSelected(candidate, selectedRouteId));
             }
 
             routeSelectionOverlay.SetActive(true);
         }
 
-        private void CloseRouteSelectionOverlay()
-        {
-            if (routeSelectionOverlay != null)
-            {
-                routeSelectionOverlay.SetActive(false);
-            }
-        }
-
         private void SelectRouteSelectionCandidate(int index)
         {
-            var selected = GetSelectedAircraft();
-            if (selected == null || selected.FlightData == null || index < 0 || index >= activeRouteSelectionCandidates.Count)
+            if (routeSelectionAircraft == null || routeSelectionAircraft.FlightData == null || index < 0 || index >= activeRouteSelectionCandidates.Count)
             {
                 return;
             }
 
             var candidate = activeRouteSelectionCandidates[index];
-            selected.SetSelectedTaxiRoute(routeSelectionPurpose, candidate.RouteId);
+            routeSelectionAircraft.SetSelectedTaxiRoute(routeSelectionPurpose, candidate.RouteId);
             Debug.Log(
-                $"Route selection overlay selected: {selected.FlightNumber} {routeSelectionPurpose} "
-                + $"RWY {candidate.RunwayDesignator} {candidate.SpotId} {GetPlayerRouteName(index)} "
+                $"Route selection overlay selected: {routeSelectionAircraft.FlightNumber} {routeSelectionMode} {routeSelectionPurpose} "
+                + $"RWY {candidate.RunwayDesignator} {candidate.SpotId} {GetPlayerRouteName(candidate, index, routeSelectionMode)} "
                 + $"routeId={candidate.RouteId} entryUsage={candidate.RunwayEntryUsageId} "
                 + $"exitUsage={candidate.RunwayExitUsageId} segments={FormatRouteSegmentIds(candidate)}");
             CloseRouteSelectionOverlay();
             Refresh();
         }
 
-        private List<TaxiRouteCandidate> GetRouteSelectionCandidates(AircraftController selected)
+        private List<TaxiRouteCandidate> GetRouteSelectionCandidates(AircraftController selected, string mode)
         {
             var candidates = new List<TaxiRouteCandidate>();
             if (selected == null || selected.FlightData == null || gameManager == null || gameManager.Airport == null)
@@ -439,9 +435,11 @@ namespace ATCJourneyJapan.UI
 
             foreach (var candidate in sourceCandidates)
             {
-                var hasRelevantUsage = data.OperationType == "Arrival"
-                    ? !string.IsNullOrEmpty(candidate.RunwayExitUsageId)
-                    : !string.IsNullOrEmpty(candidate.RunwayEntryUsageId);
+                var hasRelevantUsage = mode == RouteSelectionModeDeparture
+                    ? !string.IsNullOrEmpty(candidate.RunwayEntryUsageId)
+                    : mode == RouteSelectionModeArrivalExit
+                        ? !string.IsNullOrEmpty(candidate.RunwayExitUsageId)
+                        : candidate.SegmentIds.Count > 0;
                 if (hasRelevantUsage)
                 {
                     candidates.Add(candidate);
@@ -459,6 +457,26 @@ namespace ATCJourneyJapan.UI
             }
 
             return candidates;
+        }
+
+        private string GetRouteSelectionModeForStrip(AircraftController selected)
+        {
+            if (selected == null || selected.FlightData == null)
+            {
+                return string.Empty;
+            }
+
+            if (selected.FlightData.OperationType == "Departure")
+            {
+                return selected.CurrentState == AircraftState.AtGate ? RouteSelectionModeDeparture : string.Empty;
+            }
+
+            if (selected.CurrentState == AircraftState.LandingRoll)
+            {
+                return RouteSelectionModeArrivalExit;
+            }
+
+            return selected.CurrentState == AircraftState.Waiting ? RouteSelectionModeArrivalSpotTaxi : string.Empty;
         }
 
         private string GetRouteSelectionRunwayDesignator(AircraftData data)
@@ -491,10 +509,11 @@ namespace ATCJourneyJapan.UI
             return purpose == "Arrival" ? data.SelectedArrivalRouteId : data.SelectedDepartureRouteId;
         }
 
-        private string GetPlayerRouteOptionText(TaxiRouteCandidate candidate, int index)
+        private string GetPlayerRouteOptionText(TaxiRouteCandidate candidate, int index, string mode)
         {
-            var selectedMark = candidate.IsDefault ? "標準ルート" : GetRouteSelectionDescription(candidate);
-            return $"<size=22>{GetPlayerRouteName(index)}</size>\n<size=15>{selectedMark}</size>";
+            var optionName = GetPlayerRouteName(candidate, index, mode);
+            var description = GetRouteSelectionDescription(candidate, mode);
+            return $"<size=22>{optionName}</size>\n<size=15>{description}</size>";
         }
 
         private bool IsRouteSelectionCandidateSelected(TaxiRouteCandidate candidate, string selectedRouteId)
@@ -513,24 +532,126 @@ namespace ATCJourneyJapan.UI
             return values.Count > 0 ? string.Join(", ", values.ToArray()) : "none";
         }
 
-        private string GetPlayerRouteName(int index)
+        private string GetPlayerRouteName(TaxiRouteCandidate candidate, int index, string mode)
         {
+            if (mode == RouteSelectionModeArrivalExit)
+            {
+                return IsRapidExitCandidate(candidate) ? "高速脱出" : "通常離脱";
+            }
+
             return $"Route {(char)('A' + index)}";
         }
 
-        private string GetRouteSelectionDescription(TaxiRouteCandidate candidate)
+        private string GetRouteSelectionDescription(TaxiRouteCandidate candidate, string mode)
         {
-            if (!string.IsNullOrEmpty(candidate.RunwayEntryUsageId) && candidate.RunwayEntryUsageId.Contains("_END"))
+            if (mode == RouteSelectionModeArrivalExit)
             {
-                return "滑走路端の取付誘導路を使うルート";
+                return GetRunwayExitPositionDescription(candidate);
             }
 
-            if (!string.IsNullOrEmpty(candidate.RunwayExitUsageId) && candidate.RunwayExitUsageId.Contains("_END"))
+            if (mode == RouteSelectionModeDeparture)
             {
-                return "奥側の離脱誘導路を使うルート";
+                return GetRunwayEntryPositionDescription(candidate);
             }
 
-            return "別の取付誘導路候補";
+            return GetSpotTaxiRoutePositionDescription(candidate);
+        }
+
+        private string GetRouteSelectionOverlayTitle(string mode)
+        {
+            switch (mode)
+            {
+                case RouteSelectionModeDeparture:
+                    return "Runway Entry Route";
+                case RouteSelectionModeArrivalExit:
+                    return "Runway Exit Selection";
+                case RouteSelectionModeArrivalSpotTaxi:
+                    return "Spot Taxi Route";
+                default:
+                    return "Route Selection";
+            }
+        }
+
+        private string GetRouteSelectionHint(string mode)
+        {
+            switch (mode)
+            {
+                case RouteSelectionModeDeparture:
+                    return "出発前に滑走路へ入る取付誘導路を選択します。Route A/B/Cは表示名で、内部ではrouteIdを保存します。";
+                case RouteSelectionModeArrivalExit:
+                    return "着陸滑走中の離脱方式を選択します。表示文言ではなく、内部ではrunwayExitUsageIdを持つrouteIdを保存します。";
+                case RouteSelectionModeArrivalSpotTaxi:
+                    return "滑走路離脱後のスポットまでの候補を選択します。候補が一意の場合、この選択UIは表示しません。";
+                default:
+                    return string.Empty;
+            }
+        }
+
+        private string GetRouteSelectionStripLabel(string mode, AircraftController selected)
+        {
+            switch (mode)
+            {
+                case RouteSelectionModeDeparture:
+                    return "取付誘導路を選択\nSelect Route";
+                case RouteSelectionModeArrivalExit:
+                    return "離脱方式を選択\nSelect Exit";
+                case RouteSelectionModeArrivalSpotTaxi:
+                    return $"{selected.FlightData.SpotDisplayName}へ経路選択\nSelect Route";
+                default:
+                    return "Route選択\nSelect Route";
+            }
+        }
+
+        private string GetRunwayEntryPositionDescription(TaxiRouteCandidate candidate)
+        {
+            return GetAccessPhysicalSideDescription(candidate.RunwayEntryUsageId, "取付誘導路");
+        }
+
+        private string GetRunwayExitPositionDescription(TaxiRouteCandidate candidate)
+        {
+            return GetAccessPhysicalSideDescription(candidate.RunwayExitUsageId, "離脱誘導路");
+        }
+
+        private string GetSpotTaxiRoutePositionDescription(TaxiRouteCandidate candidate)
+        {
+            var usageId = !string.IsNullOrEmpty(candidate.RunwayExitUsageId) ? candidate.RunwayExitUsageId : candidate.RunwayEntryUsageId;
+            return GetAccessPhysicalSideDescription(usageId, "ルート");
+        }
+
+        private string GetAccessPhysicalSideDescription(string usageId, string suffix)
+        {
+            var usage = gameManager != null && gameManager.Airport != null ? gameManager.Airport.GetRunwayAccessUsage(usageId) : null;
+            var accessPoint = usage != null ? gameManager.Airport.GetRunwayAccessPoint(usage.AccessPointId) : null;
+            if (accessPoint == null)
+            {
+                return $"別の{suffix}";
+            }
+
+            switch (accessPoint.PhysicalSide)
+            {
+                case RunwayAccessPhysicalSide.Near18L:
+                    return $"18L側{suffix}";
+                case RunwayAccessPhysicalSide.MidRunway:
+                    return $"中央{suffix}";
+                case RunwayAccessPhysicalSide.Near36R:
+                    return $"36R側{suffix}";
+                default:
+                    return $"別の{suffix}";
+            }
+        }
+
+        private bool IsRapidExitCandidate(TaxiRouteCandidate candidate)
+        {
+            var usage = gameManager != null && gameManager.Airport != null ? gameManager.Airport.GetRunwayAccessUsage(candidate.RunwayExitUsageId) : null;
+            if (usage == null)
+            {
+                return false;
+            }
+
+            return usage.AccessType == RunwayAccessType.RapidExit
+                || usage.MaxExitSpeedLevel == RunwayExitSpeedLevel.Medium
+                || usage.MaxExitSpeedLevel == RunwayExitSpeedLevel.High
+                || usage.UsageId.Contains("_MID");
         }
 
         private void ApplyRouteSelectionOptionStyle(Button button, bool selected)
@@ -1038,12 +1159,10 @@ namespace ATCJourneyJapan.UI
                 return;
             }
 
-            var canShow = hasSelectedStrip
-                && selected != null
-                && recommended.HasValue
-                && selected.CanExecute(recommended.Value)
-                && (CanAcceptCommand(selected, recommended.Value)
-                    || !gameManager.CanExecuteRunwaySafetyCommand(selected, recommended.Value));
+            var actions = hasSelectedStrip && selected != null
+                ? BuildStripActions(selected, recommended)
+                : new List<StripAction>();
+            var canShow = actions.Count > 0;
 
             stripCommandPopup.SetActive(canShow);
             if (!canShow)
@@ -1052,12 +1171,10 @@ namespace ATCJourneyJapan.UI
                 return;
             }
 
-            var runwayOptions = GetCommandRunwayOptions(recommended.Value, selected);
-            var optionCount = runwayOptions.Count > 0 ? runwayOptions.Count : 1;
             var popupTransform = stripCommandPopup.GetComponent<RectTransform>();
-            popupTransform.sizeDelta = GetStripCommandPopupSize(optionCount);
+            popupTransform.sizeDelta = GetStripCommandPopupSize(actions.Count);
             popupTransform.anchoredPosition = new Vector2(selectedStripPosition.x + 306f, selectedStripPosition.y);
-            ConfigureStripCommandOptions(recommended.Value, runwayOptions, gameManager.CanExecuteRunwaySafetyCommand(selected, recommended.Value));
+            ConfigureStripActions(actions);
         }
 
         private void CreateStripCommandOptionButton(int index)
@@ -1074,25 +1191,73 @@ namespace ATCJourneyJapan.UI
             }
         }
 
-        private void ConfigureStripCommandOptions(AircraftCommand command, IReadOnlyList<string> runwayOptions, bool safe)
+        private List<StripAction> BuildStripActions(AircraftController selected, AircraftCommand? recommended)
         {
-            var optionCount = runwayOptions.Count > 0 ? runwayOptions.Count : 1;
+            var actions = new List<StripAction>();
+            AddRouteSelectionStripAction(actions, selected);
+            if (!recommended.HasValue
+                || !selected.CanExecute(recommended.Value)
+                || (!CanAcceptCommand(selected, recommended.Value)
+                    && gameManager.CanExecuteRunwaySafetyCommand(selected, recommended.Value)))
+            {
+                return actions;
+            }
+
+            var runwayOptions = GetCommandRunwayOptions(recommended.Value, selected);
+            var safe = gameManager.CanExecuteRunwaySafetyCommand(selected, recommended.Value);
+            if (runwayOptions.Count == 0)
+            {
+                actions.Add(new StripAction(GetCommandLabel(recommended.Value), () => ExecuteStripCommand(recommended.Value, string.Empty), safe));
+                return actions;
+            }
+
+            foreach (var runwayDesignator in runwayOptions)
+            {
+                var capturedRunwayDesignator = runwayDesignator;
+                actions.Add(new StripAction(
+                    GetRunwaySpecificCommandLabel(recommended.Value, capturedRunwayDesignator),
+                    () => ExecuteStripCommand(recommended.Value, capturedRunwayDesignator),
+                    safe));
+            }
+
+            return actions;
+        }
+
+        private void AddRouteSelectionStripAction(List<StripAction> actions, AircraftController selected)
+        {
+            var mode = GetRouteSelectionModeForStrip(selected);
+            if (string.IsNullOrEmpty(mode))
+            {
+                return;
+            }
+
+            var candidates = GetRouteSelectionCandidates(selected, mode);
+            if (candidates.Count <= 1)
+            {
+                return;
+            }
+
+            var label = GetRouteSelectionStripLabel(mode, selected);
+            actions.Add(new StripAction(label, () => OpenRouteSelectionOverlay(selected, mode), true));
+        }
+
+        private void ConfigureStripActions(IReadOnlyList<StripAction> actions)
+        {
+            var optionCount = actions.Count;
             EnsureStripCommandOptionButtonCount(optionCount);
             SetStripCommandOptionButtonsActive(optionCount);
 
             for (var index = 0; index < optionCount; index++)
             {
-                var runwayDesignator = runwayOptions.Count > 0 ? runwayOptions[index] : string.Empty;
                 var button = stripCommandOptionButtons[index];
                 var label = stripCommandOptionTexts[index];
                 var rectTransform = button.GetComponent<RectTransform>();
                 rectTransform.anchoredPosition = GetStripCommandOptionPosition(index, optionCount);
-                label.text = string.IsNullOrEmpty(runwayDesignator)
-                    ? GetCommandLabel(command)
-                    : GetRunwaySpecificCommandLabel(command, runwayDesignator);
+                label.text = actions[index].Label;
                 button.onClick.RemoveAllListeners();
-                button.onClick.AddListener(() => ExecuteStripCommand(command, runwayDesignator));
-                ApplyStripCommandButtonSafetyStyle(button, safe);
+                var actionIndex = index;
+                button.onClick.AddListener(() => actions[actionIndex].Execute());
+                ApplyStripCommandButtonSafetyStyle(button, actions[index].Safe);
             }
         }
 
@@ -1215,9 +1380,40 @@ namespace ATCJourneyJapan.UI
                 + $"{timeLine}\n"
                 + $"RWY：{(data.HasActiveRunwayDesignator ? data.ActiveRunwayDesignator : "-")}\n"
                 + $"SPOT：{GetSpotNumber(data.SpotDisplayName)}\n"
+                + $"{GetSelectedRouteStatusLine(selected)}\n"
                 + $"状態：{data.CurrentState}\n"
                 + $"担当：{data.ControllerPosition}\n"
                 + $"次の指示：{recommendedLabel}";
+        }
+
+        private string GetSelectedRouteStatusLine(AircraftController selected)
+        {
+            var data = selected.FlightData;
+            var purpose = GetRouteSelectionPurpose(selected);
+            var selectedRouteId = GetSelectedRouteId(data, purpose);
+            if (string.IsNullOrEmpty(selectedRouteId))
+            {
+                return "Route：未選択";
+            }
+
+            var mode = data.OperationType == "Arrival" && selected.CurrentState == AircraftState.LandingRoll
+                ? RouteSelectionModeArrivalExit
+                : data.OperationType == "Arrival"
+                    ? RouteSelectionModeArrivalSpotTaxi
+                    : RouteSelectionModeDeparture;
+            var candidates = GetRouteSelectionCandidates(selected, mode);
+            for (var index = 0; index < candidates.Count; index++)
+            {
+                if (candidates[index].RouteId != selectedRouteId)
+                {
+                    continue;
+                }
+
+                var label = GetPlayerRouteName(candidates[index], index, mode);
+                return mode == RouteSelectionModeArrivalExit ? $"離脱方式：{label}" : $"選択Route：{label}";
+            }
+
+            return "Route：選択済み";
         }
 
         private string GetSelectedCityRouteLine(AircraftData data)
@@ -2060,6 +2256,20 @@ namespace ATCJourneyJapan.UI
             BottomLeft,
             BottomCenter,
             BottomRight
+        }
+
+        private class StripAction
+        {
+            public StripAction(string label, UnityEngine.Events.UnityAction execute, bool safe)
+            {
+                Label = label;
+                Execute = execute;
+                Safe = safe;
+            }
+
+            public string Label { get; private set; }
+            public UnityEngine.Events.UnityAction Execute { get; private set; }
+            public bool Safe { get; private set; }
         }
 
         private enum TutorialWaitMode

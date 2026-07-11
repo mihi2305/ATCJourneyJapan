@@ -2,11 +2,22 @@
 
 ## Current Phase
 
-Phase 3.9-5Q Add route selection map
+Phase 3.9-5Q-2 Move route selection to strips
 
 ## Previous Phase
 
-Phase 3.9-5P Show Japanese city labels
+Phase 3.9-5Q Add route selection map
+
+## Phase 3.9-5Q-2で修正したこと
+
+- Route / Exit選択の開始位置を、右下航空機情報パネルからSTRIPS側の管制指示ポップアップへ移した
+- 右下航空機情報パネルは状態確認用に戻し、選択済みRoute / 離脱方式の表示だけを残した
+- 出発機はPushback前の `AtGate` 状態で、取付誘導路候補が複数ある場合だけ `取付誘導路を選択` を出す方針にした
+- 出発機Route overlayは `Route A` / `Route B` / `Route C` 表示のまま、説明を `18L側取付誘導路` / `中央取付誘導路` / `36R側取付誘導路` のような物理位置ベースにした
+- 到着機はLanding Rollout中に、候補が複数ある場合だけ `離脱方式を選択` を出し、表示は `高速脱出` / `通常離脱` とした
+- 到着後Spot Taxi routeは、滑走路離脱後の `Waiting` 状態で候補が複数ある場合だけRoute A/B/C選択を出す
+- 候補が一意の場合はRoute selection overlayを出さず、通常の管制指示だけを表示する
+- Route A/B/Cや `高速脱出` / `通常離脱` は表示名であり、内部は `TaxiRouteCandidate.routeId` / `runwayEntryUsageId` / `runwayExitUsageId` で管理する
 
 ## Phase 3.9-5Qで修正したこと
 
