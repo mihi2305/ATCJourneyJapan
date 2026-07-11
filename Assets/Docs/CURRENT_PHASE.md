@@ -2,13 +2,22 @@
 
 ## Current Phase
 
-Phase 3.9-5P Prepare route candidate switching
+Phase 3.9-5P Show Japanese city labels
 
 ## Previous Phase
 
-Phase 3.9-5O-4 Update minimap taxiway layout
+Phase 3.9-5P Prepare route candidate switching
 
-## Phase 3.9-5Pで修正したこと
+## Phase 3.9-5Pで修正したこと（Japanese city labels）
+
+- 選択中航空機情報パネルに、日本語都市名の表示を追加した
+- 出発機は `東京行き` のように目的地、到着機は `宮崎発` / `福岡発` のように出発地を表示する
+- 那覇ステージ前提のため、那覇は毎回 `那覇発` / `那覇行き` として表示しない
+- 日本語都市名はUI表示用helperで変換し、routeId / segmentId / runway / spotなどのロジック判定には使わない
+- Flight Stripには狭い範囲で `東京行き  RWY 18L` のような短い表示を追加した
+- Route選択UI、本格ATCメニュー、B滑走路運用は次Phase以降に回す
+
+## Phase 3.9-5Pで修正したこと（route switching foundation）
 
 - Departure / Arrival taxi route candidateを、`spotId + runwayDesignator` の候補一覧からrouteId指定で選べる内部構造にした
 - `selectedDepartureRouteId` / `selectedArrivalRouteId` を保持し、routeIdが一致すればそのcandidate、なければdefault candidateへfallbackするようにした

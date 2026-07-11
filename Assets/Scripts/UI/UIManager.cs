@@ -19,6 +19,17 @@ namespace ATCJourneyJapan.UI
         private const float MiniMapWidth = 376f;
         private const float MiniMapHeight = 206f;
 
+        private static readonly Dictionary<string, string> JapaneseCityNames = new Dictionary<string, string>
+        {
+            { "tokyo", "東京" },
+            { "osaka", "大阪" },
+            { "fukuoka", "福岡" },
+            { "sapporo", "札幌" },
+            { "nagoya", "名古屋" },
+            { "naha", "那覇" },
+            { "miyazaki", "宮崎" }
+        };
+
         private readonly AircraftCommand[] commandOrder =
         {
             AircraftCommand.ClearLanding,
@@ -738,8 +749,9 @@ namespace ATCJourneyJapan.UI
         {
             var data = aircraft.FlightData;
             var target = GetStripTargetLabel(data);
+            var cityRoute = GetCompactCityRouteLabel(data);
 
-            return $"<size=23>{data.FlightId}</size>\n<size=16>{target}</size>";
+            return $"<size=23>{data.FlightId}</size>\n<size=15>{cityRoute}  {target}</size>";
         }
 
         private void UpdateStripCommandButton(AircraftController selected, AircraftCommand? recommended, Vector2 selectedStripPosition, bool hasSelectedStrip)
@@ -920,9 +932,7 @@ namespace ATCJourneyJapan.UI
             var timeLine = data.OperationType == "Arrival"
                 ? $"予定到着：{GetTimeLabel(data.ScheduledArrivalTime)}"
                 : $"予定出発：{GetTimeLabel(data.ScheduledDepartureTime)}";
-            var routeLine = data.OperationType == "Arrival"
-                ? $"ARRIVAL  FROM {data.Origin}"
-                : $"DEPARTURE  TO {data.Destination}";
+            var routeLine = GetSelectedCityRouteLine(data);
             return $"{data.FlightId}  {data.AircraftType}\n"
                 + $"{routeLine}\n\n"
                 + $"{timeLine}\n"
@@ -931,6 +941,60 @@ namespace ATCJourneyJapan.UI
                 + $"状態：{data.CurrentState}\n"
                 + $"担当：{data.ControllerPosition}\n"
                 + $"次の指示：{recommendedLabel}";
+        }
+
+        private string GetSelectedCityRouteLine(AircraftData data)
+        {
+            var isArrival = data.OperationType == "Arrival";
+            var flightType = isArrival ? "到着便" : "出発便";
+            var cityRoute = GetCityRouteLabel(data);
+            return string.IsNullOrEmpty(cityRoute) ? flightType : $"{flightType} / {cityRoute}";
+        }
+
+        private string GetCompactCityRouteLabel(AircraftData data)
+        {
+            var cityRoute = GetCityRouteLabel(data);
+            if (!string.IsNullOrEmpty(cityRoute))
+            {
+                return cityRoute;
+            }
+
+            return data.OperationType == "Arrival" ? "到着便" : "出発便";
+        }
+
+        private string GetCityRouteLabel(AircraftData data)
+        {
+            var isArrival = data.OperationType == "Arrival";
+            var cityName = isArrival ? data.Origin : data.Destination;
+            var displayCity = GetJapaneseCityName(cityName);
+            if (string.IsNullOrEmpty(displayCity) || IsNahaCityName(cityName) || IsNahaCityName(displayCity))
+            {
+                return string.Empty;
+            }
+
+            return isArrival ? $"{displayCity}発" : $"{displayCity}行き";
+        }
+
+        private string GetJapaneseCityName(string cityName)
+        {
+            if (string.IsNullOrWhiteSpace(cityName))
+            {
+                return string.Empty;
+            }
+
+            var normalized = cityName.Trim().ToLowerInvariant();
+            return JapaneseCityNames.TryGetValue(normalized, out var japaneseName) ? japaneseName : cityName.Trim();
+        }
+
+        private bool IsNahaCityName(string cityName)
+        {
+            if (string.IsNullOrWhiteSpace(cityName))
+            {
+                return false;
+            }
+
+            var normalized = cityName.Trim().ToLowerInvariant();
+            return normalized == "naha" || normalized == "那覇";
         }
 
         private string GetTimeLabel(string time)
