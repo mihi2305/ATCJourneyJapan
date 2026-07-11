@@ -2,11 +2,20 @@
 
 ## Current Phase
 
-Phase 3.9-5R-2B Lock departure runway
+Phase 3.9-5R-2C Fix line up takeoff flow
 
 ## Previous Phase
 
-Phase 3.9-5R-2 Add departure runway selection
+Phase 3.9-5R-2B Lock departure runway
+
+## Phase 3.9-5R-2Cで修正したこと
+
+- 出発機がTaxi to runway完了後、`HoldingPoint -> Hold Short -> Line Up -> Takeoff` へ進める流れを確認し、Line Up / Takeoff時のログを追加した
+- Line Up時は既存の `activeRunwayEntryUsageId` を `AirportManager.GetLineUpRoute` へ渡し、選択Routeの取付誘導路から滑走路へ入る構造を維持した
+- Takeoff時も `activeRunwayEntryUsageId` を使い、滑走路端へ逆走しない既存のintersection takeoff routeを維持した
+- 到着機が `VacatingRunway` 中にTaxi to Spotへ切り替わる場合、Primary Runwayを先にReleaseして滑走路占有が残らないようにした
+- 滑走路占有 / 解除 / Line Up拒否 / Line Up許可 / Takeoff許可の確認用 `Debug.Log` を追加した
+- UI視認性改善、Routeハイライト、到着機Exit選択UIは次Phase以降に回す
 
 ## Phase 3.9-5R-2Bで修正したこと
 

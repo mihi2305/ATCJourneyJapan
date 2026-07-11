@@ -271,6 +271,11 @@ namespace ATCJourneyJapan.Aircraft
 
         private void TaxiToGate()
         {
+            if (currentState == AircraftState.VacatingRunway)
+            {
+                gameManager.ReleasePrimaryRunway(this);
+            }
+
             var operationDirection = GetLandingRunwayDirectionForTaxiToGate();
             var spotId = flightData != null ? flightData.SpotId : string.Empty;
             var routeCandidates = airportManager.GetArrivalTaxiRouteCandidates(spotId, operationDirection);
@@ -640,6 +645,9 @@ namespace ATCJourneyJapan.Aircraft
             var operationDirection = GetOperationRunwayDirection();
             SetState(AircraftState.LiningUp, false);
             gameManager.OccupyPrimaryRunway(this, "滑走路上待機");
+            Debug.Log(
+                $"Line up cleared: {flightNumber} runway={operationDirection} "
+                + $"entryUsage={FormatUsageId(activeRunwayEntryUsageId)} routeId={FormatUsageId(activeDepartureRouteId)}");
             StartRouteWithHeading(airportManager.GetLineUpRoute(transform.position, operationDirection, activeRunwayEntryUsageId), taxiSpeed, () =>
             {
                 transform.position = GetLineupCompletionPoint(operationDirection);
@@ -657,6 +665,9 @@ namespace ATCJourneyJapan.Aircraft
             SetState(AircraftState.TakeoffRoll, false);
             SetRunwayTakeoffHeading(operationDirection);
             LogSelectedTakeoffRoute(operationDirection);
+            Debug.Log(
+                $"Takeoff cleared: {flightNumber} runway={operationDirection} "
+                + $"entryUsage={FormatUsageId(activeRunwayEntryUsageId)} routeId={FormatUsageId(activeDepartureRouteId)}");
             StartTakeoffSpeedProfile(operationDirection);
             gameManager.OccupyPrimaryRunway(this, "離陸滑走中");
             StartRouteWithHeading(takeoffRoute, takeoffInitialSpeed, () =>

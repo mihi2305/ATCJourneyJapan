@@ -186,17 +186,35 @@ namespace ATCJourneyJapan.Core
             var occupiedBy = runway != null && !string.IsNullOrEmpty(runway.OccupiedByFlightId)
                 ? runway.OccupiedByFlightId
                 : "他機";
+            if (command == AircraftCommand.LineUp)
+            {
+                var runwayDesignator = controller != null && controller.FlightData != null ? controller.FlightData.ActiveRunwayDesignator : "--";
+                Debug.Log($"Line up blocked: {controller?.FlightNumber ?? "unknown"} runway={runwayDesignator} occupiedBy={occupiedBy}");
+            }
+
             uiManager.ShowWarning($"A滑走路は使用中です。{occupiedBy}が滑走路を使用中です。");
         }
 
         public void OccupyPrimaryRunway(AircraftController controller, string reason)
         {
-            GetPrimaryRunwayController()?.Occupy(controller, reason);
+            var runway = GetPrimaryRunwayController();
+            runway?.Occupy(controller, reason);
+            if (runway != null && controller != null)
+            {
+                Debug.Log($"Runway occupied: {runway.RunwayId} RWY by {controller.FlightNumber} reason={reason}");
+            }
         }
 
         public void ReleasePrimaryRunway(AircraftController controller)
         {
-            GetPrimaryRunwayController()?.Release(controller);
+            var runway = GetPrimaryRunwayController();
+            var reason = runway != null ? runway.OccupiedReason : string.Empty;
+            var wasOccupiedByController = runway != null && runway.IsOccupiedBy(controller);
+            runway?.Release(controller);
+            if (wasOccupiedByController && controller != null)
+            {
+                Debug.Log($"Runway released: {runway.RunwayId} RWY by {controller.FlightNumber} reason={reason}");
+            }
         }
 
         private string GetInstructorComment(AircraftCommand command)
