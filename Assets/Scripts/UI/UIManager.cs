@@ -2196,6 +2196,16 @@ namespace ATCJourneyJapan.UI
                 return options;
             }
 
+            if (command == AircraftCommand.TaxiToHold
+                && selected != null
+                && selected.FlightData != null
+                && selected.FlightData.OperationType == "Departure"
+                && selected.FlightData.HasActiveRunwayDesignator)
+            {
+                options.Add(selected.FlightData.ActiveRunwayDesignator);
+                return options;
+            }
+
             if (command == AircraftCommand.ClearLanding || command == AircraftCommand.TaxiToHold)
             {
                 foreach (var runwayDesignator in gameManager.Airport.GetPrimaryRunwayDirectionOptions())

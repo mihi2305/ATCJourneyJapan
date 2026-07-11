@@ -2,11 +2,22 @@
 
 ## Current Phase
 
-Phase 3.9-5R-2 Add departure runway selection
+Phase 3.9-5R-2B Lock departure runway
 
 ## Previous Phase
 
-Phase 3.9-5R-1 Apply selected departure route
+Phase 3.9-5R-2 Add departure runway selection
+
+## Phase 3.9-5R-2Bで修正したこと
+
+- 出発機の滑走路選択をPushback前の1回に一元化し、Pushback後の `Taxi to runway` では選択済みRWYだけを表示するようにした
+- `selectedRunwayDesignator` は既存の `AircraftData.ActiveRunwayDesignator` に保持し、Pushback / Taxi / Line Up / Takeoffへ引き継ぐ
+- Pushback後 / Taxi中 / Hold Short以降では、STRIPS側に `滑走路を選択` や出発Route選択を再表示しない
+- Route overlayは選択滑走路に一致する実在candidateだけを表示し、候補が2件ならRoute A/Bだけを出す。存在しないRoute Cは出さない
+- 端側取付誘導路は既存の `A_CONNECTOR_18L_END_01` / `A_CONNECTOR_36R_END_01` と対応candidateを使う
+- Route説明は `18L側端取付誘導路` / `中央取付誘導路` など物理位置ベースを維持し、評価語は使わない
+- 将来はRouteボタンhover/selection時に、空港マップ上で該当Route線をハイライトする方針。今回は未実装
+- 到着機UI / 到着機movement同期は未対応で次Phase以降に回す
 
 ## Phase 3.9-5R-2で修正したこと
 
