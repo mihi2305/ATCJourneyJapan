@@ -70,6 +70,20 @@ namespace ATCJourneyJapan.Aircraft
                                   || currentState == AircraftState.LiningUp
                                   || currentState == AircraftState.TakeoffRoll;
 
+        public void SetSelectedTaxiRoute(string purpose, string routeId)
+        {
+            if (purpose == "Arrival")
+            {
+                selectedArrivalRouteId = routeId ?? string.Empty;
+            }
+            else
+            {
+                selectedDepartureRouteId = routeId ?? string.Empty;
+            }
+
+            SyncSelectedRouteIds();
+        }
+
         public void Configure(
             AircraftData data,
             bool isArrival,

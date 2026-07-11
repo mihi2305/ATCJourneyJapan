@@ -2,11 +2,20 @@
 
 ## Current Phase
 
-Phase 3.9-5P Show Japanese city labels
+Phase 3.9-5Q Add route selection map
 
 ## Previous Phase
 
-Phase 3.9-5P Prepare route candidate switching
+Phase 3.9-5P Show Japanese city labels
+
+## Phase 3.9-5Qで修正したこと
+
+- 選択中航空機の右下情報パネルに `Route選択` ボタンを追加した
+- `Route Selection` overlayを追加し、A滑走路・主平行誘導路・取付誘導路・ターミナルを簡略マップとして表示するようにした
+- 選択中航空機の `spotId + runwayDesignator` から `TaxiRouteCandidate` 候補を取得し、出発は `runwayEntryUsageId`、到着は `runwayExitUsageId` を持つ候補を優先して表示する
+- プレイヤー向けには `Route A` / `Route B` / `Route C` と表示し、TWY A1 / TWY A5などの誘導路名は主表示しない
+- 選択した候補は `routeId` として `SelectedDepartureRouteId` / `SelectedArrivalRouteId` に保持し、Route A/B/Cの表示名はロジックキーに使わない
+- default route fallbackは維持し、本格Route選択UI、ATCメニュー、B滑走路運用は次Phase以降に回す
 
 ## Phase 3.9-5Pで修正したこと（Japanese city labels）
 

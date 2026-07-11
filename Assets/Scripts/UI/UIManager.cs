@@ -54,6 +54,9 @@ namespace ATCJourneyJapan.UI
         private readonly List<string> commandLogEntries = new List<string>();
         private readonly List<Button> stripCommandOptionButtons = new List<Button>();
         private readonly List<Text> stripCommandOptionTexts = new List<Text>();
+        private readonly List<Button> routeSelectionOptionButtons = new List<Button>();
+        private readonly List<Text> routeSelectionOptionTexts = new List<Text>();
+        private readonly List<TaxiRouteCandidate> activeRouteSelectionCandidates = new List<TaxiRouteCandidate>();
         private GameManager gameManager;
         private ScoreManager scoreManager;
         private CommandSystem commandSystem;
@@ -74,6 +77,8 @@ namespace ATCJourneyJapan.UI
         private RectTransform minimapContent;
         private Image minimapRunwayImage;
         private GameObject selectedPanel;
+        private GameObject routeSelectionOverlay;
+        private GameObject routeSelectionMapContent;
         private GameObject guidePanel;
         private GameObject tutorialPanel;
         private GameObject warningPanel;
@@ -82,16 +87,21 @@ namespace ATCJourneyJapan.UI
         private Text guideText;
         private Text instructorText;
         private Text selectedText;
+        private Text routeSelectionTitleText;
+        private Text routeSelectionHintText;
         private Text helpText;
         private Text commandStatusText;
+        private Text routeSelectionButtonText;
         private Text stripCommandButtonText;
         private Text tutorialText;
         private Text warningText;
         private Text resultText;
         private Button commandButton;
+        private Button routeSelectionButton;
         private Button stripCommandButton;
         private Text commandButtonText;
         private Button tutorialNextButton;
+        private string routeSelectionPurpose = string.Empty;
         private TutorialStep[] tutorialSteps;
         private int tutorialStepIndex = -1;
         private bool tutorialActive;
@@ -259,8 +269,11 @@ namespace ATCJourneyJapan.UI
             guidePanel = guideText.transform.parent.gameObject;
             guidePanel.GetComponent<Image>().color = new Color(0.02f, 0.03f, 0.04f, 0.7f);
 
-            selectedPanel = CreatePanel("Selected Aircraft", hudRoot.transform, new Vector2(0f, 0f), new Vector2(360f, 256f), AnchorPreset.BottomRight, new Vector2(-24f, 34f));
-            selectedText = CreateText("Selected Text", selectedPanel.transform, string.Empty, 16, FontStyle.Normal, TextAnchor.UpperLeft, Vector2.zero, new Vector2(316f, 222f));
+            selectedPanel = CreatePanel("Selected Aircraft", hudRoot.transform, new Vector2(0f, 0f), new Vector2(360f, 306f), AnchorPreset.BottomRight, new Vector2(-24f, 34f));
+            selectedText = CreateText("Selected Text", selectedPanel.transform, string.Empty, 16, FontStyle.Normal, TextAnchor.UpperLeft, new Vector2(0f, 26f), new Vector2(316f, 222f));
+            routeSelectionButton = CreateButton("Route Selection Button", selectedPanel.transform, "Route選択", new Vector2(0f, -124f), new Vector2(168f, 42f), 17);
+            routeSelectionButtonText = routeSelectionButton.GetComponentInChildren<Text>();
+            routeSelectionButton.onClick.AddListener(OpenRouteSelectionOverlay);
 
             commandPanel = CreatePanel("Command Panel", hudRoot.transform, new Vector2(0f, 0f), new Vector2(300f, 410f), AnchorPreset.MiddleRight, new Vector2(-12f, 0f));
             CreateText("Command Title", commandPanel.transform, "指示", 22, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(0f, 154f), new Vector2(250f, 34f));
@@ -282,6 +295,7 @@ namespace ATCJourneyJapan.UI
 
             resultPanel = CreatePanel("Result Panel", canvasObject.transform, new Vector2(0.5f, 0.5f), new Vector2(620f, 330f));
             resultText = CreateText("Result Text", resultPanel.transform, string.Empty, 23, FontStyle.Bold, TextAnchor.MiddleCenter, Vector2.zero, new Vector2(540f, 270f));
+            BuildRouteSelectionOverlay();
         }
 
         private void EnsureEventSystem()
@@ -317,10 +331,13 @@ namespace ATCJourneyJapan.UI
             {
                 selectedText.text = GetSelectedAircraftText(selected, recommended);
                 helpText.text = recommended.HasValue ? GetCommandDescription(recommended.Value) : commandHelpMessage;
+                UpdateRouteSelectionButton(selected);
             }
             else
             {
                 helpText.text = "航空機を選択すると、使える指示が表示されます。";
+                routeSelectionButton.gameObject.SetActive(false);
+                CloseRouteSelectionOverlay();
             }
 
             commandButton.gameObject.SetActive(false);
@@ -329,6 +346,200 @@ namespace ATCJourneyJapan.UI
 
             warningPanel.SetActive(!string.IsNullOrEmpty(warningMessage));
             warningText.text = warningMessage;
+        }
+
+        private void UpdateRouteSelectionButton(AircraftController selected)
+        {
+            var candidates = GetRouteSelectionCandidates(selected);
+            var canOpenRouteSelection = candidates.Count > 0;
+            routeSelectionButton.gameObject.SetActive(canOpenRouteSelection);
+            routeSelectionButton.interactable = canOpenRouteSelection;
+            routeSelectionButtonText.text = candidates.Count > 1 ? $"Route選択 ({candidates.Count})" : "Route確認";
+        }
+
+        private void OpenRouteSelectionOverlay()
+        {
+            var selected = GetSelectedAircraft();
+            if (selected == null || selected.FlightData == null)
+            {
+                return;
+            }
+
+            activeRouteSelectionCandidates.Clear();
+            activeRouteSelectionCandidates.AddRange(GetRouteSelectionCandidates(selected));
+            if (activeRouteSelectionCandidates.Count == 0)
+            {
+                return;
+            }
+
+            routeSelectionPurpose = GetRouteSelectionPurpose(selected);
+            var data = selected.FlightData;
+            var runwayDesignator = GetRouteSelectionRunwayDesignator(data);
+            routeSelectionTitleText.text = $"Route Selection\n{data.FlightId} / {GetOperationLabel(data.OperationType)} / RWY {runwayDesignator}";
+            routeSelectionHintText.text = "取付誘導路候補を選択します。画面上はRoute A/B/Cで表示し、内部ではTaxiRouteCandidateのrouteIdを保存します。";
+
+            var selectedRouteId = GetSelectedRouteId(data, routeSelectionPurpose);
+            for (var index = 0; index < routeSelectionOptionButtons.Count; index++)
+            {
+                var hasCandidate = index < activeRouteSelectionCandidates.Count;
+                routeSelectionOptionButtons[index].gameObject.SetActive(hasCandidate);
+                if (!hasCandidate)
+                {
+                    continue;
+                }
+
+                var candidate = activeRouteSelectionCandidates[index];
+                routeSelectionOptionTexts[index].text = GetPlayerRouteOptionText(candidate, index);
+                ApplyRouteSelectionOptionStyle(routeSelectionOptionButtons[index], IsRouteSelectionCandidateSelected(candidate, selectedRouteId));
+            }
+
+            routeSelectionOverlay.SetActive(true);
+        }
+
+        private void CloseRouteSelectionOverlay()
+        {
+            if (routeSelectionOverlay != null)
+            {
+                routeSelectionOverlay.SetActive(false);
+            }
+        }
+
+        private void SelectRouteSelectionCandidate(int index)
+        {
+            var selected = GetSelectedAircraft();
+            if (selected == null || selected.FlightData == null || index < 0 || index >= activeRouteSelectionCandidates.Count)
+            {
+                return;
+            }
+
+            var candidate = activeRouteSelectionCandidates[index];
+            selected.SetSelectedTaxiRoute(routeSelectionPurpose, candidate.RouteId);
+            Debug.Log(
+                $"Route selection overlay selected: {selected.FlightNumber} {routeSelectionPurpose} "
+                + $"RWY {candidate.RunwayDesignator} {candidate.SpotId} {GetPlayerRouteName(index)} "
+                + $"routeId={candidate.RouteId} entryUsage={candidate.RunwayEntryUsageId} "
+                + $"exitUsage={candidate.RunwayExitUsageId} segments={FormatRouteSegmentIds(candidate)}");
+            CloseRouteSelectionOverlay();
+            Refresh();
+        }
+
+        private List<TaxiRouteCandidate> GetRouteSelectionCandidates(AircraftController selected)
+        {
+            var candidates = new List<TaxiRouteCandidate>();
+            if (selected == null || selected.FlightData == null || gameManager == null || gameManager.Airport == null)
+            {
+                return candidates;
+            }
+
+            var data = selected.FlightData;
+            var runwayDesignator = GetRouteSelectionRunwayDesignator(data);
+            var sourceCandidates = data.OperationType == "Arrival"
+                ? gameManager.Airport.GetArrivalTaxiRouteCandidates(data.SpotId, runwayDesignator)
+                : gameManager.Airport.GetDepartureTaxiRouteCandidates(data.SpotId, runwayDesignator);
+
+            foreach (var candidate in sourceCandidates)
+            {
+                var hasRelevantUsage = data.OperationType == "Arrival"
+                    ? !string.IsNullOrEmpty(candidate.RunwayExitUsageId)
+                    : !string.IsNullOrEmpty(candidate.RunwayEntryUsageId);
+                if (hasRelevantUsage)
+                {
+                    candidates.Add(candidate);
+                }
+            }
+
+            if (candidates.Count > 0)
+            {
+                return candidates;
+            }
+
+            foreach (var candidate in sourceCandidates)
+            {
+                candidates.Add(candidate);
+            }
+
+            return candidates;
+        }
+
+        private string GetRouteSelectionRunwayDesignator(AircraftData data)
+        {
+            if (data.HasActiveRunwayDesignator)
+            {
+                return data.ActiveRunwayDesignator;
+            }
+
+            if (gameManager != null && gameManager.Airport != null)
+            {
+                foreach (var runwayDesignator in gameManager.Airport.GetPrimaryRunwayDirectionOptions())
+                {
+                    return runwayDesignator;
+                }
+            }
+
+            return "18L";
+        }
+
+        private string GetRouteSelectionPurpose(AircraftController selected)
+        {
+            return selected != null && selected.FlightData != null && selected.FlightData.OperationType == "Arrival"
+                ? "Arrival"
+                : "Departure";
+        }
+
+        private string GetSelectedRouteId(AircraftData data, string purpose)
+        {
+            return purpose == "Arrival" ? data.SelectedArrivalRouteId : data.SelectedDepartureRouteId;
+        }
+
+        private string GetPlayerRouteOptionText(TaxiRouteCandidate candidate, int index)
+        {
+            var selectedMark = candidate.IsDefault ? "標準ルート" : GetRouteSelectionDescription(candidate);
+            return $"<size=22>{GetPlayerRouteName(index)}</size>\n<size=15>{selectedMark}</size>";
+        }
+
+        private bool IsRouteSelectionCandidateSelected(TaxiRouteCandidate candidate, string selectedRouteId)
+        {
+            return !string.IsNullOrEmpty(selectedRouteId) ? candidate.RouteId == selectedRouteId : candidate.IsDefault;
+        }
+
+        private string FormatRouteSegmentIds(TaxiRouteCandidate candidate)
+        {
+            var values = new List<string>();
+            foreach (var segmentId in candidate.SegmentIds)
+            {
+                values.Add(segmentId);
+            }
+
+            return values.Count > 0 ? string.Join(", ", values.ToArray()) : "none";
+        }
+
+        private string GetPlayerRouteName(int index)
+        {
+            return $"Route {(char)('A' + index)}";
+        }
+
+        private string GetRouteSelectionDescription(TaxiRouteCandidate candidate)
+        {
+            if (!string.IsNullOrEmpty(candidate.RunwayEntryUsageId) && candidate.RunwayEntryUsageId.Contains("_END"))
+            {
+                return "滑走路端の取付誘導路を使うルート";
+            }
+
+            if (!string.IsNullOrEmpty(candidate.RunwayExitUsageId) && candidate.RunwayExitUsageId.Contains("_END"))
+            {
+                return "奥側の離脱誘導路を使うルート";
+            }
+
+            return "別の取付誘導路候補";
+        }
+
+        private void ApplyRouteSelectionOptionStyle(Button button, bool selected)
+        {
+            var colors = button.colors;
+            colors.normalColor = selected ? new Color(0.22f, 0.5f, 0.64f, 0.98f) : new Color(0.14f, 0.52f, 0.22f, 0.95f);
+            colors.highlightedColor = selected ? new Color(0.28f, 0.62f, 0.78f, 1f) : new Color(0.18f, 0.66f, 0.28f, 1f);
+            colors.pressedColor = selected ? new Color(0.16f, 0.42f, 0.56f, 1f) : new Color(0.1f, 0.42f, 0.18f, 1f);
+            button.colors = colors;
         }
 
         private void UpdateTutorialPanel()
@@ -468,6 +679,72 @@ namespace ATCJourneyJapan.UI
             CreateText("Mini Map Runway B Label", minimapContent, "B RWY 18R / 36L", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(3f, 0f, 12.2f)), new Vector2(110f, 18f));
             CreateText("Mini Map Runway B 36L End", minimapContent, "36L", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(-11.6f, 0f, 13.35f)), new Vector2(44f, 18f));
             CreateText("Mini Map Runway B 18R End", minimapContent, "18R", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(17.6f, 0f, 13.35f)), new Vector2(44f, 18f));
+        }
+
+        private void BuildRouteSelectionOverlay()
+        {
+            routeSelectionOverlay = CreatePanel("Route Selection Overlay", hudRoot.transform, new Vector2(0.5f, 0.5f), new Vector2(860f, 560f));
+            routeSelectionOverlay.GetComponent<Image>().color = new Color(0.01f, 0.018f, 0.025f, 0.96f);
+            routeSelectionTitleText = CreateText("Route Selection Title", routeSelectionOverlay.transform, "Route Selection", 25, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-250f, 230f), new Vector2(310f, 36f));
+            CreateButton("Route Selection Close", routeSelectionOverlay.transform, "閉じる", new Vector2(338f, 230f), new Vector2(116f, 40f), 16)
+                .onClick.AddListener(CloseRouteSelectionOverlay);
+
+            var mapPanel = CreatePanel("Route Selection Map", routeSelectionOverlay.transform, new Vector2(0.5f, 0.5f), new Vector2(520f, 330f), AnchorPreset.Center, new Vector2(-134f, 4f));
+            mapPanel.GetComponent<Image>().color = new Color(0.035f, 0.075f, 0.085f, 0.96f);
+
+            routeSelectionMapContent = new GameObject("Route Selection Map Content");
+            routeSelectionMapContent.transform.SetParent(mapPanel.transform, false);
+            var mapRect = routeSelectionMapContent.AddComponent<RectTransform>();
+            ApplyAnchor(mapRect, AnchorPreset.Center);
+            mapRect.sizeDelta = new Vector2(480f, 280f);
+            mapRect.anchoredPosition = Vector2.zero;
+
+            CreateRouteMapBlock("Route Map Airport Island", new Vector2(0f, -72f), new Vector2(442f, 130f), new Color(0.1f, 0.18f, 0.14f, 0.95f));
+            CreateRouteMapBlock("Route Map A Runway", new Vector2(0f, 62f), new Vector2(370f, 32f), new Color(0.36f, 0.38f, 0.4f, 0.98f));
+            CreateRouteMapBlock("Route Map Main Taxiway", new Vector2(0f, -34f), new Vector2(370f, 18f), new Color(0.18f, 0.34f, 0.42f, 0.98f));
+            CreateRouteMapBlock("Route Map 36R End Connector", new Vector2(-168f, 14f), new Vector2(18f, 94f), new Color(0.18f, 0.34f, 0.42f, 0.98f));
+            CreateRouteMapBlock("Route Map 36R Connector", new Vector2(-118f, 14f), new Vector2(18f, 94f), new Color(0.18f, 0.34f, 0.42f, 0.98f));
+            CreateRouteMapBlock("Route Map Mid Connector", new Vector2(0f, 14f), new Vector2(18f, 94f), new Color(0.18f, 0.34f, 0.42f, 0.98f));
+            CreateRouteMapBlock("Route Map 18L Connector", new Vector2(118f, 14f), new Vector2(18f, 94f), new Color(0.18f, 0.34f, 0.42f, 0.98f));
+            CreateRouteMapBlock("Route Map 18L End Connector", new Vector2(168f, 14f), new Vector2(18f, 94f), new Color(0.18f, 0.34f, 0.42f, 0.98f));
+            CreateRouteMapBlock("Route Map Terminal", new Vector2(88f, -112f), new Vector2(236f, 32f), new Color(0.58f, 0.64f, 0.62f, 0.98f));
+            CreateText("Route Map Runway Label", routeSelectionMapContent.transform, "A RWY 18L / 36R", 14, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(0f, 100f), new Vector2(170f, 22f));
+            CreateText("Route Map 36R Label", routeSelectionMapContent.transform, "36R", 13, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(-202f, 94f), new Vector2(48f, 20f));
+            CreateText("Route Map 18L Label", routeSelectionMapContent.transform, "18L", 13, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(202f, 94f), new Vector2(48f, 20f));
+            CreateText("Route Map Taxiway Label", routeSelectionMapContent.transform, "Main taxi route", 12, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(0f, -62f), new Vector2(150f, 18f));
+
+            routeSelectionHintText = CreateText("Route Selection Hint", routeSelectionOverlay.transform, string.Empty, 15, FontStyle.Normal, TextAnchor.UpperLeft, new Vector2(-134f, -226f), new Vector2(520f, 54f));
+
+            for (var index = 0; index < 3; index++)
+            {
+                CreateRouteSelectionOptionButton(index);
+            }
+
+            routeSelectionOverlay.SetActive(false);
+        }
+
+        private Image CreateRouteMapBlock(string name, Vector2 anchoredPosition, Vector2 size, Color color)
+        {
+            var block = new GameObject(name);
+            block.transform.SetParent(routeSelectionMapContent.transform, false);
+            var rectTransform = block.AddComponent<RectTransform>();
+            ApplyAnchor(rectTransform, AnchorPreset.Center);
+            rectTransform.sizeDelta = size;
+            rectTransform.anchoredPosition = anchoredPosition;
+
+            var image = block.AddComponent<Image>();
+            image.color = color;
+            image.raycastTarget = false;
+            return image;
+        }
+
+        private void CreateRouteSelectionOptionButton(int index)
+        {
+            var button = CreateButton($"Route Selection Option {index + 1}", routeSelectionOverlay.transform, string.Empty, new Vector2(276f, 112f - index * 112f), new Vector2(258f, 86f), 16);
+            var optionIndex = index;
+            button.onClick.AddListener(() => SelectRouteSelectionCandidate(optionIndex));
+            routeSelectionOptionButtons.Add(button);
+            routeSelectionOptionTexts.Add(button.GetComponentInChildren<Text>());
         }
 
         private void CreateMiniMapSpots()
