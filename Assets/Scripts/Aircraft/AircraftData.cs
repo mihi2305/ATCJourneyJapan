@@ -68,6 +68,8 @@ namespace ATCJourneyJapan.Aircraft
         public string NextTargetType { get; private set; }
         public string NextTargetId { get; private set; }
         public string NextTargetDisplayName { get; private set; }
+        public string SelectedDepartureRouteId { get; private set; }
+        public string SelectedArrivalRouteId { get; private set; }
         public bool HasActiveRunwayDesignator => !string.IsNullOrEmpty(ActiveRunwayDesignator);
         public string RunwayBilingualDisplay => HasActiveRunwayDesignator ? $"{AssignedRunwayDisplayName}（RWY {ActiveRunwayDesignator}）" : $"{AssignedRunwayDisplayName}（RWY --）";
         public string RunwayShortDisplay => HasActiveRunwayDesignator ? $"RWY {ActiveRunwayDesignator}" : "RWY --";
@@ -88,6 +90,16 @@ namespace ATCJourneyJapan.Aircraft
             {
                 ActiveRunwayDesignator = NormalizeRunwayDesignator(activeRunwayDesignator);
             }
+        }
+
+        public void SelectDepartureRoute(string routeId)
+        {
+            SelectedDepartureRouteId = routeId ?? string.Empty;
+        }
+
+        public void SelectArrivalRoute(string routeId)
+        {
+            SelectedArrivalRouteId = routeId ?? string.Empty;
         }
 
         public void UpdateRuntimeState(

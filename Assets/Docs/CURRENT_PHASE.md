@@ -2,11 +2,19 @@
 
 ## Current Phase
 
-Phase 3.9-5O-4 Update minimap taxiway layout
+Phase 3.9-5P Prepare route candidate switching
 
 ## Previous Phase
 
-Phase 3.9-5O-3 Clean apron lead-in visuals
+Phase 3.9-5O-4 Update minimap taxiway layout
+
+## Phase 3.9-5Pで修正したこと
+
+- Departure / Arrival taxi route candidateを、`spotId + runwayDesignator` の候補一覧からrouteId指定で選べる内部構造にした
+- `selectedDepartureRouteId` / `selectedArrivalRouteId` を保持し、routeIdが一致すればそのcandidate、なければdefault candidateへfallbackするようにした
+- 選択中航空機に対して、Debug用に `R` でDeparture候補、`T` でArrival候補を次candidateへ切り替えられるようにした
+- Route選択ログにcallsign / purpose / runway / spot / routeId / displayName / routeInstructionText / segmentIds / runwayEntryUsageId / runwayExitUsageIdを含めた
+- 本格Route選択UI、ATCメニュー、B滑走路運用は次Phase以降に回す
 
 ## Phase 3.9-5O-4で修正したこと
 
