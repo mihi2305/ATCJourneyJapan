@@ -54,6 +54,7 @@ namespace ATCJourneyJapan.UI
         private readonly Dictionary<string, Text> minimapAircraftArrows = new Dictionary<string, Text>();
         private readonly Dictionary<string, Outline> minimapAircraftOutlines = new Dictionary<string, Outline>();
         private readonly Dictionary<string, Text> minimapAircraftLabels = new Dictionary<string, Text>();
+        private readonly List<Image> minimapRouteHighlightSegments = new List<Image>();
         private readonly List<string> commandLogEntries = new List<string>();
         private readonly List<Button> stripCommandOptionButtons = new List<Button>();
         private readonly List<Text> stripCommandOptionTexts = new List<Text>();
@@ -109,6 +110,7 @@ namespace ATCJourneyJapan.UI
         private Button stripCommandButton;
         private Text commandButtonText;
         private Button tutorialNextButton;
+        private string lastLoggedMiniMapRouteKey = string.Empty;
         private string routeSelectionPurpose = string.Empty;
         private string routeSelectionMode = string.Empty;
         private AircraftController routeSelectionAircraft;
@@ -1418,12 +1420,141 @@ namespace ATCJourneyJapan.UI
             return image;
         }
 
+        private void UpdateMiniMapSelectedDepartureRoute(AircraftController selected)
+        {
+            var candidate = ResolveMiniMapDepartureRouteCandidate(selected, out var fallbackUsed);
+            if (candidate == null || candidate.Waypoints.Count < 2)
+            {
+                ClearMiniMapRouteHighlight();
+                lastLoggedMiniMapRouteKey = string.Empty;
+                return;
+            }
+
+            var segmentCount = candidate.Waypoints.Count - 1;
+            EnsureMiniMapRouteHighlightSegmentCount(segmentCount);
+            for (var index = 0; index < minimapRouteHighlightSegments.Count; index++)
+            {
+                var image = minimapRouteHighlightSegments[index];
+                var active = index < segmentCount;
+                image.gameObject.SetActive(active);
+                if (!active)
+                {
+                    continue;
+                }
+
+                image.color = new Color(1f, 0.86f, 0.18f, 0.9f);
+                image.transform.SetAsLastSibling();
+                ApplyRouteSelectionLineSegment(
+                    image.GetComponent<RectTransform>(),
+                    WorldToMiniMap(candidate.Waypoints[index]),
+                    WorldToMiniMap(candidate.Waypoints[index + 1]),
+                    5f);
+            }
+
+            LogMiniMapRouteHighlight(selected, candidate, fallbackUsed);
+        }
+
+        private TaxiRouteCandidate ResolveMiniMapDepartureRouteCandidate(AircraftController selected, out bool fallbackUsed)
+        {
+            fallbackUsed = false;
+            if (selected == null || selected.FlightData == null || selected.FlightData.OperationType != "Departure" || gameManager == null || gameManager.Airport == null)
+            {
+                return null;
+            }
+
+            var data = selected.FlightData;
+            if (!data.HasActiveRunwayDesignator)
+            {
+                return null;
+            }
+
+            if (string.IsNullOrEmpty(data.SelectedDepartureRouteId))
+            {
+                return null;
+            }
+
+            var candidates = gameManager.Airport.GetDepartureTaxiRouteCandidates(data.SpotId, data.ActiveRunwayDesignator);
+            TaxiRouteCandidate fallbackCandidate = null;
+            foreach (var candidate in candidates)
+            {
+                if (fallbackCandidate == null)
+                {
+                    fallbackCandidate = candidate;
+                }
+
+                if (candidate.IsDefault)
+                {
+                    fallbackCandidate = candidate;
+                }
+
+                if (!string.IsNullOrEmpty(data.SelectedDepartureRouteId) && candidate.RouteId == data.SelectedDepartureRouteId)
+                {
+                    return candidate;
+                }
+            }
+
+            fallbackUsed = fallbackCandidate != null && !string.IsNullOrEmpty(data.SelectedDepartureRouteId);
+            return fallbackCandidate;
+        }
+
+        private void EnsureMiniMapRouteHighlightSegmentCount(int segmentCount)
+        {
+            while (minimapRouteHighlightSegments.Count < segmentCount)
+            {
+                var image = CreateMiniMapBlock(
+                    $"Mini Map Selected Route Highlight {minimapRouteHighlightSegments.Count + 1}",
+                    Vector2.zero,
+                    new Vector2(20f, 5f),
+                    new Color(1f, 0.86f, 0.18f, 0.9f));
+                image.transform.SetAsLastSibling();
+                minimapRouteHighlightSegments.Add(image);
+            }
+        }
+
+        private void ClearMiniMapRouteHighlight()
+        {
+            foreach (var image in minimapRouteHighlightSegments)
+            {
+                image.gameObject.SetActive(false);
+            }
+        }
+
+        private void LogMiniMapRouteHighlight(AircraftController selected, TaxiRouteCandidate candidate, bool fallbackUsed)
+        {
+            if (selected == null || selected.FlightData == null || candidate == null)
+            {
+                return;
+            }
+
+            var firstWaypoint = candidate.Waypoints[0];
+            var lastWaypoint = candidate.Waypoints[candidate.Waypoints.Count - 1];
+            var firstMiniMapPoint = WorldToMiniMap(firstWaypoint);
+            var lastMiniMapPoint = WorldToMiniMap(lastWaypoint);
+            var routeKey = $"{selected.FlightNumber}|{selected.FlightData.ActiveRunwayDesignator}|{candidate.RouteId}|{fallbackUsed}";
+            if (routeKey == lastLoggedMiniMapRouteKey)
+            {
+                return;
+            }
+
+            lastLoggedMiniMapRouteKey = routeKey;
+            Debug.Log(
+                $"MiniMap route highlight: {selected.FlightNumber} "
+                + $"selectedRunwayDesignator={selected.FlightData.ActiveRunwayDesignator} "
+                + $"selectedDepartureRouteId={selected.FlightData.SelectedDepartureRouteId} actualRouteId={candidate.RouteId} "
+                + $"runwayEntryUsageId={candidate.RunwayEntryUsageId} segments={FormatRouteSegmentIds(candidate)} "
+                + $"firstWaypoint={FormatRouteWaypoint(candidate, true)} lastWaypoint={FormatRouteWaypoint(candidate, false)} "
+                + $"minimapFirst=({firstMiniMapPoint.x:0.0}, {firstMiniMapPoint.y:0.0}) "
+                + $"minimapLast=({lastMiniMapPoint.x:0.0}, {lastMiniMapPoint.y:0.0}) fallbackUsed={fallbackUsed}");
+        }
+
         private void UpdateMiniMap(AircraftController selected)
         {
             if (minimapPanel == null)
             {
                 return;
             }
+
+            UpdateMiniMapSelectedDepartureRoute(selected);
 
             foreach (var dot in minimapAircraftDots)
             {
@@ -1447,6 +1578,7 @@ namespace ATCJourneyJapan.UI
                 var dotTransform = minimapAircraftDots[flightNumber];
                 var minimapPosition = WorldToMiniMap(aircraft.transform.position);
                 dotTransform.gameObject.SetActive(true);
+                dotTransform.SetAsLastSibling();
                 dotTransform.anchoredPosition = minimapPosition;
                 dotTransform.sizeDelta = isSelected ? new Vector2(38f, 38f) : new Vector2(28f, 28f);
 

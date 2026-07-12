@@ -2,11 +2,19 @@
 
 ## Current Phase
 
-Phase 3.9-5R-5 滑走路選択とRoute Overlayの連動
+Phase 3.9-5R-5 追加修正: 18L側Minimap route表示合わせ
 
 ## Previous Phase
 
 Phase 3.9-5R-4 Taxi Route Highlight QA / タクシールート見える化の完成
+
+## Phase 3.9-5R-5追加修正で直したこと
+
+- 18L側Route選択時にMinimap上のRoute表示が静的connector表示に寄ってズレて見える問題を、選択中出発機の `TaxiRouteCandidate.waypoints` をMinimapにも描画する形で修正した
+- Minimap route highlightは `SelectedDepartureRouteId + ActiveRunwayDesignator + SpotId` から同じcandidateを再解決し、Overlay / Minimap / 実Taxi movementの由来を揃える
+- selected routeが無効な場合のみdefault candidateへfallbackし、segmentIdsだけselected由来、waypointsだけdefault由来になる状態を避ける方針を維持した
+- Minimap route描画ログに、callsign、selected runway、selected route、actual route、entry usage、first/last waypoint、minimap first/last pointを残すようにした
+- 36R側の既存route candidateやTaxi movementは変更していない
 
 ## Phase 3.9-5R-5で修正したこと
 
