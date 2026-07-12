@@ -59,6 +59,7 @@ namespace ATCJourneyJapan.UI
         private readonly List<Text> stripCommandOptionTexts = new List<Text>();
         private readonly List<Button> routeSelectionOptionButtons = new List<Button>();
         private readonly List<Text> routeSelectionOptionTexts = new List<Text>();
+        private readonly List<Image> routeSelectionHighlightSegments = new List<Image>();
         private readonly List<TaxiRouteCandidate> activeRouteSelectionCandidates = new List<TaxiRouteCandidate>();
         private GameManager gameManager;
         private ScoreManager scoreManager;
@@ -353,6 +354,7 @@ namespace ATCJourneyJapan.UI
                 routeSelectionOverlay.SetActive(false);
             }
 
+            ClearRouteSelectionHighlight();
             routeSelectionAircraft = null;
         }
 
@@ -365,7 +367,8 @@ namespace ATCJourneyJapan.UI
 
             activeRouteSelectionCandidates.Clear();
             var candidates = GetRouteSelectionCandidates(aircraft, mode);
-            for (var index = 0; index < candidates.Count && index < routeSelectionOptionButtons.Count; index++)
+            EnsureRouteSelectionOptionButtonCount(candidates.Count);
+            for (var index = 0; index < candidates.Count; index++)
             {
                 activeRouteSelectionCandidates.Add(candidates[index]);
             }
@@ -382,6 +385,7 @@ namespace ATCJourneyJapan.UI
             var runwayDesignator = GetRouteSelectionRunwayDesignator(data);
             routeSelectionTitleText.text = $"{GetRouteSelectionOverlayTitle(mode)}\n{data.FlightId} / {GetOperationLabel(data.OperationType)} / RWY {runwayDesignator}";
             routeSelectionHintText.text = GetRouteSelectionHint(mode);
+            LogRouteSelectionCandidates(aircraft, runwayDesignator);
 
             var selectedRouteId = GetSelectedRouteId(data, routeSelectionPurpose);
             for (var index = 0; index < routeSelectionOptionButtons.Count; index++)
@@ -394,11 +398,13 @@ namespace ATCJourneyJapan.UI
                 }
 
                 var candidate = activeRouteSelectionCandidates[index];
+                routeSelectionOptionButtons[index].GetComponent<RectTransform>().anchoredPosition = GetRouteSelectionOptionPosition(index, activeRouteSelectionCandidates.Count);
                 routeSelectionOptionTexts[index].text = GetPlayerRouteOptionText(candidate, index, mode);
                 ApplyRouteSelectionOptionStyle(routeSelectionOptionButtons[index], IsRouteSelectionCandidateSelected(candidate, selectedRouteId));
             }
 
             routeSelectionOverlay.SetActive(true);
+            ShowRouteSelectionHighlight(GetInitialRouteSelectionHighlightIndex(selectedRouteId));
         }
 
         private void SelectRouteSelectionCandidate(int index)
@@ -409,12 +415,13 @@ namespace ATCJourneyJapan.UI
             }
 
             var candidate = activeRouteSelectionCandidates[index];
+            ShowRouteSelectionHighlight(index);
             routeSelectionAircraft.SetSelectedTaxiRoute(routeSelectionPurpose, candidate.RouteId);
             Debug.Log(
                 $"Route selection overlay selected: {routeSelectionAircraft.FlightNumber} {routeSelectionMode} {routeSelectionPurpose} "
                 + $"RWY {candidate.RunwayDesignator} {candidate.SpotId} {GetPlayerRouteName(candidate, index, routeSelectionMode)} "
-                + $"routeId={candidate.RouteId} entryUsage={candidate.RunwayEntryUsageId} "
-                + $"exitUsage={candidate.RunwayExitUsageId} segments={FormatRouteSegmentIds(candidate)}");
+                + $"routeId={candidate.RouteId} entryUsage={candidate.RunwayEntryUsageId} access={GetRouteAccessSummary(candidate)} "
+                + $"exitUsage={candidate.RunwayExitUsageId} segments={FormatRouteSegmentIds(candidate)} fallback=false");
             CloseRouteSelectionOverlay();
             Refresh();
         }
@@ -448,6 +455,7 @@ namespace ATCJourneyJapan.UI
 
             if (candidates.Count > 0)
             {
+                SortRouteSelectionCandidates(candidates, mode);
                 return candidates;
             }
 
@@ -456,7 +464,29 @@ namespace ATCJourneyJapan.UI
                 candidates.Add(candidate);
             }
 
+            SortRouteSelectionCandidates(candidates, mode);
             return candidates;
+        }
+
+        private void SortRouteSelectionCandidates(List<TaxiRouteCandidate> candidates, string mode)
+        {
+            if (mode != RouteSelectionModeDeparture)
+            {
+                return;
+            }
+
+            candidates.Sort((first, second) => GetRouteCandidateRunwayPosition(first).CompareTo(GetRouteCandidateRunwayPosition(second)));
+        }
+
+        private float GetRouteCandidateRunwayPosition(TaxiRouteCandidate candidate)
+        {
+            if (HasRouteSegment(candidate, "A_CONNECTOR_MID_01"))
+            {
+                return 0.5f;
+            }
+
+            var usage = gameManager != null && gameManager.Airport != null ? gameManager.Airport.GetRunwayAccessUsage(candidate.RunwayEntryUsageId) : null;
+            return usage != null ? usage.RunwayPositionRatio : 1f;
         }
 
         private string GetRouteSelectionModeForStrip(AircraftController selected)
@@ -532,6 +562,52 @@ namespace ATCJourneyJapan.UI
             return values.Count > 0 ? string.Join(", ", values.ToArray()) : "none";
         }
 
+        private void LogRouteSelectionCandidates(AircraftController aircraft, string runwayDesignator)
+        {
+            var values = new List<string>();
+            for (var index = 0; index < activeRouteSelectionCandidates.Count; index++)
+            {
+                var candidate = activeRouteSelectionCandidates[index];
+                values.Add(
+                    $"{GetPlayerRouteName(candidate, index, routeSelectionMode)} "
+                    + $"routeId={candidate.RouteId} entryUsage={candidate.RunwayEntryUsageId} "
+                    + $"access={GetRouteAccessSummary(candidate)} segments={FormatRouteSegmentIds(candidate)} fallback=false");
+            }
+
+            Debug.Log(
+                $"Route selection candidates: {aircraft.FlightNumber} mode={routeSelectionMode} "
+                + $"runway={runwayDesignator} spot={aircraft.FlightData.SpotId} count={activeRouteSelectionCandidates.Count} "
+                + string.Join(" | ", values.ToArray()));
+        }
+
+        private string GetRouteAccessSummary(TaxiRouteCandidate candidate)
+        {
+            var usageId = routeSelectionMode == RouteSelectionModeArrivalExit || string.IsNullOrEmpty(candidate.RunwayEntryUsageId)
+                ? candidate.RunwayExitUsageId
+                : candidate.RunwayEntryUsageId;
+            var usage = gameManager != null && gameManager.Airport != null ? gameManager.Airport.GetRunwayAccessUsage(usageId) : null;
+            var accessPoint = usage != null ? gameManager.Airport.GetRunwayAccessPoint(usage.AccessPointId) : null;
+            if (usage == null || accessPoint == null)
+            {
+                return "none";
+            }
+
+            return $"{usage.UsageId}/{accessPoint.AccessPointId}/{accessPoint.ConnectedSegmentId}";
+        }
+
+        private bool HasRouteSegment(TaxiRouteCandidate candidate, string segmentId)
+        {
+            foreach (var candidateSegmentId in candidate.SegmentIds)
+            {
+                if (candidateSegmentId == segmentId)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private string GetPlayerRouteName(TaxiRouteCandidate candidate, int index, string mode)
         {
             if (mode == RouteSelectionModeArrivalExit)
@@ -604,6 +680,11 @@ namespace ATCJourneyJapan.UI
 
         private string GetRunwayEntryPositionDescription(TaxiRouteCandidate candidate)
         {
+            if (HasRouteSegment(candidate, "A_CONNECTOR_MID_01"))
+            {
+                return "中央取付誘導路";
+            }
+
             if (!string.IsNullOrEmpty(candidate.RunwayEntryUsageId) && candidate.RunwayEntryUsageId.Contains("_END"))
             {
                 return GetAccessPhysicalSideDescription(candidate.RunwayEntryUsageId, "端取付誘導路");
@@ -866,11 +947,135 @@ namespace ATCJourneyJapan.UI
 
         private void CreateRouteSelectionOptionButton(int index)
         {
-            var button = CreateButton($"Route Selection Option {index + 1}", routeSelectionOverlay.transform, string.Empty, new Vector2(276f, 112f - index * 112f), new Vector2(258f, 86f), 16);
+            var button = CreateButton($"Route Selection Option {index + 1}", routeSelectionOverlay.transform, string.Empty, GetRouteSelectionOptionPosition(index, 3), new Vector2(258f, 78f), 16);
             var optionIndex = index;
             button.onClick.AddListener(() => SelectRouteSelectionCandidate(optionIndex));
+            AddRouteSelectionHoverTrigger(button, optionIndex);
             routeSelectionOptionButtons.Add(button);
             routeSelectionOptionTexts.Add(button.GetComponentInChildren<Text>());
+        }
+
+        private void EnsureRouteSelectionOptionButtonCount(int candidateCount)
+        {
+            while (routeSelectionOptionButtons.Count < candidateCount)
+            {
+                CreateRouteSelectionOptionButton(routeSelectionOptionButtons.Count);
+            }
+        }
+
+        private Vector2 GetRouteSelectionOptionPosition(int index, int candidateCount)
+        {
+            var spacing = candidateCount > 3 ? 86f : 94f;
+            return new Vector2(276f, 112f - index * spacing);
+        }
+
+        private void AddRouteSelectionHoverTrigger(Button button, int optionIndex)
+        {
+            var trigger = button.gameObject.AddComponent<EventTrigger>();
+            var pointerEnter = new EventTrigger.Entry
+            {
+                eventID = EventTriggerType.PointerEnter
+            };
+            pointerEnter.callback.AddListener(_ => ShowRouteSelectionHighlight(optionIndex));
+            trigger.triggers.Add(pointerEnter);
+        }
+
+        private int GetInitialRouteSelectionHighlightIndex(string selectedRouteId)
+        {
+            if (!string.IsNullOrEmpty(selectedRouteId))
+            {
+                for (var index = 0; index < activeRouteSelectionCandidates.Count; index++)
+                {
+                    if (activeRouteSelectionCandidates[index].RouteId == selectedRouteId)
+                    {
+                        return index;
+                    }
+                }
+            }
+
+            for (var index = 0; index < activeRouteSelectionCandidates.Count; index++)
+            {
+                if (activeRouteSelectionCandidates[index].IsDefault)
+                {
+                    return index;
+                }
+            }
+
+            return activeRouteSelectionCandidates.Count > 0 ? 0 : -1;
+        }
+
+        private void ShowRouteSelectionHighlight(int candidateIndex)
+        {
+            if (candidateIndex < 0 || candidateIndex >= activeRouteSelectionCandidates.Count)
+            {
+                ClearRouteSelectionHighlight();
+                return;
+            }
+
+            var waypoints = activeRouteSelectionCandidates[candidateIndex].Waypoints;
+            var segmentCount = Mathf.Max(0, waypoints.Count - 1);
+            EnsureRouteSelectionHighlightSegmentCount(segmentCount);
+
+            for (var index = 0; index < routeSelectionHighlightSegments.Count; index++)
+            {
+                var image = routeSelectionHighlightSegments[index];
+                var active = index < segmentCount;
+                image.gameObject.SetActive(active);
+                if (!active)
+                {
+                    continue;
+                }
+
+                ApplyRouteSelectionHighlightSegment(
+                    image.GetComponent<RectTransform>(),
+                    RouteWorldToMap(waypoints[index]),
+                    RouteWorldToMap(waypoints[index + 1]));
+            }
+        }
+
+        private void EnsureRouteSelectionHighlightSegmentCount(int segmentCount)
+        {
+            while (routeSelectionHighlightSegments.Count < segmentCount)
+            {
+                var image = CreateRouteMapBlock(
+                    $"Route Selection Highlight {routeSelectionHighlightSegments.Count + 1}",
+                    Vector2.zero,
+                    new Vector2(20f, 8f),
+                    new Color(1f, 0.86f, 0.18f, 0.9f));
+                image.transform.SetAsLastSibling();
+                routeSelectionHighlightSegments.Add(image);
+            }
+        }
+
+        private void ApplyRouteSelectionHighlightSegment(RectTransform rectTransform, Vector2 start, Vector2 end)
+        {
+            var delta = end - start;
+            rectTransform.anchoredPosition = (start + end) * 0.5f;
+            rectTransform.sizeDelta = new Vector2(Mathf.Max(12f, delta.magnitude), 8f);
+            rectTransform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(delta.y, delta.x) * Mathf.Rad2Deg);
+        }
+
+        private Vector2 RouteWorldToMap(Vector3 worldPosition)
+        {
+            const float worldMinX = -13.25f;
+            const float worldMaxX = 19.25f;
+            const float worldMinZ = -8f;
+            const float worldMaxZ = 2f;
+            const float mapWidth = 370f;
+            const float mapHeight = 192f;
+            var normalizedX = Mathf.InverseLerp(worldMinX, worldMaxX, worldPosition.x);
+            var normalizedZ = Mathf.InverseLerp(worldMinZ, worldMaxZ, worldPosition.z);
+            return new Vector2(
+                normalizedX * mapWidth - mapWidth * 0.5f,
+                normalizedZ * mapHeight - 96f);
+        }
+
+        private void ClearRouteSelectionHighlight()
+        {
+            foreach (var image in routeSelectionHighlightSegments)
+            {
+                image.gameObject.SetActive(false);
+            }
         }
 
         private void CreateMiniMapSpots()

@@ -2,11 +2,21 @@
 
 ## Current Phase
 
-Phase 3.9-5R-2C Fix line up takeoff flow
+Phase 3.9-5R-3 Make taxi route choices visually understandable
 
 ## Previous Phase
 
-Phase 3.9-5R-2B Lock departure runway
+Phase 3.9-5R-2C Fix line up takeoff flow
+
+## Phase 3.9-5R-3で修正したこと
+
+- 出発機のRoute selection overlayで、選択滑走路とSpotに一致する実在candidateだけをRoute A/B/Cとして表示する方針を維持した
+- 出発Route候補は滑走路進入方向の位置比に沿って並べ、端側取付誘導路が候補にある場合もRoute表示へ反映されやすくした
+- Route説明を `18L側端取付誘導路` / `18L側取付誘導路` / `中央取付誘導路` / `36R側取付誘導路` / `36R側端取付誘導路` のような物理位置ベースに整理した
+- `A_CONNECTOR_18L_END_01` / `A_CONNECTOR_36R_END_01` と `RWY18L_ENTRY_END` / `RWY36R_ENTRY_END` の既存candidateをRoute候補として認識できる状態を確認した
+- Routeボタンのhoverまたは選択中candidateに合わせて、overlay map上にcandidate.waypoints由来の明るい経路ハイライトを表示するようにした
+- Route A/B/Cは表示名に留め、内部選択は引き続き `routeId` / `runwayEntryUsageId` / `segmentIds` で管理する
+- 到着機Exit選択UI、到着機movement同期、UI全体のデザイン刷新は次Phase以降に回す
 
 ## Phase 3.9-5R-2Cで修正したこと
 
