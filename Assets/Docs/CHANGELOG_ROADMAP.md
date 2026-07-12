@@ -13,6 +13,13 @@
 - 今回実装すること
 - 今回は実装せず後続Phaseに回すこと
 
+## 2026-07-12 動画分析後ロードマップ再整理
+
+- 動画分析を踏まえ、Phase 5〜10の大きな流れを日本語ロードマップとして再整理
+- Phase 5は、警告UIで危険を先回りして防ぐ方針から、インシデント演出 / Mission Failed / 失敗原因レビューで学ばせる方針へ更新
+- Phase 6として、空港周辺空域、海上進入、Approach Route、広域ミニマップを追加
+- Phase 7〜10を、那覇空港らしさ、B滑走路と混雑運用、3Dモデル/カメラ演出、ステージ制/全国空港展開として再整理
+
 ## 2026-07-06 Phase 3.9-5I Selectable provisional taxi route candidates
 
 - SPOT + RWYに対して複数の暫定Taxi route candidateを持てる構造を追加し、現時点ではdefault candidateをTaxi to RWYで使用する方針に更新

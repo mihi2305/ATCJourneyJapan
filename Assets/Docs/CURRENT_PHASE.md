@@ -17,6 +17,77 @@ Phase 3.9-5R-3B Fix taxi route labels and selected path mismatch
 - Line Up / Takeoffログにも `selectedDepartureRouteId` / `confirmedDepartureRouteId` / `activeRunwayEntryUsageId` を含め、同じrouteが引き継がれているか確認しやすくした
 - 到着機UI、到着機movement、UIデザイン改善は今回も対象外とした
 
+## 次の実装候補
+
+### Phase 3.9-5R-4 Taxi Route Highlight QA / タクシールート見える化の完成
+
+既存のRouteハイライトとRoute選択UIをゼロから作り直さず、選択候補と実際のTaxi movementが同じcandidate由来であることをQA修正する。
+
+- Route線の視認性を上げる
+- hover中Routeとselected Routeの見え方を整理する
+- ハイライトRouteと実際のTaxi movementが同じcandidate由来であることを確認する
+- 候補が1つなら自動選択する
+- 候補が2つならRoute A/Bのみ表示する
+- 存在しないRoute Cを出さない
+- 表示名は `18L側端入口` / `中央入口` など、プレイヤーが分かる日本語にする
+
+## Phase 5〜10 ロードマップ方針
+
+| Phase | 主目的 | 主な内容 |
+| --- | --- | --- |
+| Phase 5 | 空港内の地上運用・UI・インシデント基盤 | A滑走路中心に、出発・到着・Taxi・Route選択・失敗判定までをゲームとして成立させる |
+| Phase 6 | 空港周辺空域・海上進入・広域ミニマップ | 到着機が海上・沖縄島周辺の空域から接近し、Approach判断と空港内運用につながる構造を作る |
+| Phase 7 | 那覇空港らしさ・リアル感強化 | AIP/航空写真を参考に、空港形状・ターミナル・スポット・自衛隊エリア・海上進入の雰囲気を強める |
+| Phase 8 | B滑走路・複雑運用・混雑ゲーム性 | A/B滑走路、Crossfield Taxi、混雑、滑走路占有イベントをゲーム化する |
+| Phase 9 | 3Dモデル・カメラ・演出強化 | 外部3Dモデル導入ルール、カメラ演出、空港車両、インシデント演出、見た目を強化する |
+| Phase 10 | ステージ制・スコア・全国空港展開 | ステージ評価、リザルトレビュー、AirportData / StageData分離、他空港展開を進める |
+
+### Phase 5 空港内の地上運用・UI・インシデント基盤
+
+- Taxi Route Highlight QA、滑走路選択とRoute表示の連動、STRIPS情報階層整理
+- 管制交信ログ化、右下情報パネル整理、チュートリアル/レビュー案内
+- 到着機Exit選択、到着後Taxi-to-Spot Route選択、Taxi干渉のゲーム化
+- インシデント検知、事故/ニアミス演出、失敗原因レビュー
+- 設計変更: 通常プレイでは危険を事前警告で防ぎすぎず、危険な判断によって事故/ニアミス/Runway Conflictが発生し、その瞬間を演出として見せる
+- Mission Failedやリザルトで原因を理解できるようにする。チュートリアルではヒントを出してよいが、通常プレイでは先に答えを教えすぎない
+
+### Phase 6 空港周辺空域・海上進入・広域ミニマップ
+
+- Arrival Spawn Point、Approach Route、Final Approach状態
+- Departure Exit Point、離陸後のAirborne / Departed flow
+- Airport Map / Approach Map の切替、広域ミニマップ
+- 那覇周辺の海、沖縄島輪郭、那覇市街ブロック、港湾/海岸線の簡略表現
+- Approach側の判断とインシデント演出を連動させる
+
+### Phase 7 那覇空港らしさ・リアル感強化
+
+- AIP/航空写真を参考に、誘導路・エプロン・ターミナル・スポットを再整理する
+- DOM/INTLエリア拡張、PBB配置、管制塔位置調整
+- 自衛隊エリアの雰囲気作り。自衛隊機は最初はプレイヤー操作対象ではなくNPCイベントとして扱う
+- 海上進入、島影、市街地、民間/自衛隊混在による那覇ステージらしさを強める
+
+### Phase 8 B滑走路・複雑運用・混雑ゲーム性
+
+- B滑走路18R/36Lのデータ基盤
+- A/B滑走路選択、A/B滑走路別占有管理
+- Crossfield Taxi Route、混雑パターン
+- 自衛隊機による滑走路占有イベント
+
+### Phase 9 3Dモデル・カメラ・演出強化
+
+- Sketchfab / Unity Asset Store等の外部3Dモデル導入ルール、ライセンス管理
+- 航空機モデル改善。AJJなど架空塗装を優先する
+- PBB、管制塔、ターミナル、空港車両
+- 全体俯瞰、選択機追従、滑走路ビュー、管制塔ビュー、Spotビュー
+- インシデント発生時のカメラ演出、海・空・光・UIの見た目調整
+
+### Phase 10 ステージ制・スコア・全国空港展開
+
+- ステージ時間、処理機数、遅延評価、安全評価、Near Miss / Incident評価、ランク
+- リザルトレビュー、失敗原因の振り返り
+- AirportData / StageData分離、空港選択画面
+- 那覇から福岡・伊丹・羽田などへの展開
+
 ## Phase 3.9-5R-3Bで修正したこと
 
 - 出発Route選択UIのプレイヤー向け表現を `タクシールート選択` / `Taxi Route` に統一し、到着機Spot Taxi route選択へも拡張しやすい言い方にした
