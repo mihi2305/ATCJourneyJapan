@@ -2,11 +2,20 @@
 
 ## Current Phase
 
-Phase 3.9-5R-3B Fix taxi route labels and selected path mismatch
+Phase 3.9-5R-3C Fix selected departure taxi route mismatch
 
 ## Previous Phase
 
-Phase 3.9-5R-3 Make taxi route choices visually understandable
+Phase 3.9-5R-3B Fix taxi route labels and selected path mismatch
+
+## Phase 3.9-5R-3Cで修正したこと
+
+- 出発機の `selectedDepartureRouteId` と実Taxi movementの不一致を防ぐため、Pushback時に確定した `confirmedDepartureRouteId` をTaxi開始時まで保持するようにした
+- Taxi開始時は `confirmedDepartureRouteId -> activeDepartureRouteId -> selectedDepartureRouteId` の順で同じ `TaxiRouteCandidate` を解決し、default routeのwaypointsが混ざる状況を避ける
+- Taxi routeの `waypoints` / `segmentIds` / `runwayEntryUsageId` は解決済みcandidate由来で統一し、ログでも first/last waypoint とactive routeを確認できるようにした
+- Hold Short位置を固定の滑走路方向別座標ではなく、`activeRunwayEntryUsageId` に対応する入口手前へ置くようにして、端側入口routeや中央入口routeとLine Up entryのズレを抑えた
+- Line Up / Takeoffログにも `selectedDepartureRouteId` / `confirmedDepartureRouteId` / `activeRunwayEntryUsageId` を含め、同じrouteが引き継がれているか確認しやすくした
+- 到着機UI、到着機movement、UIデザイン改善は今回も対象外とした
 
 ## Phase 3.9-5R-3Bで修正したこと
 

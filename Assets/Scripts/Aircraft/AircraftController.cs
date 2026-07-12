@@ -50,6 +50,7 @@ namespace ATCJourneyJapan.Aircraft
         private Vector2 facingDirection = Vector2.up;
         private AircraftState heldTaxiState = AircraftState.Waiting;
         private string lastLandingRunwayDesignator = string.Empty;
+        private string confirmedDepartureRouteId = string.Empty;
         private string activeDepartureRouteId = string.Empty;
         private string activeRunwayEntryUsageId = string.Empty;
         private float takeoffSpeedProfileElapsed;
@@ -79,6 +80,9 @@ namespace ATCJourneyJapan.Aircraft
             else
             {
                 selectedDepartureRouteId = routeId ?? string.Empty;
+                confirmedDepartureRouteId = string.Empty;
+                activeDepartureRouteId = string.Empty;
+                activeRunwayEntryUsageId = string.Empty;
             }
 
             SyncSelectedRouteIds();
@@ -99,6 +103,9 @@ namespace ATCJourneyJapan.Aircraft
             arrivalAircraft = isArrival;
             selectedDepartureRouteId = data.SelectedDepartureRouteId;
             selectedArrivalRouteId = data.SelectedArrivalRouteId;
+            confirmedDepartureRouteId = string.Empty;
+            activeDepartureRouteId = string.Empty;
+            activeRunwayEntryUsageId = string.Empty;
             airportManager = airport;
             gameManager = manager;
             normalMaterial = normal;
@@ -311,15 +318,16 @@ namespace ATCJourneyJapan.Aircraft
             var operationDirection = GetOperationRunwayDirection();
             var spotId = flightData != null ? flightData.SpotId : string.Empty;
             var routeCandidates = airportManager.GetDepartureTaxiRouteCandidates(spotId, operationDirection);
-            var routeCandidate = ResolveDepartureTaxiRoute(routeCandidates, out var fallbackUsed);
+            var routeCandidate = ResolveDepartureTaxiRoute(routeCandidates, out var fallbackUsed, out var fallbackReason);
             var routePoints = routeCandidate != null
                 ? routeCandidate.Waypoints
                 : airportManager.GetTaxiToHoldRoute(transform.position, operationDirection);
             selectedDepartureRouteId = routeCandidate != null ? routeCandidate.RouteId : string.Empty;
+            confirmedDepartureRouteId = routeCandidate != null ? routeCandidate.RouteId : string.Empty;
             activeDepartureRouteId = routeCandidate != null ? routeCandidate.RouteId : string.Empty;
             activeRunwayEntryUsageId = routeCandidate != null ? routeCandidate.RunwayEntryUsageId : string.Empty;
             SyncSelectedRouteIds();
-            LogSelectedTaxiRoute(routeCandidate, spotId, operationDirection, fallbackUsed);
+            LogSelectedTaxiRoute(routeCandidate, spotId, operationDirection, fallbackUsed, fallbackReason);
 
             SetState(AircraftState.TaxiToHold);
             StartRouteWithHeading(routePoints, taxiSpeed, () =>
@@ -338,40 +346,44 @@ namespace ATCJourneyJapan.Aircraft
             var operationDirection = GetOperationRunwayDirection();
             var spotId = flightData.SpotId;
             var routeCandidates = airportManager.GetDepartureTaxiRouteCandidates(spotId, operationDirection);
-            var routeCandidate = SelectDepartureRouteCandidate(routeCandidates, selectedDepartureRouteId, out var fallbackUsed);
+            var routeCandidate = SelectDepartureRouteCandidate(routeCandidates, selectedDepartureRouteId, out var fallbackUsed, out var fallbackReason);
             selectedDepartureRouteId = routeCandidate != null ? routeCandidate.RouteId : string.Empty;
+            confirmedDepartureRouteId = routeCandidate != null ? routeCandidate.RouteId : string.Empty;
             activeDepartureRouteId = routeCandidate != null ? routeCandidate.RouteId : string.Empty;
             activeRunwayEntryUsageId = routeCandidate != null ? routeCandidate.RunwayEntryUsageId : string.Empty;
             SyncSelectedRouteIds();
-            LogConfirmedDepartureRoute(routeCandidate, spotId, operationDirection, fallbackUsed);
+            LogConfirmedDepartureRoute(routeCandidate, spotId, operationDirection, fallbackUsed, fallbackReason);
         }
 
-        private void LogConfirmedDepartureRoute(TaxiRouteCandidate routeCandidate, string spotId, string runwayDesignator, bool fallbackUsed)
+        private void LogConfirmedDepartureRoute(TaxiRouteCandidate routeCandidate, string spotId, string runwayDesignator, bool fallbackUsed, string fallbackReason)
         {
             Debug.Log(
                 $"Departure route confirmed: {flightNumber} purpose=DepartureRoute "
                 + $"selectedDepartureRouteId={(routeCandidate != null ? routeCandidate.RouteId : "none")} "
+                + $"confirmedDepartureRouteId={FormatUsageId(confirmedDepartureRouteId)} "
                 + $"runwayEntryUsageId={(routeCandidate != null ? FormatUsageId(routeCandidate.RunwayEntryUsageId) : "none")} "
-                + $"runway={runwayDesignator} spot={spotId} fallbackUsed={fallbackUsed} "
+                + $"runway={runwayDesignator} spot={spotId} fallbackUsed={fallbackUsed} fallbackReason={fallbackReason} "
                 + $"segments={(routeCandidate != null ? JoinSegmentIds(routeCandidate.SegmentIds) : "none")} "
                 + $"firstWaypoint={(routeCandidate != null ? FormatRouteWaypoint(routeCandidate, true) : "none")} "
                 + $"lastWaypoint={(routeCandidate != null ? FormatRouteWaypoint(routeCandidate, false) : "none")}");
         }
 
-        private void LogSelectedTaxiRoute(TaxiRouteCandidate routeCandidate, string spotId, string runwayDesignator, bool fallbackUsed)
+        private void LogSelectedTaxiRoute(TaxiRouteCandidate routeCandidate, string spotId, string runwayDesignator, bool fallbackUsed, string fallbackReason)
         {
             if (routeCandidate == null)
             {
                 Debug.LogWarning(
                     $"Selected taxi route fallback: {flightNumber} purpose=Departure {spotId} RWY {runwayDesignator} "
-                    + $"routeId=fallback selectedDepartureRouteId=none fallbackUsed={fallbackUsed} displayName=Direct Waypoint | routeInstructionText=none | segments: none "
+                    + $"routeId=fallback selectedDepartureRouteId=none confirmedDepartureRouteId=none fallbackUsed={fallbackUsed} fallbackReason={fallbackReason} "
+                    + "displayName=Direct Waypoint | routeInstructionText=none | segments: none "
                     + "runwayEntryUsageId=none runwayExitUsageId=none");
                 return;
             }
 
             Debug.Log(
                 $"Selected taxi route: {flightNumber} purpose=Departure {spotId} RWY {runwayDesignator} "
-                + $"selectedDepartureRouteId={selectedDepartureRouteId} routeId={routeCandidate.RouteId} fallbackUsed={fallbackUsed} {routeCandidate.DisplayName} | "
+                + $"selectedDepartureRouteId={selectedDepartureRouteId} confirmedDepartureRouteId={FormatUsageId(confirmedDepartureRouteId)} "
+                + $"routeId={routeCandidate.RouteId} fallbackUsed={fallbackUsed} fallbackReason={fallbackReason} {routeCandidate.DisplayName} | "
                 + $"{routeCandidate.RouteInstructionText} | segments: {JoinSegmentIds(routeCandidate.SegmentIds)} "
                 + $"runwayEntryUsageId={FormatUsageId(routeCandidate.RunwayEntryUsageId)} runwayExitUsageId={FormatUsageId(routeCandidate.RunwayExitUsageId)} "
                 + $"firstWaypoint={FormatRouteWaypoint(routeCandidate, true)} lastWaypoint={FormatRouteWaypoint(routeCandidate, false)} "
@@ -514,9 +526,10 @@ namespace ATCJourneyJapan.Aircraft
             return SelectDefaultTaxiRouteCandidate(routeCandidates);
         }
 
-        private TaxiRouteCandidate SelectDepartureRouteCandidate(IReadOnlyList<TaxiRouteCandidate> routeCandidates, string selectedRouteId, out bool fallbackUsed)
+        private TaxiRouteCandidate SelectDepartureRouteCandidate(IReadOnlyList<TaxiRouteCandidate> routeCandidates, string selectedRouteId, out bool fallbackUsed, out string fallbackReason)
         {
             fallbackUsed = false;
+            fallbackReason = "none";
             if (!string.IsNullOrEmpty(selectedRouteId))
             {
                 foreach (var routeCandidate in routeCandidates)
@@ -528,17 +541,32 @@ namespace ATCJourneyJapan.Aircraft
                 }
 
                 fallbackUsed = true;
+                fallbackReason = "selectedRouteIdNotFoundForSpotRunway";
             }
 
             var defaultCandidate = SelectDefaultTaxiRouteCandidate(routeCandidates);
-            fallbackUsed = fallbackUsed || string.IsNullOrEmpty(selectedRouteId);
+            if (string.IsNullOrEmpty(selectedRouteId))
+            {
+                fallbackUsed = true;
+                fallbackReason = "selectedRouteIdEmpty";
+            }
+
+            if (defaultCandidate == null)
+            {
+                fallbackReason = "noCandidate";
+            }
+
             return defaultCandidate;
         }
 
-        private TaxiRouteCandidate ResolveDepartureTaxiRoute(IReadOnlyList<TaxiRouteCandidate> routeCandidates, out bool fallbackUsed)
+        private TaxiRouteCandidate ResolveDepartureTaxiRoute(IReadOnlyList<TaxiRouteCandidate> routeCandidates, out bool fallbackUsed, out string fallbackReason)
         {
-            var preferredRouteId = !string.IsNullOrEmpty(activeDepartureRouteId) ? activeDepartureRouteId : selectedDepartureRouteId;
-            return SelectDepartureRouteCandidate(routeCandidates, preferredRouteId, out fallbackUsed);
+            var preferredRouteId = !string.IsNullOrEmpty(confirmedDepartureRouteId)
+                ? confirmedDepartureRouteId
+                : !string.IsNullOrEmpty(activeDepartureRouteId)
+                    ? activeDepartureRouteId
+                    : selectedDepartureRouteId;
+            return SelectDepartureRouteCandidate(routeCandidates, preferredRouteId, out fallbackUsed, out fallbackReason);
         }
 
         private TaxiRouteCandidate SelectDefaultTaxiRouteCandidate(IReadOnlyList<TaxiRouteCandidate> routeCandidates)
@@ -657,7 +685,11 @@ namespace ATCJourneyJapan.Aircraft
             var operationDirection = GetOperationRunwayDirection();
             route.Stop();
             SetState(AircraftState.HoldingShort);
-            transform.position = airportManager.GetHoldShortPosition(operationDirection);
+            transform.position = airportManager.GetHoldShortPosition(operationDirection, activeRunwayEntryUsageId);
+            Debug.Log(
+                $"Hold short position set: {flightNumber} runway={operationDirection} "
+                + $"selectedDepartureRouteId={FormatUsageId(selectedDepartureRouteId)} confirmedDepartureRouteId={FormatUsageId(confirmedDepartureRouteId)} "
+                + $"activeRunwayEntryUsageId={FormatUsageId(activeRunwayEntryUsageId)} position={FormatVector3(transform.position)}");
             SetHeadingFromWorldDirection(Vector3.forward);
         }
 
@@ -668,7 +700,8 @@ namespace ATCJourneyJapan.Aircraft
             gameManager.OccupyPrimaryRunway(this, "滑走路上待機");
             Debug.Log(
                 $"Line up cleared: {flightNumber} runway={operationDirection} "
-                + $"entryUsage={FormatUsageId(activeRunwayEntryUsageId)} routeId={FormatUsageId(activeDepartureRouteId)}");
+                + $"selectedDepartureRouteId={FormatUsageId(selectedDepartureRouteId)} confirmedDepartureRouteId={FormatUsageId(confirmedDepartureRouteId)} "
+                + $"entryUsage={FormatUsageId(activeRunwayEntryUsageId)} routeId={FormatUsageId(activeDepartureRouteId)} start={FormatVector3(transform.position)}");
             StartRouteWithHeading(airportManager.GetLineUpRoute(transform.position, operationDirection, activeRunwayEntryUsageId), taxiSpeed, () =>
             {
                 transform.position = GetLineupCompletionPoint(operationDirection);
@@ -688,6 +721,7 @@ namespace ATCJourneyJapan.Aircraft
             LogSelectedTakeoffRoute(operationDirection);
             Debug.Log(
                 $"Takeoff cleared: {flightNumber} runway={operationDirection} "
+                + $"selectedDepartureRouteId={FormatUsageId(selectedDepartureRouteId)} confirmedDepartureRouteId={FormatUsageId(confirmedDepartureRouteId)} "
                 + $"entryUsage={FormatUsageId(activeRunwayEntryUsageId)} routeId={FormatUsageId(activeDepartureRouteId)}");
             StartTakeoffSpeedProfile(operationDirection);
             gameManager.OccupyPrimaryRunway(this, "離陸滑走中");

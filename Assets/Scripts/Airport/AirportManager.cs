@@ -284,6 +284,22 @@ namespace ATCJourneyJapan.Airport
             return Is36R(operationDirection) ? new Vector3(-7f, 0.55f, -3f) : HoldShortPosition;
         }
 
+        public Vector3 GetHoldShortPosition(string operationDirection, string runwayEntryUsageId)
+        {
+            if (string.IsNullOrEmpty(runwayEntryUsageId))
+            {
+                return GetHoldShortPosition(operationDirection);
+            }
+
+            var runwayAccessPoint = GetAccessPointForUsage(runwayEntryUsageId);
+            if (runwayAccessPoint == null)
+            {
+                return GetHoldShortPosition(operationDirection);
+            }
+
+            return new Vector3(runwayAccessPoint.Position.x, 0.55f, -3f);
+        }
+
         public IEnumerable<string> GetPrimaryRunwayDirectionOptions()
         {
             if (PrimaryRunwayData == null)
