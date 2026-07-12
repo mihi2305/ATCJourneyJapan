@@ -84,6 +84,8 @@ namespace ATCJourneyJapan.UI
         private RectTransform minimapContent;
         private Image minimapRunwayImage;
         private GameObject selectedPanel;
+        private GameObject runwaySelectionOverlay;
+        private GameObject runwaySelectionMapContent;
         private GameObject routeSelectionOverlay;
         private GameObject routeSelectionMapContent;
         private GameObject guidePanel;
@@ -94,8 +96,14 @@ namespace ATCJourneyJapan.UI
         private Text guideText;
         private Text instructorText;
         private Text selectedText;
+        private Text runwaySelectionTitleText;
+        private Text runwaySelectionHintText;
+        private Text runwaySelectionStatusText;
         private Text routeSelectionTitleText;
         private Text routeSelectionHintText;
+        private Image runwaySelection18LMarker;
+        private Image runwaySelection36RMarker;
+        private Image runwaySelectionRunwayHighlight;
         private Text routeSelectionRunwayStatusText;
         private Image routeSelectionRunwayHighlight;
         private Image routeSelection18LMarker;
@@ -111,6 +119,7 @@ namespace ATCJourneyJapan.UI
         private Text commandButtonText;
         private Button tutorialNextButton;
         private string lastLoggedMiniMapRouteKey = string.Empty;
+        private AircraftController runwaySelectionAircraft;
         private string routeSelectionPurpose = string.Empty;
         private string routeSelectionMode = string.Empty;
         private AircraftController routeSelectionAircraft;
@@ -304,6 +313,7 @@ namespace ATCJourneyJapan.UI
 
             resultPanel = CreatePanel("Result Panel", canvasObject.transform, new Vector2(0.5f, 0.5f), new Vector2(620f, 330f));
             resultText = CreateText("Result Text", resultPanel.transform, string.Empty, 23, FontStyle.Bold, TextAnchor.MiddleCenter, Vector2.zero, new Vector2(540f, 270f));
+            BuildRunwaySelectionOverlay();
             BuildRouteSelectionOverlay();
         }
 
@@ -367,6 +377,40 @@ namespace ATCJourneyJapan.UI
             ClearRouteSelectionEntryLabels();
             ClearRouteSelectionRunwayVisual();
             routeSelectionAircraft = null;
+        }
+
+        private void OpenRunwaySelectionOverlay(AircraftController aircraft)
+        {
+            if (aircraft == null || aircraft.FlightData == null || runwaySelectionOverlay == null)
+            {
+                return;
+            }
+
+            runwaySelectionAircraft = aircraft;
+            var currentRunway = aircraft.FlightData.HasActiveRunwayDesignator
+                ? aircraft.FlightData.ActiveRunwayDesignator
+                : "18L";
+            runwaySelectionTitleText.text = $"滑走路を選択\n{aircraft.FlightData.FlightId} / Departure";
+            runwaySelectionHintText.text = "A滑走路の使用方向を選択します。選択後、そのRWYに対応するタクシールート候補だけを表示します。";
+            runwaySelectionOverlay.SetActive(true);
+            UpdateRunwaySelectionVisual(currentRunway);
+        }
+
+        private void CloseRunwaySelectionOverlay()
+        {
+            if (runwaySelectionOverlay != null)
+            {
+                runwaySelectionOverlay.SetActive(false);
+            }
+
+            runwaySelectionAircraft = null;
+        }
+
+        private void SelectRunwayFromOverlay(string runwayDesignator)
+        {
+            var targetAircraft = runwaySelectionAircraft;
+            CloseRunwaySelectionOverlay();
+            SelectDepartureRunway(targetAircraft, runwayDesignator);
         }
 
         private void OpenRouteSelectionOverlay(AircraftController aircraft, string mode)
@@ -958,6 +1002,95 @@ namespace ATCJourneyJapan.UI
             CreateText("Mini Map Runway B Label", minimapContent, "B RWY 18R / 36L", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(3f, 0f, 12.2f)), new Vector2(110f, 18f));
             CreateText("Mini Map Runway B 36L End", minimapContent, "36L", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(-11.6f, 0f, 13.35f)), new Vector2(44f, 18f));
             CreateText("Mini Map Runway B 18R End", minimapContent, "18R", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(17.6f, 0f, 13.35f)), new Vector2(44f, 18f));
+        }
+
+        private void BuildRunwaySelectionOverlay()
+        {
+            runwaySelectionOverlay = CreatePanel("Runway Selection Overlay", hudRoot.transform, new Vector2(0.5f, 0.5f), new Vector2(760f, 500f));
+            runwaySelectionOverlay.GetComponent<Image>().color = new Color(0.01f, 0.018f, 0.025f, 0.96f);
+            runwaySelectionTitleText = CreateText("Runway Selection Title", runwaySelectionOverlay.transform, "滑走路を選択", 25, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-210f, 202f), new Vector2(330f, 44f));
+            CreateButton("Runway Selection Close", runwaySelectionOverlay.transform, "閉じる", new Vector2(290f, 202f), new Vector2(110f, 40f), 16)
+                .onClick.AddListener(CloseRunwaySelectionOverlay);
+
+            var mapPanel = CreatePanel("Runway Selection Map", runwaySelectionOverlay.transform, new Vector2(0.5f, 0.5f), new Vector2(520f, 310f), AnchorPreset.Center, new Vector2(-96f, 8f));
+            mapPanel.GetComponent<Image>().color = new Color(0.035f, 0.075f, 0.085f, 0.96f);
+
+            runwaySelectionMapContent = new GameObject("Runway Selection Map Content");
+            runwaySelectionMapContent.transform.SetParent(mapPanel.transform, false);
+            var mapRect = runwaySelectionMapContent.AddComponent<RectTransform>();
+            ApplyAnchor(mapRect, AnchorPreset.Center);
+            mapRect.sizeDelta = new Vector2(480f, 280f);
+            mapRect.anchoredPosition = Vector2.zero;
+
+            CreateRunwayMapBlock("Runway Map Airport Island", new Vector2(0f, -72f), new Vector2(442f, 130f), new Color(0.1f, 0.18f, 0.14f, 0.95f));
+            CreateRunwayMapBlock("Runway Map A Runway", new Vector2(0f, 62f), new Vector2(370f, 32f), new Color(0.36f, 0.38f, 0.4f, 0.98f));
+            CreateRunwayMapBlock("Runway Map Main Taxiway", new Vector2(0f, -34f), new Vector2(370f, 18f), new Color(0.18f, 0.34f, 0.42f, 0.98f));
+            CreateRunwayMapBlock("Runway Map 36R End Connector", new Vector2(-168f, 14f), new Vector2(18f, 94f), new Color(0.18f, 0.34f, 0.42f, 0.98f));
+            CreateRunwayMapBlock("Runway Map Mid Connector", new Vector2(0f, 14f), new Vector2(18f, 94f), new Color(0.18f, 0.34f, 0.42f, 0.98f));
+            CreateRunwayMapBlock("Runway Map 18L End Connector", new Vector2(168f, 14f), new Vector2(18f, 94f), new Color(0.18f, 0.34f, 0.42f, 0.98f));
+            runwaySelectionRunwayHighlight = CreateRunwayMapBlock("Runway Map Selected Direction", new Vector2(0f, 62f), new Vector2(370f, 10f), new Color(1f, 0.86f, 0.18f, 0.28f));
+            runwaySelection36RMarker = CreateRunwayMapBlock("Runway Map 36R Marker", new Vector2(-202f, 94f), new Vector2(58f, 24f), new Color(1f, 0.86f, 0.18f, 0.18f));
+            runwaySelection18LMarker = CreateRunwayMapBlock("Runway Map 18L Marker", new Vector2(202f, 94f), new Vector2(58f, 24f), new Color(1f, 0.86f, 0.18f, 0.18f));
+            CreateText("Runway Map Runway Label", runwaySelectionMapContent.transform, "A RWY 18L / 36R", 14, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(0f, 100f), new Vector2(170f, 22f));
+            CreateText("Runway Map 36R Label", runwaySelectionMapContent.transform, "36R", 13, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(-202f, 94f), new Vector2(48f, 20f));
+            CreateText("Runway Map 18L Label", runwaySelectionMapContent.transform, "18L", 13, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(202f, 94f), new Vector2(48f, 20f));
+            CreateText("Runway Map 36R Entry Label", runwaySelectionMapContent.transform, "36R側入口", 12, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(-168f, -18f), new Vector2(92f, 20f));
+            CreateText("Runway Map Mid Entry Label", runwaySelectionMapContent.transform, "中央入口", 12, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(0f, -18f), new Vector2(82f, 20f));
+            CreateText("Runway Map 18L Entry Label", runwaySelectionMapContent.transform, "18L側入口", 12, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(168f, -18f), new Vector2(92f, 20f));
+            runwaySelectionStatusText = CreateText("Runway Selection Status", runwaySelectionMapContent.transform, string.Empty, 13, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(0f, 124f), new Vector2(240f, 20f));
+
+            var button18L = CreateButton("Runway Selection 18L", runwaySelectionOverlay.transform, "RWY 18L\n18L側を使用", new Vector2(238f, 62f), new Vector2(178f, 76f), 18);
+            button18L.onClick.AddListener(() => SelectRunwayFromOverlay("18L"));
+            AddRunwaySelectionHoverTrigger(button18L, "18L");
+            var button36R = CreateButton("Runway Selection 36R", runwaySelectionOverlay.transform, "RWY 36R\n36R側を使用", new Vector2(238f, -34f), new Vector2(178f, 76f), 18);
+            button36R.onClick.AddListener(() => SelectRunwayFromOverlay("36R"));
+            AddRunwaySelectionHoverTrigger(button36R, "36R");
+
+            runwaySelectionHintText = CreateText("Runway Selection Hint", runwaySelectionOverlay.transform, string.Empty, 15, FontStyle.Normal, TextAnchor.UpperLeft, new Vector2(-96f, -204f), new Vector2(520f, 48f));
+            runwaySelectionOverlay.SetActive(false);
+        }
+
+        private Image CreateRunwayMapBlock(string name, Vector2 anchoredPosition, Vector2 size, Color color)
+        {
+            var block = new GameObject(name);
+            block.transform.SetParent(runwaySelectionMapContent.transform, false);
+            var rectTransform = block.AddComponent<RectTransform>();
+            ApplyAnchor(rectTransform, AnchorPreset.Center);
+            rectTransform.sizeDelta = size;
+            rectTransform.anchoredPosition = anchoredPosition;
+
+            var image = block.AddComponent<Image>();
+            image.color = color;
+            image.raycastTarget = false;
+            return image;
+        }
+
+        private void AddRunwaySelectionHoverTrigger(Button button, string runwayDesignator)
+        {
+            var trigger = button.gameObject.AddComponent<EventTrigger>();
+            var pointerEnter = new EventTrigger.Entry
+            {
+                eventID = EventTriggerType.PointerEnter
+            };
+            pointerEnter.callback.AddListener(_ => UpdateRunwaySelectionVisual(runwayDesignator));
+            trigger.triggers.Add(pointerEnter);
+        }
+
+        private void UpdateRunwaySelectionVisual(string runwayDesignator)
+        {
+            if (runwaySelectionRunwayHighlight == null || runwaySelection18LMarker == null || runwaySelection36RMarker == null || runwaySelectionStatusText == null)
+            {
+                return;
+            }
+
+            var is18L = runwayDesignator == "18L";
+            var is36R = runwayDesignator == "36R";
+            runwaySelection18LMarker.color = is18L ? new Color(1f, 0.86f, 0.18f, 0.76f) : new Color(0.74f, 0.82f, 0.86f, 0.12f);
+            runwaySelection36RMarker.color = is36R ? new Color(1f, 0.86f, 0.18f, 0.76f) : new Color(0.74f, 0.82f, 0.86f, 0.12f);
+            runwaySelectionRunwayHighlight.color = new Color(1f, 0.86f, 0.18f, is18L || is36R ? 0.32f : 0.14f);
+            runwaySelectionStatusText.text = string.IsNullOrEmpty(runwayDesignator)
+                ? string.Empty
+                : $"選択候補 RWY {runwayDesignator}";
         }
 
         private void BuildRouteSelectionOverlay()
@@ -1867,14 +2000,10 @@ namespace ATCJourneyJapan.UI
                 return;
             }
 
-            foreach (var runwayDesignator in gameManager.Airport.GetPrimaryRunwayDirectionOptions())
-            {
-                var capturedRunwayDesignator = runwayDesignator;
-                actions.Add(new StripAction(
-                    $"滑走路を選択 RWY {capturedRunwayDesignator}\nSelect RWY {capturedRunwayDesignator}",
-                    () => SelectDepartureRunway(selected, capturedRunwayDesignator),
-                    true));
-            }
+            actions.Add(new StripAction(
+                "滑走路を選択\nSelect Runway",
+                () => OpenRunwaySelectionOverlay(selected),
+                true));
         }
 
         private void SelectDepartureRunway(AircraftController selected, string runwayDesignator)

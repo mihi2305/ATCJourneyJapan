@@ -2,11 +2,19 @@
 
 ## Current Phase
 
-Phase 3.9-5R-5 追加修正: 18L側Minimap route表示合わせ
+Phase 3.9-5R-5 本修正: 滑走路選択Map Overlay
 
 ## Previous Phase
 
 Phase 3.9-5R-4 Taxi Route Highlight QA / タクシールート見える化の完成
+
+## Phase 3.9-5R-5本修正で直したこと
+
+- 出発機のPushback前フローで、STRIPから直接18L/36Rを選ぶのではなく、滑走路選択Overlayを開いてA滑走路の18L端/36R端を見ながら選べるようにした
+- 滑走路選択Overlayは、Route selection overlayと同じ簡略空港マップ思想で、A滑走路本体、18L/36R端、主誘導路、18L側入口/中央入口/36R側入口を表示する
+- RWY 18L / RWY 36Rボタンのhoverまたは選択時に、該当する滑走路端を黄色で強調し、非選択側を薄く表示する
+- 滑走路選択後は既存通り `selectedRunwayDesignator` を航空機に保持し、そのRWYに一致する `TaxiRouteCandidate` だけをRoute selection overlayへ出す
+- Route A/Bハイライト、Minimap route highlight、Pushback後Taxi、Line Up / Takeoffへの `activeRunwayEntryUsageId` 引き継ぎは既存挙動を維持した
 
 ## Phase 3.9-5R-5追加修正で直したこと
 
