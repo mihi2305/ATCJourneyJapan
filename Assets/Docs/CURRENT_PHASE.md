@@ -2,11 +2,20 @@
 
 ## Current Phase
 
-Phase 3.9-5R-4 Taxi Route Highlight QA / タクシールート見える化の完成
+Phase 3.9-5R-5 滑走路選択とRoute Overlayの連動
 
 ## Previous Phase
 
-Phase 3.9-5R-3C Fix selected departure taxi route mismatch
+Phase 3.9-5R-4 Taxi Route Highlight QA / タクシールート見える化の完成
+
+## Phase 3.9-5R-5で修正したこと
+
+- 出発機の滑走路選択後、Route selection overlay上で選択中RWYを黄色のハイライトと `選択RWY 18L / 36R` 表示で確認できるようにした
+- 18L / 36Rの端ラベルは選択側を強調し、非選択側は薄くして、どちらの滑走路方向を選んだか分かりやすくした
+- Route overlay上に、candidateの `runwayEntryUsageId -> RunwayAccessUsage -> RunwayAccessPoint` から取得した入口位置ラベルを表示するようにした
+- 滑走路選択時ログに、選択RWYに紐づくcandidate数、routeId、runwayEntryUsageIdを出し、Route候補が選択滑走路で絞られているか確認しやすくした
+- Route A/Bのハイライト、`selectedDepartureRouteId` と実Taxi movementの一致、Pushback後の滑走路選択非表示は既存挙動を維持した
+- 到着機新UI、B滑走路、3Dモデル、カメラ、スコア制は今回も対象外とした
 
 ## Phase 3.9-5R-4で修正したこと
 

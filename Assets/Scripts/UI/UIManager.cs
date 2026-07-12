@@ -61,6 +61,7 @@ namespace ATCJourneyJapan.UI
         private readonly List<Text> routeSelectionOptionTexts = new List<Text>();
         private readonly List<Image> routeSelectionPreviewSegments = new List<Image>();
         private readonly List<Image> routeSelectionHighlightSegments = new List<Image>();
+        private readonly List<Text> routeSelectionEntryLabelTexts = new List<Text>();
         private readonly List<TaxiRouteCandidate> activeRouteSelectionCandidates = new List<TaxiRouteCandidate>();
         private GameManager gameManager;
         private ScoreManager scoreManager;
@@ -94,6 +95,10 @@ namespace ATCJourneyJapan.UI
         private Text selectedText;
         private Text routeSelectionTitleText;
         private Text routeSelectionHintText;
+        private Text routeSelectionRunwayStatusText;
+        private Image routeSelectionRunwayHighlight;
+        private Image routeSelection18LMarker;
+        private Image routeSelection36RMarker;
         private Text helpText;
         private Text commandStatusText;
         private Text stripCommandButtonText;
@@ -357,6 +362,8 @@ namespace ATCJourneyJapan.UI
 
             ClearRouteSelectionPreview();
             ClearRouteSelectionHighlight();
+            ClearRouteSelectionEntryLabels();
+            ClearRouteSelectionRunwayVisual();
             routeSelectionAircraft = null;
         }
 
@@ -412,8 +419,10 @@ namespace ATCJourneyJapan.UI
             }
 
             routeSelectionOverlay.SetActive(true);
+            UpdateRouteSelectionRunwayVisual(runwayDesignator);
             ShowRouteSelectionPreview();
             ShowRouteSelectionHighlight(GetInitialRouteSelectionHighlightIndex(selectedRouteId));
+            UpdateRouteSelectionEntryLabels(mode);
         }
 
         private void AutoSelectSingleRouteCandidate(AircraftController aircraft, string mode, TaxiRouteCandidate candidate, bool refreshAfterSelection = true)
@@ -596,6 +605,31 @@ namespace ATCJourneyJapan.UI
 
             var point = first ? candidate.Waypoints[0] : candidate.Waypoints[candidate.Waypoints.Count - 1];
             return $"({point.x:0.0}, {point.y:0.0}, {point.z:0.0})";
+        }
+
+        private string FormatRouteCandidateRouteIds(IReadOnlyList<TaxiRouteCandidate> candidates)
+        {
+            var values = new List<string>();
+            foreach (var candidate in candidates)
+            {
+                values.Add(candidate.RouteId);
+            }
+
+            return values.Count > 0 ? string.Join(", ", values.ToArray()) : "none";
+        }
+
+        private string FormatRouteCandidateEntryUsageIds(IReadOnlyList<TaxiRouteCandidate> candidates)
+        {
+            var values = new List<string>();
+            foreach (var candidate in candidates)
+            {
+                if (!string.IsNullOrEmpty(candidate.RunwayEntryUsageId))
+                {
+                    values.Add(candidate.RunwayEntryUsageId);
+                }
+            }
+
+            return values.Count > 0 ? string.Join(", ", values.ToArray()) : "none";
         }
 
         private void LogRouteSelectionCandidates(AircraftController aircraft, string runwayDesignator)
@@ -951,10 +985,14 @@ namespace ATCJourneyJapan.UI
             CreateRouteMapBlock("Route Map 18L Connector", new Vector2(118f, 14f), new Vector2(18f, 94f), new Color(0.18f, 0.34f, 0.42f, 0.98f));
             CreateRouteMapBlock("Route Map 18L End Connector", new Vector2(168f, 14f), new Vector2(18f, 94f), new Color(0.18f, 0.34f, 0.42f, 0.98f));
             CreateRouteMapBlock("Route Map Terminal", new Vector2(88f, -112f), new Vector2(236f, 32f), new Color(0.58f, 0.64f, 0.62f, 0.98f));
+            routeSelectionRunwayHighlight = CreateRouteMapBlock("Route Map Selected Runway Highlight", new Vector2(0f, 62f), new Vector2(370f, 10f), new Color(1f, 0.86f, 0.18f, 0.28f));
+            routeSelection36RMarker = CreateRouteMapBlock("Route Map Selected 36R Marker", new Vector2(-202f, 94f), new Vector2(58f, 24f), new Color(1f, 0.86f, 0.18f, 0.18f));
+            routeSelection18LMarker = CreateRouteMapBlock("Route Map Selected 18L Marker", new Vector2(202f, 94f), new Vector2(58f, 24f), new Color(1f, 0.86f, 0.18f, 0.18f));
             CreateText("Route Map Runway Label", routeSelectionMapContent.transform, "A RWY 18L / 36R", 14, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(0f, 100f), new Vector2(170f, 22f));
             CreateText("Route Map 36R Label", routeSelectionMapContent.transform, "36R", 13, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(-202f, 94f), new Vector2(48f, 20f));
             CreateText("Route Map 18L Label", routeSelectionMapContent.transform, "18L", 13, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(202f, 94f), new Vector2(48f, 20f));
             CreateText("Route Map Taxiway Label", routeSelectionMapContent.transform, "Main taxi route", 12, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(0f, -62f), new Vector2(150f, 18f));
+            routeSelectionRunwayStatusText = CreateText("Route Map Selected Runway Text", routeSelectionMapContent.transform, string.Empty, 13, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(0f, 124f), new Vector2(220f, 20f));
 
             routeSelectionHintText = CreateText("Route Selection Hint", routeSelectionOverlay.transform, string.Empty, 15, FontStyle.Normal, TextAnchor.UpperLeft, new Vector2(-134f, -226f), new Vector2(520f, 54f));
 
@@ -979,6 +1017,118 @@ namespace ATCJourneyJapan.UI
             image.color = color;
             image.raycastTarget = false;
             return image;
+        }
+
+        private void UpdateRouteSelectionRunwayVisual(string runwayDesignator)
+        {
+            if (routeSelectionRunwayHighlight == null || routeSelection18LMarker == null || routeSelection36RMarker == null || routeSelectionRunwayStatusText == null)
+            {
+                return;
+            }
+
+            routeSelectionRunwayHighlight.gameObject.SetActive(!string.IsNullOrEmpty(runwayDesignator));
+            routeSelection18LMarker.gameObject.SetActive(true);
+            routeSelection36RMarker.gameObject.SetActive(true);
+
+            var is18L = runwayDesignator == "18L";
+            var is36R = runwayDesignator == "36R";
+            routeSelection18LMarker.color = is18L ? new Color(1f, 0.86f, 0.18f, 0.72f) : new Color(0.74f, 0.82f, 0.86f, 0.12f);
+            routeSelection36RMarker.color = is36R ? new Color(1f, 0.86f, 0.18f, 0.72f) : new Color(0.74f, 0.82f, 0.86f, 0.12f);
+            routeSelectionRunwayHighlight.color = new Color(1f, 0.86f, 0.18f, is18L || is36R ? 0.3f : 0.14f);
+            routeSelectionRunwayStatusText.text = string.IsNullOrEmpty(runwayDesignator)
+                ? string.Empty
+                : $"選択RWY {runwayDesignator}";
+            routeSelectionRunwayStatusText.gameObject.SetActive(!string.IsNullOrEmpty(runwayDesignator));
+        }
+
+        private void ClearRouteSelectionRunwayVisual()
+        {
+            if (routeSelectionRunwayHighlight != null)
+            {
+                routeSelectionRunwayHighlight.gameObject.SetActive(false);
+            }
+
+            if (routeSelection18LMarker != null)
+            {
+                routeSelection18LMarker.gameObject.SetActive(false);
+            }
+
+            if (routeSelection36RMarker != null)
+            {
+                routeSelection36RMarker.gameObject.SetActive(false);
+            }
+
+            if (routeSelectionRunwayStatusText != null)
+            {
+                routeSelectionRunwayStatusText.gameObject.SetActive(false);
+            }
+        }
+
+        private void UpdateRouteSelectionEntryLabels(string mode)
+        {
+            if (mode != RouteSelectionModeDeparture || gameManager == null || gameManager.Airport == null)
+            {
+                ClearRouteSelectionEntryLabels();
+                return;
+            }
+
+            var usedUsageIds = new List<string>();
+            var labelIndex = 0;
+            foreach (var candidate in activeRouteSelectionCandidates)
+            {
+                if (string.IsNullOrEmpty(candidate.RunwayEntryUsageId) || usedUsageIds.Contains(candidate.RunwayEntryUsageId))
+                {
+                    continue;
+                }
+
+                var usage = gameManager.Airport.GetRunwayAccessUsage(candidate.RunwayEntryUsageId);
+                var accessPoint = usage != null ? gameManager.Airport.GetRunwayAccessPoint(usage.AccessPointId) : null;
+                if (usage == null || accessPoint == null)
+                {
+                    continue;
+                }
+
+                EnsureRouteSelectionEntryLabelCount(labelIndex + 1);
+                var label = routeSelectionEntryLabelTexts[labelIndex++];
+                label.gameObject.SetActive(true);
+                label.text = GetRunwayEntryPositionDescription(candidate);
+                label.color = new Color(1f, 0.92f, 0.56f, 0.96f);
+                label.transform.SetAsLastSibling();
+                var rectTransform = label.GetComponent<RectTransform>();
+                rectTransform.anchoredPosition = RouteWorldToMap(accessPoint.Position) + new Vector2(0f, -30f);
+                usedUsageIds.Add(candidate.RunwayEntryUsageId);
+            }
+
+            for (var index = labelIndex; index < routeSelectionEntryLabelTexts.Count; index++)
+            {
+                routeSelectionEntryLabelTexts[index].gameObject.SetActive(false);
+            }
+        }
+
+        private void EnsureRouteSelectionEntryLabelCount(int labelCount)
+        {
+            while (routeSelectionEntryLabelTexts.Count < labelCount)
+            {
+                var text = CreateText(
+                    $"Route Selection Entry Label {routeSelectionEntryLabelTexts.Count + 1}",
+                    routeSelectionMapContent.transform,
+                    string.Empty,
+                    12,
+                    FontStyle.Bold,
+                    TextAnchor.MiddleCenter,
+                    Vector2.zero,
+                    new Vector2(96f, 20f));
+                text.raycastTarget = false;
+                routeSelectionEntryLabelTexts.Add(text);
+            }
+        }
+
+        private void ClearRouteSelectionEntryLabels()
+        {
+            foreach (var text in routeSelectionEntryLabelTexts)
+            {
+                text.gameObject.SetActive(false);
+            }
         }
 
         private void CreateRouteSelectionOptionButton(int index)
@@ -1604,9 +1754,12 @@ namespace ATCJourneyJapan.UI
 
             selected.BindRunwayDirection(gameManager.Airport.PrimaryRunwayData, runwayDesignator);
             selected.SetSelectedTaxiRoute("Departure", string.Empty);
+            var candidates = GetRouteSelectionCandidates(selected, RouteSelectionModeDeparture);
             Debug.Log(
                 $"Departure runway selected: {selected.FlightNumber} "
-                + $"selectedRunwayDesignator={runwayDesignator} selectedDepartureRouteId=none spot={selected.FlightData.SpotId}");
+                + $"selectedRunwayDesignator={runwayDesignator} selectedDepartureRouteId=none spot={selected.FlightData.SpotId} "
+                + $"candidateCount={candidates.Count} routeIds={FormatRouteCandidateRouteIds(candidates)} "
+                + $"entryUsages={FormatRouteCandidateEntryUsageIds(candidates)}");
             Refresh();
         }
 
