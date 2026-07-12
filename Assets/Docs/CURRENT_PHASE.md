@@ -2,11 +2,22 @@
 
 ## Current Phase
 
-Phase 3.9-5R-3 Make taxi route choices visually understandable
+Phase 3.9-5R-3B Fix taxi route labels and selected path mismatch
 
 ## Previous Phase
 
-Phase 3.9-5R-2C Fix line up takeoff flow
+Phase 3.9-5R-3 Make taxi route choices visually understandable
+
+## Phase 3.9-5R-3Bで修正したこと
+
+- 出発Route選択UIのプレイヤー向け表現を `タクシールート選択` / `Taxi Route` に統一し、到着機Spot Taxi route選択へも拡張しやすい言い方にした
+- Route A/B/Cの説明を `18L側端入口` / `18L側入口` / `中央入口` / `36R側入口` / `36R側端入口` のような入口位置ベースに変更した
+- Route候補は選択滑走路とSpotに一致するcandidateだけを表示し、表示順は `runwayEntryUsageId` の `runwayPositionRatio` を基準に安定化する
+- `DEP_SPOT02_36R_B` を `RWY36R_ENTRY_MID` / `A_CONNECTOR_MID_01` / 中央入口waypointsに揃え、表示・segmentIds・waypoints・Line Up entryUsageのズレを修正した
+- Taxi開始時はPushback時に確定した `activeDepartureRouteId` を優先してcandidateを再解決し、default routeのwaypointsが混ざらないようにした
+- Pushback確定時 / Taxi開始時ログにsegmentIds、first/last waypoint、active route / entry usageを追加し、選択Routeと実移動routeの一致を確認しやすくした
+- 表示名ではなく `routeId` / `runwayEntryUsageId` / `segmentIds` で管理する方針を維持した
+- 到着機Exit選択UI、到着機movement同期、UI全体のデザイン刷新は次Phase以降に回す
 
 ## Phase 3.9-5R-3で修正したこと
 

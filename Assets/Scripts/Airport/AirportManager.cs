@@ -976,6 +976,16 @@ namespace ATCJourneyJapan.Airport
                 true,
                 "RWY 36R出発で36R側からline upする暫定entry");
             AddRunwayAccessUsage(
+                "RWY36R_ENTRY_MID",
+                "36R",
+                "A_ACCESS_MID_01",
+                RunwayAccessType.Entry,
+                RunwayAccessPreferredFor.Departure,
+                0.5f,
+                RunwayExitSpeedLevel.NotApplicable,
+                true,
+                "RWY 36R出発で中央connectorからline upする暫定entry");
+            AddRunwayAccessUsage(
                 "RWY18L_ENTRY_END",
                 "18L",
                 "A_ACCESS_18L_END_01",
@@ -996,25 +1006,15 @@ namespace ATCJourneyJapan.Airport
                 true,
                 "RWY 18L出発で18L側からline upする暫定entry");
             AddRunwayAccessUsage(
-                "RWY36R_ENTRY_MID",
-                "36R",
-                "A_ACCESS_MID_01",
-                RunwayAccessType.Entry,
-                RunwayAccessPreferredFor.Departure,
-                0.48f,
-                RunwayExitSpeedLevel.NotApplicable,
-                true,
-                "RWY 36R intersection departureの将来候補。現Phaseでは挙動変更しない");
-            AddRunwayAccessUsage(
                 "RWY18L_ENTRY_MID",
                 "18L",
                 "A_ACCESS_MID_01",
                 RunwayAccessType.Entry,
                 RunwayAccessPreferredFor.Departure,
-                0.48f,
+                0.5f,
                 RunwayExitSpeedLevel.NotApplicable,
                 true,
-                "RWY 18L intersection departureの将来候補。現Phaseでは挙動変更しない");
+                "RWY 18L出発で中央connectorからline upする暫定entry");
         }
 
         private void AddRunwayAccessPoint(
@@ -1122,16 +1122,16 @@ namespace ATCJourneyJapan.Airport
                 GetHoldShortPosition("36R"));
             AddDepartureTaxiRouteCandidate(
                 "DEP_SPOT02_36R_B",
-                "Route B / Apron Bypass",
-                "SPOT 02からエプロン側の余白を使いRWY 36R手前へ向かう将来選択用の暫定経路",
+                "Route B / Mid Entry",
+                "SPOT 02から主誘導路を中央connectorへ進みRWY 36Rへ入る将来選択用の暫定経路",
                 "SPOT 02",
                 "36R",
                 false,
+                "RWY36R_ENTRY_MID",
                 new Vector3(10.8f, 0.6f, -5f),
-                new Vector3(10.8f, 0.6f, -7.35f),
-                new Vector3(0f, 0.6f, -7.35f),
-                new Vector3(-7f, 0.6f, -5f),
-                GetHoldShortPosition("36R"));
+                new Vector3(4.8f, 0.6f, -5f),
+                new Vector3(0f, 0.6f, -5f),
+                new Vector3(0f, 0.6f, -3f));
             AddDepartureTaxiRouteCandidate(
                 "DEP_SPOT02_18L_END_A",
                 "Route End / 18L",
@@ -1309,19 +1309,8 @@ namespace ATCJourneyJapan.Airport
                 segmentIds.Add(standEntrySegmentId);
             }
 
-            if (!routeId.Contains("_B"))
-            {
-                segmentIds.Add("A_MAIN_PARALLEL_01");
-            }
-
-            if (NormalizeRunwayDesignator(runwayDesignator) == "36R")
-            {
-                segmentIds.Add(routeId.Contains("_B") ? "A_CONNECTOR_MID_01" : GetConnectedSegmentIdForUsage(runwayEntryUsageId));
-            }
-            else
-            {
-                segmentIds.Add(GetConnectedSegmentIdForUsage(runwayEntryUsageId));
-            }
+            segmentIds.Add("A_MAIN_PARALLEL_01");
+            segmentIds.Add(GetConnectedSegmentIdForUsage(runwayEntryUsageId));
 
             return segmentIds;
         }

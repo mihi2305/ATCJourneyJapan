@@ -638,7 +638,7 @@ namespace ATCJourneyJapan.UI
             switch (mode)
             {
                 case RouteSelectionModeDeparture:
-                    return "Runway Entry Route";
+                    return "Taxi Route";
                 case RouteSelectionModeArrivalExit:
                     return "Runway Exit Selection";
                 case RouteSelectionModeArrivalSpotTaxi:
@@ -653,7 +653,7 @@ namespace ATCJourneyJapan.UI
             switch (mode)
             {
                 case RouteSelectionModeDeparture:
-                    return "出発前に滑走路へ入る取付誘導路を選択します。Route A/B/Cは表示名で、内部ではrouteIdを保存します。";
+                    return "出発前にタクシールートを選択します。Route A/B/Cは表示名で、内部ではrouteIdを保存します。";
                 case RouteSelectionModeArrivalExit:
                     return "着陸滑走中の離脱方式を選択します。表示文言ではなく、内部ではrunwayExitUsageIdを持つrouteIdを保存します。";
                 case RouteSelectionModeArrivalSpotTaxi:
@@ -668,7 +668,7 @@ namespace ATCJourneyJapan.UI
             switch (mode)
             {
                 case RouteSelectionModeDeparture:
-                    return "取付誘導路を選択\nSelect Route";
+                    return "タクシールートを選択\nTaxi Route";
                 case RouteSelectionModeArrivalExit:
                     return "離脱方式を選択\nSelect Exit";
                 case RouteSelectionModeArrivalSpotTaxi:
@@ -682,15 +682,15 @@ namespace ATCJourneyJapan.UI
         {
             if (HasRouteSegment(candidate, "A_CONNECTOR_MID_01"))
             {
-                return "中央取付誘導路";
+                return "中央入口";
             }
 
             if (!string.IsNullOrEmpty(candidate.RunwayEntryUsageId) && candidate.RunwayEntryUsageId.Contains("_END"))
             {
-                return GetAccessPhysicalSideDescription(candidate.RunwayEntryUsageId, "端取付誘導路");
+                return GetAccessPhysicalSideDescription(candidate.RunwayEntryUsageId, "端入口");
             }
 
-            return GetAccessPhysicalSideDescription(candidate.RunwayEntryUsageId, "取付誘導路");
+            return GetAccessPhysicalSideDescription(candidate.RunwayEntryUsageId, "入口");
         }
 
         private string GetRunwayExitPositionDescription(TaxiRouteCandidate candidate)
