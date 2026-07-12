@@ -587,6 +587,17 @@ namespace ATCJourneyJapan.UI
             return values.Count > 0 ? string.Join(", ", values.ToArray()) : "none";
         }
 
+        private string FormatRouteWaypoint(TaxiRouteCandidate candidate, bool first)
+        {
+            if (candidate == null || candidate.Waypoints.Count == 0)
+            {
+                return "none";
+            }
+
+            var point = first ? candidate.Waypoints[0] : candidate.Waypoints[candidate.Waypoints.Count - 1];
+            return $"({point.x:0.0}, {point.y:0.0}, {point.z:0.0})";
+        }
+
         private void LogRouteSelectionCandidates(AircraftController aircraft, string runwayDesignator)
         {
             var values = new List<string>();
