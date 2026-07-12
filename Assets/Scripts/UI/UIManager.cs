@@ -59,6 +59,7 @@ namespace ATCJourneyJapan.UI
         private readonly List<Text> stripCommandOptionTexts = new List<Text>();
         private readonly List<Button> routeSelectionOptionButtons = new List<Button>();
         private readonly List<Text> routeSelectionOptionTexts = new List<Text>();
+        private readonly List<Image> routeSelectionPreviewSegments = new List<Image>();
         private readonly List<Image> routeSelectionHighlightSegments = new List<Image>();
         private readonly List<TaxiRouteCandidate> activeRouteSelectionCandidates = new List<TaxiRouteCandidate>();
         private GameManager gameManager;
@@ -354,6 +355,7 @@ namespace ATCJourneyJapan.UI
                 routeSelectionOverlay.SetActive(false);
             }
 
+            ClearRouteSelectionPreview();
             ClearRouteSelectionHighlight();
             routeSelectionAircraft = null;
         }
@@ -371,6 +373,12 @@ namespace ATCJourneyJapan.UI
             for (var index = 0; index < candidates.Count; index++)
             {
                 activeRouteSelectionCandidates.Add(candidates[index]);
+            }
+
+            if (activeRouteSelectionCandidates.Count == 1)
+            {
+                AutoSelectSingleRouteCandidate(aircraft, mode, activeRouteSelectionCandidates[0]);
+                return;
             }
 
             if (activeRouteSelectionCandidates.Count <= 1)
@@ -404,7 +412,23 @@ namespace ATCJourneyJapan.UI
             }
 
             routeSelectionOverlay.SetActive(true);
+            ShowRouteSelectionPreview();
             ShowRouteSelectionHighlight(GetInitialRouteSelectionHighlightIndex(selectedRouteId));
+        }
+
+        private void AutoSelectSingleRouteCandidate(AircraftController aircraft, string mode, TaxiRouteCandidate candidate, bool refreshAfterSelection = true)
+        {
+            routeSelectionPurpose = GetRouteSelectionPurpose(aircraft);
+            aircraft.SetSelectedTaxiRoute(routeSelectionPurpose, candidate.RouteId);
+            Debug.Log(
+                $"Route selection auto-selected: {aircraft.FlightNumber} mode={mode} {routeSelectionPurpose} "
+                + $"RWY {candidate.RunwayDesignator} {candidate.SpotId} routeId={candidate.RouteId} "
+                + $"entryUsage={candidate.RunwayEntryUsageId} segments={FormatRouteSegmentIds(candidate)} "
+                + $"firstWaypoint={FormatRouteWaypoint(candidate, true)} lastWaypoint={FormatRouteWaypoint(candidate, false)} fallback=false");
+            if (refreshAfterSelection)
+            {
+                Refresh();
+            }
         }
 
         private void SelectRouteSelectionCandidate(int index)
@@ -421,7 +445,8 @@ namespace ATCJourneyJapan.UI
                 $"Route selection overlay selected: {routeSelectionAircraft.FlightNumber} {routeSelectionMode} {routeSelectionPurpose} "
                 + $"RWY {candidate.RunwayDesignator} {candidate.SpotId} {GetPlayerRouteName(candidate, index, routeSelectionMode)} "
                 + $"routeId={candidate.RouteId} entryUsage={candidate.RunwayEntryUsageId} access={GetRouteAccessSummary(candidate)} "
-                + $"exitUsage={candidate.RunwayExitUsageId} segments={FormatRouteSegmentIds(candidate)} fallback=false");
+                + $"exitUsage={candidate.RunwayExitUsageId} segments={FormatRouteSegmentIds(candidate)} "
+                + $"firstWaypoint={FormatRouteWaypoint(candidate, true)} lastWaypoint={FormatRouteWaypoint(candidate, false)} fallback=false");
             CloseRouteSelectionOverlay();
             Refresh();
         }
@@ -1004,6 +1029,37 @@ namespace ATCJourneyJapan.UI
             return activeRouteSelectionCandidates.Count > 0 ? 0 : -1;
         }
 
+        private void ShowRouteSelectionPreview()
+        {
+            var segmentCount = 0;
+            foreach (var candidate in activeRouteSelectionCandidates)
+            {
+                segmentCount += Mathf.Max(0, candidate.Waypoints.Count - 1);
+            }
+
+            EnsureRouteSelectionPreviewSegmentCount(segmentCount);
+            var segmentIndex = 0;
+            foreach (var candidate in activeRouteSelectionCandidates)
+            {
+                for (var waypointIndex = 0; waypointIndex < candidate.Waypoints.Count - 1; waypointIndex++)
+                {
+                    var image = routeSelectionPreviewSegments[segmentIndex++];
+                    image.gameObject.SetActive(true);
+                    image.color = new Color(0.78f, 0.9f, 1f, 0.24f);
+                    ApplyRouteSelectionLineSegment(
+                        image.GetComponent<RectTransform>(),
+                        RouteWorldToMap(candidate.Waypoints[waypointIndex]),
+                        RouteWorldToMap(candidate.Waypoints[waypointIndex + 1]),
+                        4f);
+                }
+            }
+
+            for (var index = segmentIndex; index < routeSelectionPreviewSegments.Count; index++)
+            {
+                routeSelectionPreviewSegments[index].gameObject.SetActive(false);
+            }
+        }
+
         private void ShowRouteSelectionHighlight(int candidateIndex)
         {
             if (candidateIndex < 0 || candidateIndex >= activeRouteSelectionCandidates.Count)
@@ -1015,6 +1071,7 @@ namespace ATCJourneyJapan.UI
             var waypoints = activeRouteSelectionCandidates[candidateIndex].Waypoints;
             var segmentCount = Mathf.Max(0, waypoints.Count - 1);
             EnsureRouteSelectionHighlightSegmentCount(segmentCount);
+            SetRouteSelectionHighlightedOption(candidateIndex);
 
             for (var index = 0; index < routeSelectionHighlightSegments.Count; index++)
             {
@@ -1026,10 +1083,27 @@ namespace ATCJourneyJapan.UI
                     continue;
                 }
 
-                ApplyRouteSelectionHighlightSegment(
+                image.color = new Color(1f, 0.86f, 0.18f, 0.96f);
+                image.transform.SetAsLastSibling();
+                ApplyRouteSelectionLineSegment(
                     image.GetComponent<RectTransform>(),
                     RouteWorldToMap(waypoints[index]),
-                    RouteWorldToMap(waypoints[index + 1]));
+                    RouteWorldToMap(waypoints[index + 1]),
+                    9f);
+            }
+        }
+
+        private void EnsureRouteSelectionPreviewSegmentCount(int segmentCount)
+        {
+            while (routeSelectionPreviewSegments.Count < segmentCount)
+            {
+                var image = CreateRouteMapBlock(
+                    $"Route Selection Preview {routeSelectionPreviewSegments.Count + 1}",
+                    Vector2.zero,
+                    new Vector2(20f, 4f),
+                    new Color(0.78f, 0.9f, 1f, 0.24f));
+                image.transform.SetAsLastSibling();
+                routeSelectionPreviewSegments.Add(image);
             }
         }
 
@@ -1047,11 +1121,11 @@ namespace ATCJourneyJapan.UI
             }
         }
 
-        private void ApplyRouteSelectionHighlightSegment(RectTransform rectTransform, Vector2 start, Vector2 end)
+        private void ApplyRouteSelectionLineSegment(RectTransform rectTransform, Vector2 start, Vector2 end, float thickness)
         {
             var delta = end - start;
             rectTransform.anchoredPosition = (start + end) * 0.5f;
-            rectTransform.sizeDelta = new Vector2(Mathf.Max(12f, delta.magnitude), 8f);
+            rectTransform.sizeDelta = new Vector2(Mathf.Max(12f, delta.magnitude), thickness);
             rectTransform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(delta.y, delta.x) * Mathf.Rad2Deg);
         }
 
@@ -1070,11 +1144,36 @@ namespace ATCJourneyJapan.UI
                 normalizedZ * mapHeight - 96f);
         }
 
+        private void ClearRouteSelectionPreview()
+        {
+            foreach (var image in routeSelectionPreviewSegments)
+            {
+                image.gameObject.SetActive(false);
+            }
+        }
+
         private void ClearRouteSelectionHighlight()
         {
             foreach (var image in routeSelectionHighlightSegments)
             {
                 image.gameObject.SetActive(false);
+            }
+        }
+
+        private void SetRouteSelectionHighlightedOption(int highlightedIndex)
+        {
+            var selectedRouteId = routeSelectionAircraft != null && routeSelectionAircraft.FlightData != null
+                ? GetSelectedRouteId(routeSelectionAircraft.FlightData, routeSelectionPurpose)
+                : string.Empty;
+            for (var index = 0; index < routeSelectionOptionButtons.Count; index++)
+            {
+                if (!routeSelectionOptionButtons[index].gameObject.activeSelf || index >= activeRouteSelectionCandidates.Count)
+                {
+                    continue;
+                }
+
+                var selected = index == highlightedIndex || IsRouteSelectionCandidateSelected(activeRouteSelectionCandidates[index], selectedRouteId);
+                ApplyRouteSelectionOptionStyle(routeSelectionOptionButtons[index], selected);
             }
         }
 
@@ -1452,6 +1551,12 @@ namespace ATCJourneyJapan.UI
             }
 
             var candidates = GetRouteSelectionCandidates(selected, RouteSelectionModeDeparture);
+            if (candidates.Count == 1 && !HasValidSelectedDepartureRoute(selected.FlightData, candidates))
+            {
+                AutoSelectSingleRouteCandidate(selected, RouteSelectionModeDeparture, candidates[0], false);
+                return false;
+            }
+
             if (candidates.Count > 1 && !HasValidSelectedDepartureRoute(selected.FlightData, candidates))
             {
                 var label = GetRouteSelectionStripLabel(RouteSelectionModeDeparture, selected);

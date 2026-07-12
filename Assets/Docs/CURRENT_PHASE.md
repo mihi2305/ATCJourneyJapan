@@ -2,11 +2,21 @@
 
 ## Current Phase
 
-Phase 3.9-5R-3C Fix selected departure taxi route mismatch
+Phase 3.9-5R-4 Taxi Route Highlight QA / タクシールート見える化の完成
 
 ## Previous Phase
 
-Phase 3.9-5R-3B Fix taxi route labels and selected path mismatch
+Phase 3.9-5R-3C Fix selected departure taxi route mismatch
+
+## Phase 3.9-5R-4で修正したこと
+
+- Route selection overlay上で、候補candidateの `waypoints` を全て薄い線で表示し、Route A/Bの違いをマップ上で見比べられるようにした
+- hover中またはselected中のRouteは太い黄色線で強調し、非選択Routeは薄い線として残す
+- 候補が1つだけの場合はRoute overlayを出さず、該当 `routeId` を自動選択する
+- 候補数と表示数を一致させ、2候補ならRoute A/Bのみ表示し、存在しないRoute Cは出さない
+- Route表示と実Taxi movementの一致確認用に、Route選択ログへ `segmentIds` と first/last waypoint を残す
+- Taxi movement側は引き続き `confirmedDepartureRouteId` / `activeRunwayEntryUsageId` を使い、同じcandidate由来の `waypoints` / `segmentIds` / `runwayEntryUsageId` を引き継ぐ
+- 到着機新UI、B滑走路、3Dモデル、カメラ、スコア制は今回も対象外とした
 
 ## Phase 3.9-5R-3Cで修正したこと
 
@@ -17,11 +27,11 @@ Phase 3.9-5R-3B Fix taxi route labels and selected path mismatch
 - Line Up / Takeoffログにも `selectedDepartureRouteId` / `confirmedDepartureRouteId` / `activeRunwayEntryUsageId` を含め、同じrouteが引き継がれているか確認しやすくした
 - 到着機UI、到着機movement、UIデザイン改善は今回も対象外とした
 
-## 次の実装候補
+## Phase 3.9-5R-4 QA確認ポイント
 
 ### Phase 3.9-5R-4 Taxi Route Highlight QA / タクシールート見える化の完成
 
-既存のRouteハイライトとRoute選択UIをゼロから作り直さず、選択候補と実際のTaxi movementが同じcandidate由来であることをQA修正する。
+既存のRouteハイライトとRoute選択UIをゼロから作り直さず、選択候補と実際のTaxi movementが同じcandidate由来であることをUnity Playで確認する。
 
 - Route線の視認性を上げる
 - hover中Routeとselected Routeの見え方を整理する
