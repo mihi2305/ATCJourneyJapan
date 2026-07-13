@@ -2,6 +2,15 @@
 
 ## Current Phase
 
+Phase 3.9-5R-5C: Airport Map Overlay大型化
+
+## Phase 3.9-5R-5Cで直したこと
+
+- 滑走路選択Overlayとタクシールート選択Overlayを画面中央の大型パネルへ広げ、Airport Mapを主要表示として見やすくした
+- 共通Airport Map描画は維持したまま、Overlay内のMap表示サイズを大きくし、滑走路・入口・SPOT・Route線を判断しやすくした
+- 選択ボタンは右側、説明文は下部へ整理し、閉じるボタンは右上に維持した
+- 出発機/到着機の滑走路選択、出発Route選択、Pushback後Taxi、Line Up / Takeoffの既存フローは変更していない
+
 Phase 3.9-5R-5B: 空港マップ描画の共通化
 
 ## Phase 3.9-5R-5Bで直したこと

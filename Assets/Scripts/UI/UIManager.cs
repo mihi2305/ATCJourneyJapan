@@ -18,8 +18,8 @@ namespace ATCJourneyJapan.UI
         private const float MiniMapWorldMaxZ = 24f;
         private const float MiniMapWidth = 376f;
         private const float MiniMapHeight = 206f;
-        private const float OverlayMapWidth = 480f;
-        private const float OverlayMapHeight = 280f;
+        private const float OverlayMapWidth = 780f;
+        private const float OverlayMapHeight = 455f;
         private const string RouteSelectionModeDeparture = "DepartureRoute";
         private const string RouteSelectionModeArrivalExit = "ArrivalExit";
         private const string RouteSelectionModeArrivalSpotTaxi = "ArrivalSpotTaxi";
@@ -772,7 +772,7 @@ namespace ATCJourneyJapan.UI
             switch (mode)
             {
                 case RouteSelectionModeDeparture:
-                    return "Taxi Route";
+                    return "タクシールートを選択";
                 case RouteSelectionModeArrivalExit:
                     return "Runway Exit Selection";
                 case RouteSelectionModeArrivalSpotTaxi:
@@ -991,13 +991,13 @@ namespace ATCJourneyJapan.UI
 
         private void BuildRunwaySelectionOverlay()
         {
-            runwaySelectionOverlay = CreatePanel("Runway Selection Overlay", hudRoot.transform, new Vector2(0.5f, 0.5f), new Vector2(760f, 500f));
+            runwaySelectionOverlay = CreatePanel("Runway Selection Overlay", hudRoot.transform, new Vector2(0.5f, 0.5f), new Vector2(1120f, 680f));
             runwaySelectionOverlay.GetComponent<Image>().color = new Color(0.01f, 0.018f, 0.025f, 0.96f);
-            runwaySelectionTitleText = CreateText("Runway Selection Title", runwaySelectionOverlay.transform, "滑走路を選択", 25, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-210f, 202f), new Vector2(330f, 44f));
-            CreateButton("Runway Selection Close", runwaySelectionOverlay.transform, "閉じる", new Vector2(290f, 202f), new Vector2(110f, 40f), 16)
+            runwaySelectionTitleText = CreateText("Runway Selection Title", runwaySelectionOverlay.transform, "滑走路を選択", 27, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-384f, 292f), new Vector2(470f, 52f));
+            CreateButton("Runway Selection Close", runwaySelectionOverlay.transform, "閉じる", new Vector2(492f, 292f), new Vector2(112f, 42f), 16)
                 .onClick.AddListener(CloseRunwaySelectionOverlay);
 
-            var mapPanel = CreatePanel("Runway Selection Map", runwaySelectionOverlay.transform, new Vector2(0.5f, 0.5f), new Vector2(520f, 310f), AnchorPreset.Center, new Vector2(-96f, 8f));
+            var mapPanel = CreatePanel("Runway Selection Map", runwaySelectionOverlay.transform, new Vector2(0.5f, 0.5f), new Vector2(830f, 505f), AnchorPreset.Center, new Vector2(-116f, 24f));
             mapPanel.GetComponent<Image>().color = new Color(0.035f, 0.075f, 0.085f, 0.96f);
 
             runwaySelectionMapContent = new GameObject("Runway Selection Map Content");
@@ -1013,16 +1013,16 @@ namespace ATCJourneyJapan.UI
             runwaySelection18LMarker = CreateAirportMapBlock(runwaySelectionMapContent.transform, new Vector2(OverlayMapWidth, OverlayMapHeight), "Runway Map 18L Marker", new Vector3(19.25f, 0f, 1.8f), new Vector2(7.8f, 1.9f), new Color(1f, 0.86f, 0.18f, 0.18f), false);
             runwaySelectionStatusText = CreateAirportMapText("Runway Selection Status", runwaySelectionMapContent.transform, new Vector2(OverlayMapWidth, OverlayMapHeight), string.Empty, 13, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector3(3f, 0f, 6.9f), new Vector2(240f, 20f), Vector2.zero, false);
 
-            var button18L = CreateButton("Runway Selection 18L", runwaySelectionOverlay.transform, "RWY 18L\n18L側を使用", new Vector2(238f, 62f), new Vector2(178f, 76f), 18);
+            var button18L = CreateButton("Runway Selection 18L", runwaySelectionOverlay.transform, "RWY 18L\n18L側を使用", new Vector2(424f, 112f), new Vector2(220f, 86f), 19);
             runwaySelection18LButtonText = button18L.GetComponentInChildren<Text>();
             button18L.onClick.AddListener(() => SelectRunwayFromOverlay("18L"));
             AddRunwaySelectionHoverTrigger(button18L, "18L");
-            var button36R = CreateButton("Runway Selection 36R", runwaySelectionOverlay.transform, "RWY 36R\n36R側を使用", new Vector2(238f, -34f), new Vector2(178f, 76f), 18);
+            var button36R = CreateButton("Runway Selection 36R", runwaySelectionOverlay.transform, "RWY 36R\n36R側を使用", new Vector2(424f, 2f), new Vector2(220f, 86f), 19);
             runwaySelection36RButtonText = button36R.GetComponentInChildren<Text>();
             button36R.onClick.AddListener(() => SelectRunwayFromOverlay("36R"));
             AddRunwaySelectionHoverTrigger(button36R, "36R");
 
-            runwaySelectionHintText = CreateText("Runway Selection Hint", runwaySelectionOverlay.transform, string.Empty, 15, FontStyle.Normal, TextAnchor.UpperLeft, new Vector2(-96f, -204f), new Vector2(520f, 48f));
+            runwaySelectionHintText = CreateText("Runway Selection Hint", runwaySelectionOverlay.transform, string.Empty, 16, FontStyle.Normal, TextAnchor.UpperLeft, new Vector2(-116f, -298f), new Vector2(830f, 50f));
             runwaySelectionOverlay.SetActive(false);
         }
 
@@ -1061,13 +1061,13 @@ namespace ATCJourneyJapan.UI
 
         private void BuildRouteSelectionOverlay()
         {
-            routeSelectionOverlay = CreatePanel("Route Selection Overlay", hudRoot.transform, new Vector2(0.5f, 0.5f), new Vector2(860f, 560f));
+            routeSelectionOverlay = CreatePanel("Route Selection Overlay", hudRoot.transform, new Vector2(0.5f, 0.5f), new Vector2(1180f, 720f));
             routeSelectionOverlay.GetComponent<Image>().color = new Color(0.01f, 0.018f, 0.025f, 0.96f);
-            routeSelectionTitleText = CreateText("Route Selection Title", routeSelectionOverlay.transform, "Route Selection", 25, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-250f, 230f), new Vector2(310f, 36f));
-            CreateButton("Route Selection Close", routeSelectionOverlay.transform, "閉じる", new Vector2(338f, 230f), new Vector2(116f, 40f), 16)
+            routeSelectionTitleText = CreateText("Route Selection Title", routeSelectionOverlay.transform, "タクシールートを選択", 27, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-420f, 312f), new Vector2(500f, 52f));
+            CreateButton("Route Selection Close", routeSelectionOverlay.transform, "閉じる", new Vector2(520f, 312f), new Vector2(116f, 42f), 16)
                 .onClick.AddListener(CloseRouteSelectionOverlay);
 
-            var mapPanel = CreatePanel("Route Selection Map", routeSelectionOverlay.transform, new Vector2(0.5f, 0.5f), new Vector2(520f, 330f), AnchorPreset.Center, new Vector2(-134f, 4f));
+            var mapPanel = CreatePanel("Route Selection Map", routeSelectionOverlay.transform, new Vector2(0.5f, 0.5f), new Vector2(830f, 505f), AnchorPreset.Center, new Vector2(-150f, 24f));
             mapPanel.GetComponent<Image>().color = new Color(0.035f, 0.075f, 0.085f, 0.96f);
 
             routeSelectionMapContent = new GameObject("Route Selection Map Content");
@@ -1083,7 +1083,7 @@ namespace ATCJourneyJapan.UI
             routeSelection18LMarker = CreateAirportMapBlock(routeSelectionMapContent.transform, new Vector2(OverlayMapWidth, OverlayMapHeight), "Route Map Selected 18L Marker", new Vector3(19.25f, 0f, 1.8f), new Vector2(7.8f, 1.9f), new Color(1f, 0.86f, 0.18f, 0.18f), false);
             routeSelectionRunwayStatusText = CreateAirportMapText("Route Map Selected Runway Text", routeSelectionMapContent.transform, new Vector2(OverlayMapWidth, OverlayMapHeight), string.Empty, 13, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector3(3f, 0f, 6.9f), new Vector2(220f, 20f), Vector2.zero, false);
 
-            routeSelectionHintText = CreateText("Route Selection Hint", routeSelectionOverlay.transform, string.Empty, 15, FontStyle.Normal, TextAnchor.UpperLeft, new Vector2(-134f, -226f), new Vector2(520f, 54f));
+            routeSelectionHintText = CreateText("Route Selection Hint", routeSelectionOverlay.transform, string.Empty, 16, FontStyle.Normal, TextAnchor.UpperLeft, new Vector2(-150f, -318f), new Vector2(830f, 54f));
 
             for (var index = 0; index < 3; index++)
             {
@@ -1230,8 +1230,8 @@ namespace ATCJourneyJapan.UI
 
         private Vector2 GetRouteSelectionOptionPosition(int index, int candidateCount)
         {
-            var spacing = candidateCount > 3 ? 86f : 94f;
-            return new Vector2(276f, 112f - index * spacing);
+            var spacing = candidateCount > 3 ? 86f : 104f;
+            return new Vector2(430f, 168f - index * spacing);
         }
 
         private void AddRouteSelectionHoverTrigger(Button button, int optionIndex)
