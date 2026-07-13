@@ -2,6 +2,16 @@
 
 ## Current Phase
 
+Phase 3.9-5S: STRIPSの管制フェーズUI整理
+
+## Phase 3.9-5Sで直したこと
+
+- 左STRIPSを詳細情報カードではなく、便名・最低限のRWY/SPOT・管制フェーズ・次に出せる主指示中心の一覧UIへ寄せた
+- STRIP内から目的地/出発地、予定時刻、Route詳細、詳細状態文を外し、詳細は右下航空機情報パネルへ寄せる方針にした
+- STRIPS下部に簡易管制フェーズ表示を追加し、APPROACH / TOWER / GROUND / DEPARTURE の機体数と選択中機体のフェーズを確認できるようにした
+- 選択中STRIPは従来通り色で強調し、主操作ボタンは選択中STRIP横のポップアップにだけ出す構造を維持した
+- 出発/到着の滑走路選択、Route選択、Taxi / Line Up / Takeoff / Landing の既存フローは変更していない
+
 Phase 3.9-5R-5C: Airport Map Overlay大型化
 
 ## Phase 3.9-5R-5Cで直したこと

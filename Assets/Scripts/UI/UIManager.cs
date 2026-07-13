@@ -99,6 +99,7 @@ namespace ATCJourneyJapan.UI
         private Text guideText;
         private Text instructorText;
         private Text selectedText;
+        private Text controlSectorSummaryText;
         private Text runwaySelectionTitleText;
         private Text runwaySelectionHintText;
         private Text runwaySelectionStatusText;
@@ -956,13 +957,14 @@ namespace ATCJourneyJapan.UI
 
         private void BuildFlightStripPanel()
         {
-            flightStripPanel = CreatePanel("Flight Strip Panel", hudRoot.transform, new Vector2(0f, 1f), new Vector2(340f, 500f), AnchorPreset.TopLeft, new Vector2(24f, -164f));
+            flightStripPanel = CreatePanel("Flight Strip Panel", hudRoot.transform, new Vector2(0f, 1f), new Vector2(340f, 560f), AnchorPreset.TopLeft, new Vector2(24f, -164f));
             flightStripPanel.GetComponent<Image>().color = new Color(0.025f, 0.032f, 0.04f, 0.82f);
-            CreateText("Strip Title", flightStripPanel.transform, "STRIPS", 18, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-122f, 218f), new Vector2(76f, 28f));
-            CreateText("Arrival Header", flightStripPanel.transform, "到着  ARRIVAL", 17, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-78f, 180f), new Vector2(220f, 28f));
-            CreateText("Departure Header", flightStripPanel.transform, "出発  DEPARTURE", 17, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-78f, -34f), new Vector2(220f, 28f));
-            CreateFlightStripButton("AJJ101", new Vector2(0f, 128f));
-            CreateFlightStripButton("AJJ202", new Vector2(0f, -86f));
+            CreateText("Strip Title", flightStripPanel.transform, "STRIPS", 18, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-122f, 248f), new Vector2(76f, 28f));
+            CreateText("Arrival Header", flightStripPanel.transform, "到着  ARRIVAL", 17, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-78f, 210f), new Vector2(220f, 28f));
+            CreateText("Departure Header", flightStripPanel.transform, "出発  DEPARTURE", 17, FontStyle.Bold, TextAnchor.MiddleLeft, new Vector2(-78f, -18f), new Vector2(220f, 28f));
+            controlSectorSummaryText = CreateText("Control Sector Summary", flightStripPanel.transform, string.Empty, 13, FontStyle.Bold, TextAnchor.UpperLeft, new Vector2(0f, -246f), new Vector2(292f, 48f));
+            CreateFlightStripButton("AJJ101", new Vector2(0f, 156f));
+            CreateFlightStripButton("AJJ202", new Vector2(0f, -72f));
 
             stripCommandPopup = CreatePanel("Strip Command Popup", flightStripPanel.transform, new Vector2(0.5f, 0.5f), new Vector2(292f, 96f));
             stripCommandPopup.GetComponent<Image>().color = new Color(0.015f, 0.025f, 0.032f, 0.94f);
@@ -1878,7 +1880,7 @@ namespace ATCJourneyJapan.UI
             stripObject.transform.SetParent(flightStripPanel.transform, false);
             var rectTransform = stripObject.AddComponent<RectTransform>();
             ApplyAnchor(rectTransform, AnchorPreset.Center);
-            rectTransform.sizeDelta = new Vector2(292f, 72f);
+            rectTransform.sizeDelta = new Vector2(292f, 64f);
             rectTransform.anchoredPosition = anchoredPosition;
 
             var image = stripObject.AddComponent<Image>();
@@ -1893,7 +1895,7 @@ namespace ATCJourneyJapan.UI
             button.colors = colors;
             button.onClick.AddListener(() => SelectFlightStripAircraft(flightNumber));
 
-            var stripText = CreateText($"{flightNumber} Strip Text", stripObject.transform, string.Empty, 18, FontStyle.Bold, TextAnchor.UpperLeft, Vector2.zero, new Vector2(250f, 52f));
+            var stripText = CreateText($"{flightNumber} Strip Text", stripObject.transform, string.Empty, 18, FontStyle.Bold, TextAnchor.UpperLeft, Vector2.zero, new Vector2(252f, 48f));
             flightStripButtons[flightNumber] = button;
             flightStripTexts[flightNumber] = stripText;
             flightStripImages[flightNumber] = image;
@@ -1953,21 +1955,105 @@ namespace ATCJourneyJapan.UI
             }
 
             UpdateStripCommandButton(selected, selectedRecommended, selectedStripPosition, hasSelectedStrip);
+            UpdateControlSectorSummary(selected);
         }
 
         private Vector2 GetFlightStripPosition(bool isArrival, int index)
         {
-            var baseY = isArrival ? 128f : -86f;
-            return new Vector2(0f, baseY - index * 82f);
+            var baseY = isArrival ? 156f : -72f;
+            return new Vector2(0f, baseY - index * 72f);
         }
 
         private string GetFlightStripText(AircraftController aircraft, AircraftCommand? recommended)
         {
             var data = aircraft.FlightData;
             var target = GetStripTargetLabel(data);
-            var cityRoute = GetCompactCityRouteLabel(data);
+            var phase = GetControlSectorLabel(aircraft);
+            var nextAction = recommended.HasValue ? GetCommandShortLabel(recommended.Value) : "監視";
 
-            return $"<size=23>{data.FlightId}</size>\n<size=15>{cityRoute}  {target}</size>";
+            return $"<size=23>{data.FlightId}</size>   <size=13>{phase}</size>\n<size=15>{target}  /  {nextAction}</size>";
+        }
+
+        private void UpdateControlSectorSummary(AircraftController selected)
+        {
+            if (controlSectorSummaryText == null || gameManager == null)
+            {
+                return;
+            }
+
+            var approachCount = 0;
+            var towerCount = 0;
+            var groundCount = 0;
+            var departureCount = 0;
+            foreach (var aircraft in gameManager.Aircraft)
+            {
+                var sector = GetControlSectorLabel(aircraft);
+                switch (sector)
+                {
+                    case "APPROACH":
+                        approachCount++;
+                        break;
+                    case "TOWER":
+                        towerCount++;
+                        break;
+                    case "GROUND":
+                        groundCount++;
+                        break;
+                    case "DEPARTURE":
+                        departureCount++;
+                        break;
+                }
+            }
+
+            var selectedSector = selected != null ? GetControlSectorLabel(selected) : "-";
+            controlSectorSummaryText.text =
+                $"管制フェーズ  選択: {selectedSector}\n"
+                + $"APP {approachCount} / TWR {towerCount} / GND {groundCount} / DEP {departureCount}";
+        }
+
+        private string GetControlSectorLabel(AircraftController aircraft)
+        {
+            if (aircraft == null || aircraft.FlightData == null)
+            {
+                return "-";
+            }
+
+            if (aircraft.FlightData.OperationType == "Arrival")
+            {
+                switch (aircraft.CurrentState)
+                {
+                    case AircraftState.Inbound:
+                    case AircraftState.FinalApproach:
+                    case AircraftState.LandingRoll:
+                        return "TOWER";
+                    case AircraftState.VacatingRunway:
+                    case AircraftState.TaxiToGate:
+                    case AircraftState.Waiting:
+                    case AircraftState.AtGate:
+                        return "GROUND";
+                    default:
+                        return "TOWER";
+                }
+            }
+
+            switch (aircraft.CurrentState)
+            {
+                case AircraftState.AtGate:
+                case AircraftState.Pushbacking:
+                case AircraftState.PushbackReady:
+                case AircraftState.TaxiToHold:
+                case AircraftState.TaxiHeld:
+                    return "GROUND";
+                case AircraftState.HoldingPoint:
+                case AircraftState.HoldingShort:
+                case AircraftState.LiningUp:
+                case AircraftState.TakeoffRoll:
+                    return "TOWER";
+                case AircraftState.AirborneDeparture:
+                    return "DEPARTURE";
+                default:
+                    return "GROUND";
+            }
         }
 
         private void UpdateStripCommandButton(AircraftController selected, AircraftCommand? recommended, Vector2 selectedStripPosition, bool hasSelectedStrip)
@@ -2354,7 +2440,7 @@ namespace ATCJourneyJapan.UI
                 + $"SPOT：{GetSpotNumber(data.SpotDisplayName)}\n"
                 + $"{GetSelectedRouteStatusLine(selected)}\n"
                 + $"状態：{data.CurrentState}\n"
-                + $"担当：{data.ControllerPosition}\n"
+                + $"担当フェーズ：{GetControlSectorLabel(selected)}\n"
                 + $"次の指示：{recommendedLabel}";
         }
 
