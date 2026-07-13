@@ -907,8 +907,8 @@ namespace ATCJourneyJapan.UI
                 return;
             }
 
-            commandLogEntries.Add(GetControllerLogText(aircraft, phrase.ControllerJapaneseText));
-            while (commandLogEntries.Count > 2)
+            commandLogEntries.Add(BuildAtcCommunicationLogEntry(aircraft, phrase));
+            while (commandLogEntries.Count > 1)
             {
                 commandLogEntries.RemoveAt(0);
             }
@@ -916,18 +916,41 @@ namespace ATCJourneyJapan.UI
             Refresh();
         }
 
-        private string GetControllerLogText(AircraftController aircraft, string phraseText)
+        private string BuildAtcCommunicationLogEntry(AircraftController aircraft, CommandPhrase phrase)
+        {
+            var callsign = aircraft != null ? aircraft.FlightNumber : "航空機";
+            var controllerText = FormatAtcPhraseText(aircraft, phrase.JapaneseControllerText);
+            var readbackText = FormatAtcPhraseText(aircraft, phrase.JapanesePilotReadbackText);
+            return $"管制官：{controllerText}\n{callsign}：{readbackText}";
+        }
+
+        private string FormatAtcPhraseText(AircraftController aircraft, string phraseText)
         {
             if (aircraft == null)
             {
                 return phraseText;
             }
 
-            var runwayLabel = aircraft.FlightData != null ? aircraft.FlightData.RunwayShortDisplay : "A滑走路";
+            var runwayLabel = GetRadioRunwayLabel(aircraft);
+            var spotLabel = aircraft.FlightData != null ? aircraft.FlightData.SpotDisplayName : "SPOT";
             return phraseText
+                .Replace("{CALLSIGN}", aircraft.FlightNumber)
+                .Replace("{RUNWAY}", runwayLabel)
+                .Replace("{SPOT}", spotLabel)
                 .Replace("AJJ101", aircraft.FlightNumber)
                 .Replace("AJJ202", aircraft.FlightNumber)
-                .Replace("A滑走路", runwayLabel);
+                .Replace("A滑走路", runwayLabel)
+                .Replace("SPOT 01", spotLabel);
+        }
+
+        private string GetRadioRunwayLabel(AircraftController aircraft)
+        {
+            if (aircraft != null && aircraft.FlightData != null && aircraft.FlightData.HasActiveRunwayDesignator)
+            {
+                return $"RWY{aircraft.FlightData.ActiveRunwayDesignator}";
+            }
+
+            return "A滑走路";
         }
 
         private void UpdateCommandLogPanel()
@@ -935,8 +958,8 @@ namespace ATCJourneyJapan.UI
             var hasLogs = commandLogEntries.Count > 0;
             guidePanel.SetActive(hasLogs || CurrentTutorialStep == null);
             guideText.text = hasLogs
-                ? $"管制ログ\n{string.Join("\n", commandLogEntries)}"
-                : "管制ログ\n指示を出すと、ここに日本語で記録されます。";
+                ? $"管制交信ログ\n{string.Join("\n\n", commandLogEntries)}"
+                : "管制交信ログ\n指示を出すと、管制官の発話とパイロット復唱が日本語で記録されます。";
         }
 
         private string GetCommandStatusText(AircraftController selected, AircraftCommand? recommended)

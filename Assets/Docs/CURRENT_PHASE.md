@@ -2,6 +2,16 @@
 
 ## Current Phase
 
+Phase 3.9-5T: 管制交信ログ土台整理
+
+## Phase 3.9-5Tで直したこと
+
+- 既存の下部ログを作り直さず、管制官発話とパイロット復唱を1セットで表示する `管制交信ログ` へ整理した
+- `CommandPhrase` を日本語表示文と将来英語音声用フレーズに分けて持てる構造へ整理した
+- Pushback / Taxi to runway / Line Up / Takeoff clearance / Landing clearance / Taxi to Spot など既存主要指示の文言を `{CALLSIGN}` / `{RUNWAY}` / `{SPOT}` のテンプレートで扱うようにした
+- 今回は音声再生、音声ファイル追加、外部TTS連携は実装していない
+- STRIPS、右下情報パネル、Route選択、Taxi movementの既存フローは変更していない
+
 Phase 3.9-5S: STRIPSの管制フェーズUI整理
 
 ## Phase 3.9-5Sで直したこと
