@@ -18,6 +18,8 @@ namespace ATCJourneyJapan.UI
         private const float MiniMapWorldMaxZ = 24f;
         private const float MiniMapWidth = 376f;
         private const float MiniMapHeight = 206f;
+        private const float OverlayMapWidth = 480f;
+        private const float OverlayMapHeight = 280f;
         private const string RouteSelectionModeDeparture = "DepartureRoute";
         private const string RouteSelectionModeArrivalExit = "ArrivalExit";
         private const string RouteSelectionModeArrivalSpotTaxi = "ArrivalSpotTaxi";
@@ -981,48 +983,10 @@ namespace ATCJourneyJapan.UI
             contentObject.transform.SetParent(minimapPanel.transform, false);
             minimapContent = contentObject.AddComponent<RectTransform>();
             ApplyAnchor(minimapContent, AnchorPreset.Center);
-            minimapContent.sizeDelta = new Vector2(376f, 206f);
+            minimapContent.sizeDelta = new Vector2(MiniMapWidth, MiniMapHeight);
             minimapContent.anchoredPosition = new Vector2(0f, -22f);
 
-            CreateMiniMapBlock("Mini Map Sea Background", Vector2.zero, new Vector2(MiniMapWidth, MiniMapHeight), new Color(0.02f, 0.28f, 0.42f, 0.82f));
-            CreateMiniMapBlock("Mini Map Main Airport Island", WorldToMiniMap(new Vector3(3f, 0f, -8.2f)), WorldSizeToMiniMap(new Vector2(68f, 18.8f)), new Color(0.08f, 0.19f, 0.12f, 0.88f));
-            CreateMiniMapBlock("Mini Map Future Runway Island", WorldToMiniMap(new Vector3(3f, 0f, 10.2f)), WorldSizeToMiniMap(new Vector2(36.5f, 5.4f)), new Color(0.11f, 0.21f, 0.13f, 0.88f));
-            CreateMiniMapBlock("Mini Map Central Wedge Base", WorldToMiniMap(new Vector3(4.3f, 0f, 2.7f)), WorldSizeToMiniMap(new Vector2(16.8f, 2.8f)), new Color(0.1f, 0.23f, 0.14f, 0.9f));
-            CreateMiniMapBlock("Mini Map Central Wedge Nose", WorldToMiniMap(new Vector3(6.6f, 0f, 5.1f)), WorldSizeToMiniMap(new Vector2(9.6f, 2.9f)), new Color(0.1f, 0.23f, 0.14f, 0.9f));
-            CreateMiniMapBlock("Mini Map Right Connector Island", WorldToMiniMap(new Vector3(17.1f, 0f, 5.1f)), WorldSizeToMiniMap(new Vector2(4.6f, 10.6f)), new Color(0.1f, 0.22f, 0.14f, 0.9f));
-
-            CreateMiniMapBlock("Mini Map Fighter Base Area", WorldToMiniMap(new Vector3(-13.5f, 0f, -9.7f)), WorldSizeToMiniMap(new Vector2(12.5f, 5.2f)), new Color(0.25f, 0.31f, 0.24f, 0.96f));
-            CreateMiniMapBlock("Mini Map Support Base Area", WorldToMiniMap(new Vector3(-1.6f, 0f, -10f)), WorldSizeToMiniMap(new Vector2(11.2f, 5.9f)), new Color(0.29f, 0.34f, 0.29f, 0.96f));
-            CreateMiniMapBlock("Mini Map Passenger Apron", WorldToMiniMap(new Vector3(17.1f, 0f, -10.1f)), WorldSizeToMiniMap(new Vector2(29.2f, 9.35f)), new Color(0.35f, 0.39f, 0.38f, 0.92f));
-            CreateMiniMapBlock("Mini Map DOM Terminal", WorldToMiniMap(new Vector3(12.5f, 0f, -15.35f)), WorldSizeToMiniMap(new Vector2(18.2f, 2.35f)), new Color(0.58f, 0.64f, 0.62f, 0.98f));
-            CreateMiniMapBlock("Mini Map INTL Terminal", WorldToMiniMap(new Vector3(25.7f, 0f, -15.35f)), WorldSizeToMiniMap(new Vector2(8.4f, 2.55f)), new Color(0.64f, 0.67f, 0.65f, 0.98f));
-            CreateMiniMapBlock("Mini Map DOM Finger West", WorldToMiniMap(new Vector3(8.6f, 0f, -12.35f)), WorldSizeToMiniMap(new Vector2(1.55f, 5.25f)), new Color(0.58f, 0.64f, 0.62f, 0.98f));
-            CreateMiniMapBlock("Mini Map DOM Finger East", WorldToMiniMap(new Vector3(16.3f, 0f, -12.35f)), WorldSizeToMiniMap(new Vector2(1.55f, 5.25f)), new Color(0.58f, 0.64f, 0.62f, 0.98f));
-            CreateMiniMapBlock("Mini Map INTL Pier", WorldToMiniMap(new Vector3(25.7f, 0f, -12.55f)), WorldSizeToMiniMap(new Vector2(5.9f, 2.05f)), new Color(0.64f, 0.67f, 0.65f, 0.98f));
-
-            minimapRunwayImage = CreateMiniMapBlock("Mini Map Runway A", WorldToMiniMap(new Vector3(3f, 0f, 0f)), WorldSizeToMiniMap(new Vector2(32.5f, 2.35f)), new Color(0.38f, 0.4f, 0.42f, 0.98f));
-            CreateMiniMapBlock("Mini Map Runway B", WorldToMiniMap(new Vector3(3f, 0f, 10.2f)), WorldSizeToMiniMap(new Vector2(29.2f, 2.8f)), new Color(0.31f, 0.34f, 0.35f, 0.78f));
-            CreateMiniMapBlock("Mini Map Taxiway Main", WorldToMiniMap(new Vector3(2.7f, 0f, -5f)), WorldSizeToMiniMap(new Vector2(52f, 1.24f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
-            CreateMiniMapBlock("Mini Map Taxiway 36R End", WorldToMiniMap(new Vector3(-10.8f, 0f, -2.5f)), WorldSizeToMiniMap(new Vector2(1.7f, 5f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
-            CreateMiniMapBlock("Mini Map Taxiway 36R Near", WorldToMiniMap(new Vector3(-7f, 0f, -2.5f)), WorldSizeToMiniMap(new Vector2(1.7f, 5f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
-            CreateMiniMapBlock("Mini Map Taxiway Mid", WorldToMiniMap(new Vector3(0f, 0f, -2.5f)), WorldSizeToMiniMap(new Vector2(1.7f, 5f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
-            CreateMiniMapBlock("Mini Map Taxiway 18L Near", WorldToMiniMap(new Vector3(12f, 0f, -2.5f)), WorldSizeToMiniMap(new Vector2(1.7f, 5f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
-            CreateMiniMapBlock("Mini Map Taxiway 18L End", WorldToMiniMap(new Vector3(15.2f, 0f, -2.5f)), WorldSizeToMiniMap(new Vector2(1.7f, 5f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
-            CreateMiniMapBlock("Mini Map Hold A 36R", WorldToMiniMap(new Vector3(-7f, 0f, -3f)), new Vector2(18f, 12f), new Color(0.92f, 0.72f, 0.16f, 0.98f));
-            CreateMiniMapBlock("Mini Map Hold A 18L", WorldToMiniMap(new Vector3(12f, 0f, -3f)), new Vector2(18f, 12f), new Color(0.92f, 0.72f, 0.16f, 0.68f));
-
-            CreateMiniMapSpots();
-            CreateText("Mini Map Runway A Label", minimapContent, "A RWY 18L / 36R", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(3f, 0f, 1.8f)), new Vector2(112f, 18f));
-            CreateText("Mini Map Runway A 36R End", minimapContent, "36R", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(-13.25f, 0f, 1.8f)), new Vector2(44f, 18f));
-            CreateText("Mini Map Runway A 18L End", minimapContent, "18L", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(19.25f, 0f, 1.8f)), new Vector2(44f, 18f));
-            CreateText("Mini Map Entry 36R End", minimapContent, "36R端", 9, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(-10.8f, 0f, -6.7f)), new Vector2(40f, 14f));
-            CreateText("Mini Map Entry 36R Near", minimapContent, "36R側", 9, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(-7f, 0f, -6.7f)), new Vector2(40f, 14f));
-            CreateText("Mini Map Entry Mid", minimapContent, "中央", 9, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(0f, 0f, -6.7f)), new Vector2(40f, 14f));
-            CreateText("Mini Map Entry 18L Near", minimapContent, "18L側", 9, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(12f, 0f, -6.7f)), new Vector2(40f, 14f));
-            CreateText("Mini Map Entry 18L End", minimapContent, "18L端", 9, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(15.2f, 0f, -6.7f)), new Vector2(40f, 14f));
-            CreateText("Mini Map Runway B Label", minimapContent, "B RWY 18R / 36L", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(3f, 0f, 12.2f)), new Vector2(110f, 18f));
-            CreateText("Mini Map Runway B 36L End", minimapContent, "36L", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(-11.6f, 0f, 13.35f)), new Vector2(44f, 18f));
-            CreateText("Mini Map Runway B 18R End", minimapContent, "18R", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(17.6f, 0f, 13.35f)), new Vector2(44f, 18f));
+            DrawAirportMapBase(minimapContent, new Vector2(MiniMapWidth, MiniMapHeight), "Mini Map", true, true, true, true);
         }
 
         private void BuildRunwaySelectionOverlay()
@@ -1040,25 +1004,14 @@ namespace ATCJourneyJapan.UI
             runwaySelectionMapContent.transform.SetParent(mapPanel.transform, false);
             var mapRect = runwaySelectionMapContent.AddComponent<RectTransform>();
             ApplyAnchor(mapRect, AnchorPreset.Center);
-            mapRect.sizeDelta = new Vector2(480f, 280f);
+            mapRect.sizeDelta = new Vector2(OverlayMapWidth, OverlayMapHeight);
             mapRect.anchoredPosition = Vector2.zero;
 
-            CreateRunwayMapBlock("Runway Map Airport Island", new Vector2(0f, -72f), new Vector2(442f, 130f), new Color(0.1f, 0.18f, 0.14f, 0.95f));
-            CreateRunwayMapBlock("Runway Map A Runway", new Vector2(0f, 62f), new Vector2(370f, 32f), new Color(0.36f, 0.38f, 0.4f, 0.98f));
-            CreateRunwayMapBlock("Runway Map Main Taxiway", new Vector2(0f, -34f), new Vector2(370f, 18f), new Color(0.18f, 0.34f, 0.42f, 0.98f));
-            CreateRunwayMapBlock("Runway Map 36R End Connector", new Vector2(-168f, 14f), new Vector2(18f, 94f), new Color(0.18f, 0.34f, 0.42f, 0.98f));
-            CreateRunwayMapBlock("Runway Map Mid Connector", new Vector2(0f, 14f), new Vector2(18f, 94f), new Color(0.18f, 0.34f, 0.42f, 0.98f));
-            CreateRunwayMapBlock("Runway Map 18L End Connector", new Vector2(168f, 14f), new Vector2(18f, 94f), new Color(0.18f, 0.34f, 0.42f, 0.98f));
-            runwaySelectionRunwayHighlight = CreateRunwayMapBlock("Runway Map Selected Direction", new Vector2(0f, 62f), new Vector2(370f, 10f), new Color(1f, 0.86f, 0.18f, 0.28f));
-            runwaySelection36RMarker = CreateRunwayMapBlock("Runway Map 36R Marker", new Vector2(-202f, 94f), new Vector2(58f, 24f), new Color(1f, 0.86f, 0.18f, 0.18f));
-            runwaySelection18LMarker = CreateRunwayMapBlock("Runway Map 18L Marker", new Vector2(202f, 94f), new Vector2(58f, 24f), new Color(1f, 0.86f, 0.18f, 0.18f));
-            CreateText("Runway Map Runway Label", runwaySelectionMapContent.transform, "A RWY 18L / 36R", 14, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(0f, 100f), new Vector2(170f, 22f));
-            CreateText("Runway Map 36R Label", runwaySelectionMapContent.transform, "36R", 13, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(-202f, 94f), new Vector2(48f, 20f));
-            CreateText("Runway Map 18L Label", runwaySelectionMapContent.transform, "18L", 13, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(202f, 94f), new Vector2(48f, 20f));
-            CreateText("Runway Map 36R Entry Label", runwaySelectionMapContent.transform, "36R側入口", 12, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(-168f, -18f), new Vector2(92f, 20f));
-            CreateText("Runway Map Mid Entry Label", runwaySelectionMapContent.transform, "中央入口", 12, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(0f, -18f), new Vector2(82f, 20f));
-            CreateText("Runway Map 18L Entry Label", runwaySelectionMapContent.transform, "18L側入口", 12, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(168f, -18f), new Vector2(92f, 20f));
-            runwaySelectionStatusText = CreateText("Runway Selection Status", runwaySelectionMapContent.transform, string.Empty, 13, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(0f, 124f), new Vector2(240f, 20f));
+            DrawAirportMapBase(runwaySelectionMapContent.transform, new Vector2(OverlayMapWidth, OverlayMapHeight), "Runway Map", false, true, true, true);
+            runwaySelectionRunwayHighlight = CreateAirportMapBlock(runwaySelectionMapContent.transform, new Vector2(OverlayMapWidth, OverlayMapHeight), "Runway Map Selected Direction", new Vector3(3f, 0f, 0f), new Vector2(32.5f, 0.7f), new Color(1f, 0.86f, 0.18f, 0.28f), false);
+            runwaySelection36RMarker = CreateAirportMapBlock(runwaySelectionMapContent.transform, new Vector2(OverlayMapWidth, OverlayMapHeight), "Runway Map 36R Marker", new Vector3(-13.25f, 0f, 1.8f), new Vector2(7.8f, 1.9f), new Color(1f, 0.86f, 0.18f, 0.18f), false);
+            runwaySelection18LMarker = CreateAirportMapBlock(runwaySelectionMapContent.transform, new Vector2(OverlayMapWidth, OverlayMapHeight), "Runway Map 18L Marker", new Vector3(19.25f, 0f, 1.8f), new Vector2(7.8f, 1.9f), new Color(1f, 0.86f, 0.18f, 0.18f), false);
+            runwaySelectionStatusText = CreateAirportMapText("Runway Selection Status", runwaySelectionMapContent.transform, new Vector2(OverlayMapWidth, OverlayMapHeight), string.Empty, 13, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector3(3f, 0f, 6.9f), new Vector2(240f, 20f), Vector2.zero, false);
 
             var button18L = CreateButton("Runway Selection 18L", runwaySelectionOverlay.transform, "RWY 18L\n18L側を使用", new Vector2(238f, 62f), new Vector2(178f, 76f), 18);
             runwaySelection18LButtonText = button18L.GetComponentInChildren<Text>();
@@ -1075,17 +1028,7 @@ namespace ATCJourneyJapan.UI
 
         private Image CreateRunwayMapBlock(string name, Vector2 anchoredPosition, Vector2 size, Color color)
         {
-            var block = new GameObject(name);
-            block.transform.SetParent(runwaySelectionMapContent.transform, false);
-            var rectTransform = block.AddComponent<RectTransform>();
-            ApplyAnchor(rectTransform, AnchorPreset.Center);
-            rectTransform.sizeDelta = size;
-            rectTransform.anchoredPosition = anchoredPosition;
-
-            var image = block.AddComponent<Image>();
-            image.color = color;
-            image.raycastTarget = false;
-            return image;
+            return CreateMapBlock(name, runwaySelectionMapContent.transform, anchoredPosition, size, color);
         }
 
         private void AddRunwaySelectionHoverTrigger(Button button, string runwayDesignator)
@@ -1131,26 +1074,14 @@ namespace ATCJourneyJapan.UI
             routeSelectionMapContent.transform.SetParent(mapPanel.transform, false);
             var mapRect = routeSelectionMapContent.AddComponent<RectTransform>();
             ApplyAnchor(mapRect, AnchorPreset.Center);
-            mapRect.sizeDelta = new Vector2(480f, 280f);
+            mapRect.sizeDelta = new Vector2(OverlayMapWidth, OverlayMapHeight);
             mapRect.anchoredPosition = Vector2.zero;
 
-            CreateRouteMapBlock("Route Map Airport Island", new Vector2(0f, -72f), new Vector2(442f, 130f), new Color(0.1f, 0.18f, 0.14f, 0.95f));
-            CreateRouteMapBlock("Route Map A Runway", new Vector2(0f, 62f), new Vector2(370f, 32f), new Color(0.36f, 0.38f, 0.4f, 0.98f));
-            CreateRouteMapBlock("Route Map Main Taxiway", new Vector2(0f, -34f), new Vector2(370f, 18f), new Color(0.18f, 0.34f, 0.42f, 0.98f));
-            CreateRouteMapBlock("Route Map 36R End Connector", new Vector2(-168f, 14f), new Vector2(18f, 94f), new Color(0.18f, 0.34f, 0.42f, 0.98f));
-            CreateRouteMapBlock("Route Map 36R Connector", new Vector2(-118f, 14f), new Vector2(18f, 94f), new Color(0.18f, 0.34f, 0.42f, 0.98f));
-            CreateRouteMapBlock("Route Map Mid Connector", new Vector2(0f, 14f), new Vector2(18f, 94f), new Color(0.18f, 0.34f, 0.42f, 0.98f));
-            CreateRouteMapBlock("Route Map 18L Connector", new Vector2(118f, 14f), new Vector2(18f, 94f), new Color(0.18f, 0.34f, 0.42f, 0.98f));
-            CreateRouteMapBlock("Route Map 18L End Connector", new Vector2(168f, 14f), new Vector2(18f, 94f), new Color(0.18f, 0.34f, 0.42f, 0.98f));
-            CreateRouteMapBlock("Route Map Terminal", new Vector2(88f, -112f), new Vector2(236f, 32f), new Color(0.58f, 0.64f, 0.62f, 0.98f));
-            routeSelectionRunwayHighlight = CreateRouteMapBlock("Route Map Selected Runway Highlight", new Vector2(0f, 62f), new Vector2(370f, 10f), new Color(1f, 0.86f, 0.18f, 0.28f));
-            routeSelection36RMarker = CreateRouteMapBlock("Route Map Selected 36R Marker", new Vector2(-202f, 94f), new Vector2(58f, 24f), new Color(1f, 0.86f, 0.18f, 0.18f));
-            routeSelection18LMarker = CreateRouteMapBlock("Route Map Selected 18L Marker", new Vector2(202f, 94f), new Vector2(58f, 24f), new Color(1f, 0.86f, 0.18f, 0.18f));
-            CreateText("Route Map Runway Label", routeSelectionMapContent.transform, "A RWY 18L / 36R", 14, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(0f, 100f), new Vector2(170f, 22f));
-            CreateText("Route Map 36R Label", routeSelectionMapContent.transform, "36R", 13, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(-202f, 94f), new Vector2(48f, 20f));
-            CreateText("Route Map 18L Label", routeSelectionMapContent.transform, "18L", 13, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(202f, 94f), new Vector2(48f, 20f));
-            CreateText("Route Map Taxiway Label", routeSelectionMapContent.transform, "Main taxi route", 12, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(0f, -62f), new Vector2(150f, 18f));
-            routeSelectionRunwayStatusText = CreateText("Route Map Selected Runway Text", routeSelectionMapContent.transform, string.Empty, 13, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(0f, 124f), new Vector2(220f, 20f));
+            DrawAirportMapBase(routeSelectionMapContent.transform, new Vector2(OverlayMapWidth, OverlayMapHeight), "Route Map", false, true, true, false);
+            routeSelectionRunwayHighlight = CreateAirportMapBlock(routeSelectionMapContent.transform, new Vector2(OverlayMapWidth, OverlayMapHeight), "Route Map Selected Runway Highlight", new Vector3(3f, 0f, 0f), new Vector2(32.5f, 0.7f), new Color(1f, 0.86f, 0.18f, 0.28f), false);
+            routeSelection36RMarker = CreateAirportMapBlock(routeSelectionMapContent.transform, new Vector2(OverlayMapWidth, OverlayMapHeight), "Route Map Selected 36R Marker", new Vector3(-13.25f, 0f, 1.8f), new Vector2(7.8f, 1.9f), new Color(1f, 0.86f, 0.18f, 0.18f), false);
+            routeSelection18LMarker = CreateAirportMapBlock(routeSelectionMapContent.transform, new Vector2(OverlayMapWidth, OverlayMapHeight), "Route Map Selected 18L Marker", new Vector3(19.25f, 0f, 1.8f), new Vector2(7.8f, 1.9f), new Color(1f, 0.86f, 0.18f, 0.18f), false);
+            routeSelectionRunwayStatusText = CreateAirportMapText("Route Map Selected Runway Text", routeSelectionMapContent.transform, new Vector2(OverlayMapWidth, OverlayMapHeight), string.Empty, 13, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector3(3f, 0f, 6.9f), new Vector2(220f, 20f), Vector2.zero, false);
 
             routeSelectionHintText = CreateText("Route Selection Hint", routeSelectionOverlay.transform, string.Empty, 15, FontStyle.Normal, TextAnchor.UpperLeft, new Vector2(-134f, -226f), new Vector2(520f, 54f));
 
@@ -1164,17 +1095,7 @@ namespace ATCJourneyJapan.UI
 
         private Image CreateRouteMapBlock(string name, Vector2 anchoredPosition, Vector2 size, Color color)
         {
-            var block = new GameObject(name);
-            block.transform.SetParent(routeSelectionMapContent.transform, false);
-            var rectTransform = block.AddComponent<RectTransform>();
-            ApplyAnchor(rectTransform, AnchorPreset.Center);
-            rectTransform.sizeDelta = size;
-            rectTransform.anchoredPosition = anchoredPosition;
-
-            var image = block.AddComponent<Image>();
-            image.color = color;
-            image.raycastTarget = false;
-            return image;
+            return CreateMapBlock(name, routeSelectionMapContent.transform, anchoredPosition, size, color);
         }
 
         private void UpdateRouteSelectionRunwayVisual(string runwayDesignator)
@@ -1450,17 +1371,7 @@ namespace ATCJourneyJapan.UI
 
         private Vector2 RouteWorldToMap(Vector3 worldPosition)
         {
-            const float worldMinX = -13.25f;
-            const float worldMaxX = 19.25f;
-            const float worldMinZ = -8f;
-            const float worldMaxZ = 2f;
-            const float mapWidth = 370f;
-            const float mapHeight = 192f;
-            var normalizedX = Mathf.InverseLerp(worldMinX, worldMaxX, worldPosition.x);
-            var normalizedZ = Mathf.InverseLerp(worldMinZ, worldMaxZ, worldPosition.z);
-            return new Vector2(
-                normalizedX * mapWidth - mapWidth * 0.5f,
-                normalizedZ * mapHeight - 96f);
+            return ConvertAirportWorldToMapPoint(worldPosition, new Vector2(OverlayMapWidth, OverlayMapHeight), false);
         }
 
         private void ClearRouteSelectionPreview()
@@ -1494,6 +1405,140 @@ namespace ATCJourneyJapan.UI
                 var selected = index == highlightedIndex || IsRouteSelectionCandidateSelected(activeRouteSelectionCandidates[index], selectedRouteId);
                 ApplyRouteSelectionOptionStyle(routeSelectionOptionButtons[index], selected);
             }
+        }
+
+        private void DrawAirportMapBase(Transform parent, Vector2 mapSize, string prefix, bool includeBRunway, bool includeSpots, bool includeTerminal, bool includeEntryLabels)
+        {
+            var round = prefix == "Mini Map";
+            DrawAirportMapBlock(parent, mapSize, round, $"{prefix} Sea Background", new Vector3((MiniMapWorldMinX + MiniMapWorldMaxX) * 0.5f, 0f, (MiniMapWorldMinZ + MiniMapWorldMaxZ) * 0.5f), new Vector2(MiniMapWorldMaxX - MiniMapWorldMinX, MiniMapWorldMaxZ - MiniMapWorldMinZ), new Color(0.02f, 0.28f, 0.42f, 0.82f));
+            DrawAirportMapBlock(parent, mapSize, round, $"{prefix} Main Airport Island", new Vector3(3f, 0f, -8.2f), new Vector2(68f, 18.8f), new Color(0.08f, 0.19f, 0.12f, 0.88f));
+            DrawAirportMapBlock(parent, mapSize, round, $"{prefix} Central Wedge Base", new Vector3(4.3f, 0f, 2.7f), new Vector2(16.8f, 2.8f), new Color(0.1f, 0.23f, 0.14f, 0.9f));
+            DrawAirportMapBlock(parent, mapSize, round, $"{prefix} Central Wedge Nose", new Vector3(6.6f, 0f, 5.1f), new Vector2(9.6f, 2.9f), new Color(0.1f, 0.23f, 0.14f, 0.9f));
+            DrawAirportMapBlock(parent, mapSize, round, $"{prefix} Right Connector Island", new Vector3(17.1f, 0f, 5.1f), new Vector2(4.6f, 10.6f), new Color(0.1f, 0.22f, 0.14f, 0.9f));
+
+            if (includeBRunway)
+            {
+                DrawAirportMapBlock(parent, mapSize, round, $"{prefix} Future Runway Island", new Vector3(3f, 0f, 10.2f), new Vector2(36.5f, 5.4f), new Color(0.11f, 0.21f, 0.13f, 0.88f));
+                DrawAirportMapBlock(parent, mapSize, round, $"{prefix} Runway B", new Vector3(3f, 0f, 10.2f), new Vector2(29.2f, 2.8f), new Color(0.31f, 0.34f, 0.35f, 0.78f));
+                CreateAirportMapText($"{prefix} Runway B Label", parent, mapSize, "B RWY 18R / 36L", 11, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector3(3f, 0f, 12.2f), new Vector2(110f, 18f), Vector2.zero, round);
+                CreateAirportMapText($"{prefix} Runway B 36L End", parent, mapSize, "36L", 11, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector3(-11.6f, 0f, 13.35f), new Vector2(44f, 18f), Vector2.zero, round);
+                CreateAirportMapText($"{prefix} Runway B 18R End", parent, mapSize, "18R", 11, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector3(17.6f, 0f, 13.35f), new Vector2(44f, 18f), Vector2.zero, round);
+            }
+
+            if (includeTerminal)
+            {
+                DrawAirportMapBlock(parent, mapSize, round, $"{prefix} Fighter Base Area", new Vector3(-13.5f, 0f, -9.7f), new Vector2(12.5f, 5.2f), new Color(0.25f, 0.31f, 0.24f, 0.96f));
+                DrawAirportMapBlock(parent, mapSize, round, $"{prefix} Support Base Area", new Vector3(-1.6f, 0f, -10f), new Vector2(11.2f, 5.9f), new Color(0.29f, 0.34f, 0.29f, 0.96f));
+                DrawAirportMapBlock(parent, mapSize, round, $"{prefix} Passenger Apron", new Vector3(17.1f, 0f, -10.1f), new Vector2(29.2f, 9.35f), new Color(0.35f, 0.39f, 0.38f, 0.92f));
+                DrawAirportMapBlock(parent, mapSize, round, $"{prefix} DOM Terminal", new Vector3(12.5f, 0f, -15.35f), new Vector2(18.2f, 2.35f), new Color(0.58f, 0.64f, 0.62f, 0.98f));
+                DrawAirportMapBlock(parent, mapSize, round, $"{prefix} INTL Terminal", new Vector3(25.7f, 0f, -15.35f), new Vector2(8.4f, 2.55f), new Color(0.64f, 0.67f, 0.65f, 0.98f));
+                DrawAirportMapBlock(parent, mapSize, round, $"{prefix} DOM Finger West", new Vector3(8.6f, 0f, -12.35f), new Vector2(1.55f, 5.25f), new Color(0.58f, 0.64f, 0.62f, 0.98f));
+                DrawAirportMapBlock(parent, mapSize, round, $"{prefix} DOM Finger East", new Vector3(16.3f, 0f, -12.35f), new Vector2(1.55f, 5.25f), new Color(0.58f, 0.64f, 0.62f, 0.98f));
+                DrawAirportMapBlock(parent, mapSize, round, $"{prefix} INTL Pier", new Vector3(25.7f, 0f, -12.55f), new Vector2(5.9f, 2.05f), new Color(0.64f, 0.67f, 0.65f, 0.98f));
+            }
+
+            var runwayA = DrawAirportMapBlock(parent, mapSize, round, $"{prefix} Runway A", new Vector3(3f, 0f, 0f), new Vector2(32.5f, 2.35f), new Color(0.38f, 0.4f, 0.42f, 0.98f));
+            if (prefix == "Mini Map")
+            {
+                minimapRunwayImage = runwayA;
+            }
+
+            DrawAirportMapBlock(parent, mapSize, round, $"{prefix} Taxiway Main", new Vector3(2.7f, 0f, -5f), new Vector2(52f, 1.24f), new Color(0.2f, 0.34f, 0.42f, 0.98f));
+            DrawAirportMapBlock(parent, mapSize, round, $"{prefix} Taxiway 36R End", new Vector3(-10.8f, 0f, -2.5f), new Vector2(1.7f, 5f), new Color(0.2f, 0.34f, 0.42f, 0.98f));
+            DrawAirportMapBlock(parent, mapSize, round, $"{prefix} Taxiway 36R Near", new Vector3(-7f, 0f, -2.5f), new Vector2(1.7f, 5f), new Color(0.2f, 0.34f, 0.42f, 0.98f));
+            DrawAirportMapBlock(parent, mapSize, round, $"{prefix} Taxiway Mid", new Vector3(0f, 0f, -2.5f), new Vector2(1.7f, 5f), new Color(0.2f, 0.34f, 0.42f, 0.98f));
+            DrawAirportMapBlock(parent, mapSize, round, $"{prefix} Taxiway 18L Near", new Vector3(12f, 0f, -2.5f), new Vector2(1.7f, 5f), new Color(0.2f, 0.34f, 0.42f, 0.98f));
+            DrawAirportMapBlock(parent, mapSize, round, $"{prefix} Taxiway 18L End", new Vector3(15.2f, 0f, -2.5f), new Vector2(1.7f, 5f), new Color(0.2f, 0.34f, 0.42f, 0.98f));
+            DrawAirportMapBlock(parent, mapSize, round, $"{prefix} Hold A 36R", new Vector3(-7f, 0f, -3f), new Vector2(3.2f, 2.4f), new Color(0.92f, 0.72f, 0.16f, 0.72f));
+            DrawAirportMapBlock(parent, mapSize, round, $"{prefix} Hold A 18L", new Vector3(12f, 0f, -3f), new Vector2(3.2f, 2.4f), new Color(0.92f, 0.72f, 0.16f, 0.58f));
+
+            if (includeSpots)
+            {
+                DrawAirportMapSpots(parent, mapSize, round, prefix);
+            }
+
+            CreateAirportMapText($"{prefix} Runway A Label", parent, mapSize, "A RWY 18L / 36R", 11, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector3(3f, 0f, 1.8f), new Vector2(112f, 18f), Vector2.zero, round);
+            CreateAirportMapText($"{prefix} Runway A 36R End", parent, mapSize, "36R", 11, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector3(-13.25f, 0f, 1.8f), new Vector2(44f, 18f), Vector2.zero, round);
+            CreateAirportMapText($"{prefix} Runway A 18L End", parent, mapSize, "18L", 11, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector3(19.25f, 0f, 1.8f), new Vector2(44f, 18f), Vector2.zero, round);
+
+            if (includeEntryLabels)
+            {
+                CreateAirportMapText($"{prefix} Entry 36R End", parent, mapSize, "36R端", 9, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector3(-10.8f, 0f, -6.7f), new Vector2(48f, 14f), Vector2.zero, round);
+                CreateAirportMapText($"{prefix} Entry 36R Near", parent, mapSize, "36R側", 9, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector3(-7f, 0f, -6.7f), new Vector2(48f, 14f), Vector2.zero, round);
+                CreateAirportMapText($"{prefix} Entry Mid", parent, mapSize, "中央", 9, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector3(0f, 0f, -6.7f), new Vector2(48f, 14f), Vector2.zero, round);
+                CreateAirportMapText($"{prefix} Entry 18L Near", parent, mapSize, "18L側", 9, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector3(12f, 0f, -6.7f), new Vector2(48f, 14f), Vector2.zero, round);
+                CreateAirportMapText($"{prefix} Entry 18L End", parent, mapSize, "18L端", 9, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector3(15.2f, 0f, -6.7f), new Vector2(48f, 14f), Vector2.zero, round);
+            }
+        }
+
+        private Image DrawAirportMapBlock(Transform parent, Vector2 mapSize, bool round, string name, Vector3 worldCenter, Vector2 worldSize, Color color)
+        {
+            return CreateAirportMapBlock(parent, mapSize, name, worldCenter, worldSize, color, round);
+        }
+
+        private Image CreateAirportMapBlock(Transform parent, Vector2 mapSize, string name, Vector3 worldCenter, Vector2 worldSize, Color color, bool round)
+        {
+            return CreateMapBlock(
+                name,
+                parent,
+                ConvertAirportWorldToMapPoint(worldCenter, mapSize, round),
+                ConvertAirportWorldSizeToMapSize(worldSize, mapSize, round),
+                color);
+        }
+
+        private Text CreateAirportMapText(string name, Transform parent, Vector2 mapSize, string content, int size, FontStyle style, TextAnchor anchor, Vector3 worldPosition, Vector2 uiSize, Vector2 offset, bool round)
+        {
+            return CreateText(
+                name,
+                parent,
+                content,
+                size,
+                style,
+                anchor,
+                ConvertAirportWorldToMapPoint(worldPosition, mapSize, round) + offset,
+                uiSize);
+        }
+
+        private void DrawAirportMapSpots(Transform parent, Vector2 mapSize, bool round, string prefix)
+        {
+            var airport = gameManager != null ? gameManager.Airport : null;
+            if (airport == null || airport.SpotDefinitions.Count == 0)
+            {
+                DrawAirportMapSpot(parent, mapSize, round, prefix, "SPOT 01", AirportSpotArea.DOM, AircraftSizeClass.Narrowbody, new Vector3(6.3f, 0f, -8.35f), new Vector3(2.35f, 0f, 3.45f));
+                DrawAirportMapSpot(parent, mapSize, round, prefix, "SPOT 02", AirportSpotArea.DOM, AircraftSizeClass.Narrowbody, new Vector3(10.8f, 0f, -7.95f), new Vector3(2.35f, 0f, 3.45f));
+                DrawAirportMapSpot(parent, mapSize, round, prefix, "SPOT 03", AirportSpotArea.DOM, AircraftSizeClass.Narrowbody, new Vector3(17.1f, 0f, -8.15f), new Vector3(2.35f, 0f, 3.45f));
+                DrawAirportMapSpot(parent, mapSize, round, prefix, "SPOT 04", AirportSpotArea.INTL, AircraftSizeClass.Widebody, new Vector3(26.2f, 0f, -8.65f), new Vector3(3.7f, 0f, 4.85f));
+                return;
+            }
+
+            foreach (var spotDefinition in airport.SpotDefinitions)
+            {
+                DrawAirportMapSpot(parent, mapSize, round, prefix, spotDefinition.TutorialId, spotDefinition.Area, spotDefinition.AircraftSizeClass, spotDefinition.Position, spotDefinition.StandScale);
+            }
+        }
+
+        private void DrawAirportMapSpot(Transform parent, Vector2 mapSize, bool round, string prefix, string label, AirportSpotArea area, AircraftSizeClass aircraftSizeClass, Vector3 worldPosition, Vector3 standScale)
+        {
+            DrawAirportMapStandLeadIn(parent, mapSize, round, prefix, label, worldPosition);
+
+            var worldSize = new Vector2(standScale.x, standScale.z);
+            var uiSize = ConvertAirportWorldSizeToMapSize(worldSize, mapSize, round);
+            uiSize = new Vector2(Mathf.Max(uiSize.x, aircraftSizeClass == AircraftSizeClass.Widebody ? 22f : 18f), Mathf.Max(uiSize.y, aircraftSizeClass == AircraftSizeClass.Widebody ? 18f : 14f));
+            CreateMapBlock($"{prefix} {label}", parent, ConvertAirportWorldToMapPoint(worldPosition, mapSize, round), uiSize, GetMiniMapSpotColor(area, aircraftSizeClass));
+            CreateAirportMapText($"{prefix} {label} Label", parent, mapSize, label.Replace("SPOT ", "S"), 11, FontStyle.Bold, TextAnchor.MiddleCenter, worldPosition, new Vector2(50f, 16f), new Vector2(0f, -20f), round);
+        }
+
+        private void DrawAirportMapStandLeadIn(Transform parent, Vector2 mapSize, bool round, string prefix, string label, Vector3 spotWorldPosition)
+        {
+            var taxiwayZ = -5f;
+            var leadInDepth = Mathf.Abs(spotWorldPosition.z - taxiwayZ);
+            if (leadInDepth <= 0.1f)
+            {
+                return;
+            }
+
+            var leadInCenter = new Vector3(spotWorldPosition.x, 0f, (spotWorldPosition.z + taxiwayZ) * 0.5f);
+            CreateAirportMapBlock(parent, mapSize, $"{prefix} {label} Lead In", leadInCenter, new Vector2(0.55f, leadInDepth), new Color(0.24f, 0.42f, 0.48f, 0.96f), round);
         }
 
         private void CreateMiniMapSpots()
@@ -1564,8 +1609,13 @@ namespace ATCJourneyJapan.UI
 
         private Image CreateMiniMapBlock(string name, Vector2 anchoredPosition, Vector2 size, Color color)
         {
+            return CreateMapBlock(name, minimapContent, anchoredPosition, size, color);
+        }
+
+        private Image CreateMapBlock(string name, Transform parent, Vector2 anchoredPosition, Vector2 size, Color color)
+        {
             var blockObject = new GameObject(name);
-            blockObject.transform.SetParent(minimapContent, false);
+            blockObject.transform.SetParent(parent, false);
             var rectTransform = blockObject.AddComponent<RectTransform>();
             ApplyAnchor(rectTransform, AnchorPreset.Center);
             rectTransform.sizeDelta = size;
@@ -1800,16 +1850,26 @@ namespace ATCJourneyJapan.UI
 
         private Vector2 WorldToMiniMap(Vector3 worldPosition)
         {
-            var x = Mathf.InverseLerp(MiniMapWorldMinX, MiniMapWorldMaxX, worldPosition.x) * MiniMapWidth - MiniMapWidth * 0.5f;
-            var y = Mathf.InverseLerp(MiniMapWorldMinZ, MiniMapWorldMaxZ, worldPosition.z) * MiniMapHeight - MiniMapHeight * 0.5f;
-            return new Vector2(Mathf.Round(x), Mathf.Round(y));
+            return ConvertAirportWorldToMapPoint(worldPosition, new Vector2(MiniMapWidth, MiniMapHeight), true);
         }
 
         private Vector2 WorldSizeToMiniMap(Vector2 worldSize)
         {
-            var x = Mathf.Max(3f, worldSize.x / (MiniMapWorldMaxX - MiniMapWorldMinX) * MiniMapWidth);
-            var y = Mathf.Max(3f, worldSize.y / (MiniMapWorldMaxZ - MiniMapWorldMinZ) * MiniMapHeight);
-            return new Vector2(Mathf.Round(x), Mathf.Round(y));
+            return ConvertAirportWorldSizeToMapSize(worldSize, new Vector2(MiniMapWidth, MiniMapHeight), true);
+        }
+
+        private Vector2 ConvertAirportWorldToMapPoint(Vector3 worldPosition, Vector2 mapSize, bool round)
+        {
+            var x = Mathf.InverseLerp(MiniMapWorldMinX, MiniMapWorldMaxX, worldPosition.x) * mapSize.x - mapSize.x * 0.5f;
+            var y = Mathf.InverseLerp(MiniMapWorldMinZ, MiniMapWorldMaxZ, worldPosition.z) * mapSize.y - mapSize.y * 0.5f;
+            return round ? new Vector2(Mathf.Round(x), Mathf.Round(y)) : new Vector2(x, y);
+        }
+
+        private Vector2 ConvertAirportWorldSizeToMapSize(Vector2 worldSize, Vector2 mapSize, bool round)
+        {
+            var x = Mathf.Max(3f, worldSize.x / (MiniMapWorldMaxX - MiniMapWorldMinX) * mapSize.x);
+            var y = Mathf.Max(3f, worldSize.y / (MiniMapWorldMaxZ - MiniMapWorldMinZ) * mapSize.y);
+            return round ? new Vector2(Mathf.Round(x), Mathf.Round(y)) : new Vector2(x, y);
         }
 
         private void CreateFlightStripButton(string flightNumber, Vector2 anchoredPosition)

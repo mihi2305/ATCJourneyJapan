@@ -2,6 +2,16 @@
 
 ## Current Phase
 
+Phase 3.9-5R-5B: 空港マップ描画の共通化
+
+## Phase 3.9-5R-5Bで直したこと
+
+- 右上ミニマップ、滑走路選択Overlay、タクシールート選択Overlayの空港マップ描画を `UIManager` 内の共通描画helperへ寄せた
+- A滑走路、主平行誘導路、5つの取付誘導路、SPOT 01〜04、ターミナル/エプロン簡略表示を同じworld座標基準から描くようにした
+- Route highlight、滑走路選択表示、ミニマップ上の選択Route線が同じworld->map座標変換を使うようにした
+- 出発/到着の滑走路選択、出発Route選択、Pushback後Taxi、Line Up / Takeoffの既存フローは維持した
+- 到着機Exit選択、高速脱出/通常離脱UI、B滑走路運用は引き続き次Phase以降に回す
+
 Phase 3.9-5R-5 追加修正: 到着機滑走路選択とMinimap整理
 
 ## Previous Phase
