@@ -2,11 +2,20 @@
 
 ## Current Phase
 
-Phase 3.9-5R-5 本修正: 滑走路選択Map Overlay
+Phase 3.9-5R-5 追加修正: 到着機滑走路選択とMinimap整理
 
 ## Previous Phase
 
 Phase 3.9-5R-4 Taxi Route Highlight QA / タクシールート見える化の完成
+
+## Phase 3.9-5R-5追加修正で直したこと（到着機/Minimap）
+
+- 右上MinimapのA滑走路周辺を、主平行誘導路1本と 36R端 / 36R側 / 中央 / 18L側 / 18L端 の5入口が見える構造へ整理した
+- ターミナル前に別の長い平行誘導路があるように見えないよう、Minimap上のA側地上構造を現在のOverlay/メイン画面寄りに合わせた
+- 到着機が `Inbound` かつRWY未選択の場合、STRIPから滑走路選択Overlayを開くようにした
+- 到着機用の滑走路選択Overlayでは `RWY 18Lへ着陸` / `RWY 36Rへ着陸` と表示し、出発向け文言を流用しないようにした
+- 初期データ上の既定RWYとは別に、到着機がOverlayで滑走路を選んだかをUI側で管理し、選択後は既存の `ActiveRunwayDesignator` に保持して着陸許可時は選択済みRWYだけを表示する
+- 到着機のExit選択、高速脱出/通常離脱UI、Taxi-to-Spot route選択は次Phase以降に回す
 
 ## Phase 3.9-5R-5本修正で直したこと
 

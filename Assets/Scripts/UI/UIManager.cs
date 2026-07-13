@@ -64,6 +64,7 @@ namespace ATCJourneyJapan.UI
         private readonly List<Image> routeSelectionHighlightSegments = new List<Image>();
         private readonly List<Text> routeSelectionEntryLabelTexts = new List<Text>();
         private readonly List<TaxiRouteCandidate> activeRouteSelectionCandidates = new List<TaxiRouteCandidate>();
+        private readonly List<string> arrivalRunwaySelectionCompletedFlightIds = new List<string>();
         private GameManager gameManager;
         private ScoreManager scoreManager;
         private CommandSystem commandSystem;
@@ -99,6 +100,8 @@ namespace ATCJourneyJapan.UI
         private Text runwaySelectionTitleText;
         private Text runwaySelectionHintText;
         private Text runwaySelectionStatusText;
+        private Text runwaySelection18LButtonText;
+        private Text runwaySelection36RButtonText;
         private Text routeSelectionTitleText;
         private Text routeSelectionHintText;
         private Image runwaySelection18LMarker;
@@ -390,8 +393,21 @@ namespace ATCJourneyJapan.UI
             var currentRunway = aircraft.FlightData.HasActiveRunwayDesignator
                 ? aircraft.FlightData.ActiveRunwayDesignator
                 : "18L";
-            runwaySelectionTitleText.text = $"滑走路を選択\n{aircraft.FlightData.FlightId} / Departure";
-            runwaySelectionHintText.text = "A滑走路の使用方向を選択します。選択後、そのRWYに対応するタクシールート候補だけを表示します。";
+            var isArrival = aircraft.FlightData.OperationType == "Arrival";
+            runwaySelectionTitleText.text = $"滑走路を選択\n{aircraft.FlightData.FlightId} / {(isArrival ? "Arrival" : "Departure")}";
+            runwaySelectionHintText.text = isArrival
+                ? "着陸に使うA滑走路の方向を選択します。選択後、この滑走路への着陸許可を出します。"
+                : "A滑走路の使用方向を選択します。選択後、そのRWYに対応するタクシールート候補だけを表示します。";
+            if (runwaySelection18LButtonText != null)
+            {
+                runwaySelection18LButtonText.text = isArrival ? "RWY 18L\n18Lへ着陸" : "RWY 18L\n18L側を使用";
+            }
+
+            if (runwaySelection36RButtonText != null)
+            {
+                runwaySelection36RButtonText.text = isArrival ? "RWY 36R\n36Rへ着陸" : "RWY 36R\n36R側を使用";
+            }
+
             runwaySelectionOverlay.SetActive(true);
             UpdateRunwaySelectionVisual(currentRunway);
         }
@@ -410,7 +426,7 @@ namespace ATCJourneyJapan.UI
         {
             var targetAircraft = runwaySelectionAircraft;
             CloseRunwaySelectionOverlay();
-            SelectDepartureRunway(targetAircraft, runwayDesignator);
+            SelectRunwayForAircraft(targetAircraft, runwayDesignator);
         }
 
         private void OpenRouteSelectionOverlay(AircraftController aircraft, string mode)
@@ -986,12 +1002,12 @@ namespace ATCJourneyJapan.UI
 
             minimapRunwayImage = CreateMiniMapBlock("Mini Map Runway A", WorldToMiniMap(new Vector3(3f, 0f, 0f)), WorldSizeToMiniMap(new Vector2(32.5f, 2.35f)), new Color(0.38f, 0.4f, 0.42f, 0.98f));
             CreateMiniMapBlock("Mini Map Runway B", WorldToMiniMap(new Vector3(3f, 0f, 10.2f)), WorldSizeToMiniMap(new Vector2(29.2f, 2.8f)), new Color(0.31f, 0.34f, 0.35f, 0.78f));
-            CreateMiniMapBlock("Mini Map Taxiway Main", WorldToMiniMap(new Vector3(6.6f, 0f, -5f)), WorldSizeToMiniMap(new Vector2(39.2f, 1.24f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
+            CreateMiniMapBlock("Mini Map Taxiway Main", WorldToMiniMap(new Vector3(2.7f, 0f, -5f)), WorldSizeToMiniMap(new Vector2(52f, 1.24f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
             CreateMiniMapBlock("Mini Map Taxiway 36R End", WorldToMiniMap(new Vector3(-10.8f, 0f, -2.5f)), WorldSizeToMiniMap(new Vector2(1.7f, 5f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
-            CreateMiniMapBlock("Mini Map Taxiway West", WorldToMiniMap(new Vector3(-7f, 0f, -2.5f)), WorldSizeToMiniMap(new Vector2(1.7f, 5f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
-            CreateMiniMapBlock("Mini Map Taxiway East", WorldToMiniMap(new Vector3(12f, 0f, -2.5f)), WorldSizeToMiniMap(new Vector2(1.7f, 5f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
+            CreateMiniMapBlock("Mini Map Taxiway 36R Near", WorldToMiniMap(new Vector3(-7f, 0f, -2.5f)), WorldSizeToMiniMap(new Vector2(1.7f, 5f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
+            CreateMiniMapBlock("Mini Map Taxiway Mid", WorldToMiniMap(new Vector3(0f, 0f, -2.5f)), WorldSizeToMiniMap(new Vector2(1.7f, 5f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
+            CreateMiniMapBlock("Mini Map Taxiway 18L Near", WorldToMiniMap(new Vector3(12f, 0f, -2.5f)), WorldSizeToMiniMap(new Vector2(1.7f, 5f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
             CreateMiniMapBlock("Mini Map Taxiway 18L End", WorldToMiniMap(new Vector3(15.2f, 0f, -2.5f)), WorldSizeToMiniMap(new Vector2(1.7f, 5f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
-            CreateMiniMapBlock("Mini Map Taxiway E Right", WorldToMiniMap(new Vector3(17.1f, 0f, 5.1f)), WorldSizeToMiniMap(new Vector2(1.25f, 10.2f)), new Color(0.2f, 0.34f, 0.42f, 0.98f));
             CreateMiniMapBlock("Mini Map Hold A 36R", WorldToMiniMap(new Vector3(-7f, 0f, -3f)), new Vector2(18f, 12f), new Color(0.92f, 0.72f, 0.16f, 0.98f));
             CreateMiniMapBlock("Mini Map Hold A 18L", WorldToMiniMap(new Vector3(12f, 0f, -3f)), new Vector2(18f, 12f), new Color(0.92f, 0.72f, 0.16f, 0.68f));
 
@@ -999,6 +1015,11 @@ namespace ATCJourneyJapan.UI
             CreateText("Mini Map Runway A Label", minimapContent, "A RWY 18L / 36R", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(3f, 0f, 1.8f)), new Vector2(112f, 18f));
             CreateText("Mini Map Runway A 36R End", minimapContent, "36R", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(-13.25f, 0f, 1.8f)), new Vector2(44f, 18f));
             CreateText("Mini Map Runway A 18L End", minimapContent, "18L", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(19.25f, 0f, 1.8f)), new Vector2(44f, 18f));
+            CreateText("Mini Map Entry 36R End", minimapContent, "36R端", 9, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(-10.8f, 0f, -6.7f)), new Vector2(40f, 14f));
+            CreateText("Mini Map Entry 36R Near", minimapContent, "36R側", 9, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(-7f, 0f, -6.7f)), new Vector2(40f, 14f));
+            CreateText("Mini Map Entry Mid", minimapContent, "中央", 9, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(0f, 0f, -6.7f)), new Vector2(40f, 14f));
+            CreateText("Mini Map Entry 18L Near", minimapContent, "18L側", 9, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(12f, 0f, -6.7f)), new Vector2(40f, 14f));
+            CreateText("Mini Map Entry 18L End", minimapContent, "18L端", 9, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(15.2f, 0f, -6.7f)), new Vector2(40f, 14f));
             CreateText("Mini Map Runway B Label", minimapContent, "B RWY 18R / 36L", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(3f, 0f, 12.2f)), new Vector2(110f, 18f));
             CreateText("Mini Map Runway B 36L End", minimapContent, "36L", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(-11.6f, 0f, 13.35f)), new Vector2(44f, 18f));
             CreateText("Mini Map Runway B 18R End", minimapContent, "18R", 11, FontStyle.Bold, TextAnchor.MiddleCenter, WorldToMiniMap(new Vector3(17.6f, 0f, 13.35f)), new Vector2(44f, 18f));
@@ -1040,9 +1061,11 @@ namespace ATCJourneyJapan.UI
             runwaySelectionStatusText = CreateText("Runway Selection Status", runwaySelectionMapContent.transform, string.Empty, 13, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector2(0f, 124f), new Vector2(240f, 20f));
 
             var button18L = CreateButton("Runway Selection 18L", runwaySelectionOverlay.transform, "RWY 18L\n18L側を使用", new Vector2(238f, 62f), new Vector2(178f, 76f), 18);
+            runwaySelection18LButtonText = button18L.GetComponentInChildren<Text>();
             button18L.onClick.AddListener(() => SelectRunwayFromOverlay("18L"));
             AddRunwaySelectionHoverTrigger(button18L, "18L");
             var button36R = CreateButton("Runway Selection 36R", runwaySelectionOverlay.transform, "RWY 36R\n36R側を使用", new Vector2(238f, -34f), new Vector2(178f, 76f), 18);
+            runwaySelection36RButtonText = button36R.GetComponentInChildren<Text>();
             button36R.onClick.AddListener(() => SelectRunwayFromOverlay("36R"));
             AddRunwaySelectionHoverTrigger(button36R, "36R");
 
@@ -1934,6 +1957,11 @@ namespace ATCJourneyJapan.UI
                 return actions;
             }
 
+            if (TryBuildArrivalPreLandingActions(actions, selected))
+            {
+                return actions;
+            }
+
             AddRouteSelectionStripAction(actions, selected);
             if (!recommended.HasValue
                 || !selected.CanExecute(recommended.Value)
@@ -1993,6 +2021,31 @@ namespace ATCJourneyJapan.UI
             return false;
         }
 
+        private bool TryBuildArrivalPreLandingActions(List<StripAction> actions, AircraftController selected)
+        {
+            if (selected == null
+                || selected.FlightData == null
+                || selected.FlightData.OperationType != "Arrival"
+                || selected.CurrentState != AircraftState.Inbound
+                || HasArrivalRunwaySelectionCompleted(selected))
+            {
+                return false;
+            }
+
+            actions.Add(new StripAction(
+                "滑走路を選択\nSelect Runway",
+                () => OpenRunwaySelectionOverlay(selected),
+                true));
+            return true;
+        }
+
+        private bool HasArrivalRunwaySelectionCompleted(AircraftController selected)
+        {
+            return selected != null
+                && selected.FlightData != null
+                && arrivalRunwaySelectionCompletedFlightIds.Contains(selected.FlightData.FlightId);
+        }
+
         private void AddDepartureRunwaySelectionActions(List<StripAction> actions, AircraftController selected)
         {
             if (gameManager == null || gameManager.Airport == null)
@@ -2004,6 +2057,22 @@ namespace ATCJourneyJapan.UI
                 "滑走路を選択\nSelect Runway",
                 () => OpenRunwaySelectionOverlay(selected),
                 true));
+        }
+
+        private void SelectRunwayForAircraft(AircraftController selected, string runwayDesignator)
+        {
+            if (selected == null || selected.FlightData == null)
+            {
+                return;
+            }
+
+            if (selected.FlightData.OperationType == "Arrival")
+            {
+                SelectArrivalRunway(selected, runwayDesignator);
+                return;
+            }
+
+            SelectDepartureRunway(selected, runwayDesignator);
         }
 
         private void SelectDepartureRunway(AircraftController selected, string runwayDesignator)
@@ -2021,6 +2090,25 @@ namespace ATCJourneyJapan.UI
                 + $"selectedRunwayDesignator={runwayDesignator} selectedDepartureRouteId=none spot={selected.FlightData.SpotId} "
                 + $"candidateCount={candidates.Count} routeIds={FormatRouteCandidateRouteIds(candidates)} "
                 + $"entryUsages={FormatRouteCandidateEntryUsageIds(candidates)}");
+            Refresh();
+        }
+
+        private void SelectArrivalRunway(AircraftController selected, string runwayDesignator)
+        {
+            if (selected == null || selected.FlightData == null || gameManager == null || gameManager.Airport == null)
+            {
+                return;
+            }
+
+            selected.BindRunwayDirection(gameManager.Airport.PrimaryRunwayData, runwayDesignator);
+            if (!arrivalRunwaySelectionCompletedFlightIds.Contains(selected.FlightData.FlightId))
+            {
+                arrivalRunwaySelectionCompletedFlightIds.Add(selected.FlightData.FlightId);
+            }
+
+            Debug.Log(
+                $"Arrival runway selected: {selected.FlightNumber} "
+                + $"operationType={selected.FlightData.OperationType} selectedRunwayDesignator={runwayDesignator}");
             Refresh();
         }
 
@@ -2935,6 +3023,16 @@ namespace ATCJourneyJapan.UI
                 && selected != null
                 && selected.FlightData != null
                 && selected.FlightData.OperationType == "Departure"
+                && selected.FlightData.HasActiveRunwayDesignator)
+            {
+                options.Add(selected.FlightData.ActiveRunwayDesignator);
+                return options;
+            }
+
+            if (command == AircraftCommand.ClearLanding
+                && selected != null
+                && selected.FlightData != null
+                && selected.FlightData.OperationType == "Arrival"
                 && selected.FlightData.HasActiveRunwayDesignator)
             {
                 options.Add(selected.FlightData.ActiveRunwayDesignator);
