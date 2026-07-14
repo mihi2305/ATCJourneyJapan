@@ -58,6 +58,39 @@ namespace ATCJourneyJapan.Aircraft
         private Vector3 landingRolloutStartPosition;
         private Vector3 landingRolloutEndPosition;
         private float landingRolloutDistance;
+        private RunwayPerformanceProfile activeRunwayPerformanceProfile;
+        private float activeTakeoffRollDistance;
+        private float activeLandingRolloutDistance;
+
+        // Provisional game-tuned runway performance values. These are not real aircraft performance data.
+        private struct RunwayPerformanceProfile
+        {
+            public string ProfileName;
+            public float TakeoffRollDistanceRatio;
+            public float LandingRolloutDistanceRatio;
+            public float TakeoffAccelerationTime;
+            public float LandingDecelerationTime;
+            public float TouchdownToTaxiSpeedRatio;
+            public float RunwayOccupancyPadding;
+
+            public RunwayPerformanceProfile(
+                string profileName,
+                float takeoffRollDistanceRatio,
+                float landingRolloutDistanceRatio,
+                float takeoffAccelerationTime,
+                float landingDecelerationTime,
+                float touchdownToTaxiSpeedRatio,
+                float runwayOccupancyPadding)
+            {
+                ProfileName = profileName;
+                TakeoffRollDistanceRatio = takeoffRollDistanceRatio;
+                LandingRolloutDistanceRatio = landingRolloutDistanceRatio;
+                TakeoffAccelerationTime = takeoffAccelerationTime;
+                LandingDecelerationTime = landingDecelerationTime;
+                TouchdownToTaxiSpeedRatio = touchdownToTaxiSpeedRatio;
+                RunwayOccupancyPadding = runwayOccupancyPadding;
+            }
+        }
 
         public string FlightNumber => flightNumber;
         public AircraftData FlightData => flightData;
@@ -261,10 +294,18 @@ namespace ATCJourneyJapan.Aircraft
                 SetState(AircraftState.LandingRoll);
                 SetRunwayLandingHeading(operationDirection);
                 gameManager.OccupyPrimaryRunway(this, "着陸滑走中");
-                var landingRollRoute = new List<Vector3>(airportManager.GetLandingRollRoute(operationDirection));
-                StartLandingSpeedProfile(operationDirection, landingRollRoute);
+                var performanceProfile = ResolveRunwayPerformanceProfile();
+                var landingRollRoute = BuildLandingRolloutRouteForProfile(
+                    operationDirection,
+                    new List<Vector3>(airportManager.GetLandingRollRoute(operationDirection)),
+                    performanceProfile);
+                StartLandingSpeedProfile(operationDirection, landingRollRoute, performanceProfile);
                 StartRouteWithHeading(landingRollRoute, landingInitialSpeed, () =>
                 {
+                    Debug.Log(
+                        $"Landing rollout complete: {flightNumber} aircraftType={GetAircraftTypeLabel()} "
+                        + $"profile={performanceProfile.ProfileName} runway={operationDirection} "
+                        + $"rolloutDistance={activeLandingRolloutDistance:0.##} position={FormatVector3(transform.position)}");
                     SetState(AircraftState.VacatingRunway);
                     gameManager.OccupyPrimaryRunway(this, "滑走路離脱中");
                     StartRouteWithHeading(airportManager.GetVacateRunwayRoute(operationDirection), taxiSpeed, () =>
@@ -454,16 +495,22 @@ namespace ATCJourneyJapan.Aircraft
         private void LogTakeoffSpeedProfile(string runwayDesignator)
         {
             Debug.Log(
-                $"Takeoff speed profile: {flightNumber} RWY {runwayDesignator} "
-                + $"initial={takeoffInitialSpeed:0.##} max={takeoffMaxSpeed:0.##} accelerationTime={takeoffAccelerationTime:0.##}");
+                $"Takeoff runway performance: {flightNumber} aircraftType={GetAircraftTypeLabel()} "
+                + $"profile={activeRunwayPerformanceProfile.ProfileName} RWY {runwayDesignator} "
+                + $"rollDistance={activeTakeoffRollDistance:0.##} "
+                + $"initial={takeoffInitialSpeed:0.##} max={takeoffMaxSpeed:0.##} "
+                + $"accelerationTime={GetActiveTakeoffAccelerationTime():0.##}");
         }
 
         private void LogLandingSpeedProfile(string runwayDesignator)
         {
             Debug.Log(
-                $"Landing rollout speed profile: {flightNumber} RWY {runwayDesignator} "
+                $"Landing runway performance: {flightNumber} aircraftType={GetAircraftTypeLabel()} "
+                + $"profile={activeRunwayPerformanceProfile.ProfileName} RWY {runwayDesignator} "
+                + $"rolloutDistance={activeLandingRolloutDistance:0.##} "
                 + $"initial={landingInitialSpeed:0.##} rolloutEnd={landingRolloutEndSpeed:0.##} "
-                + $"completionProgress={landingDecelerationCompletionProgress:0.##} fallbackTime={landingDecelerationTime:0.##}");
+                + $"taxiSpeedRatio={GetActiveTouchdownToTaxiSpeedRatio():0.##} "
+                + $"decelerationTime={GetActiveLandingDecelerationTime():0.##}");
         }
 
         private string GetConnectorSegmentId(TaxiRouteCandidate routeCandidate)
@@ -713,9 +760,11 @@ namespace ATCJourneyJapan.Aircraft
         private void ClearTakeoff()
         {
             var operationDirection = GetOperationRunwayDirection();
-            var takeoffRoute = HasRunwayEntryUsage()
+            var baseTakeoffRoute = HasRunwayEntryUsage()
                 ? airportManager.GetTakeoffRoute(operationDirection, activeRunwayEntryUsageId, transform.position)
                 : airportManager.GetTakeoffRoute(operationDirection);
+            var performanceProfile = ResolveRunwayPerformanceProfile();
+            var takeoffRoute = BuildTakeoffRouteForProfile(operationDirection, baseTakeoffRoute, performanceProfile);
             SetState(AircraftState.TakeoffRoll, false);
             SetRunwayTakeoffHeading(operationDirection);
             LogSelectedTakeoffRoute(operationDirection);
@@ -723,10 +772,14 @@ namespace ATCJourneyJapan.Aircraft
                 $"Takeoff cleared: {flightNumber} runway={operationDirection} "
                 + $"selectedDepartureRouteId={FormatUsageId(selectedDepartureRouteId)} confirmedDepartureRouteId={FormatUsageId(confirmedDepartureRouteId)} "
                 + $"entryUsage={FormatUsageId(activeRunwayEntryUsageId)} routeId={FormatUsageId(activeDepartureRouteId)}");
-            StartTakeoffSpeedProfile(operationDirection);
+            StartTakeoffSpeedProfile(operationDirection, performanceProfile);
             gameManager.OccupyPrimaryRunway(this, "離陸滑走中");
             StartRouteWithHeading(takeoffRoute, takeoffInitialSpeed, () =>
             {
+                Debug.Log(
+                    $"Takeoff airborne: {flightNumber} aircraftType={GetAircraftTypeLabel()} "
+                    + $"profile={performanceProfile.ProfileName} runway={operationDirection} "
+                    + $"rollDistance={activeTakeoffRollDistance:0.##} position={FormatVector3(transform.position)}");
                 gameManager.ReleasePrimaryRunway(this);
                 SetState(AircraftState.AirborneDeparture, false);
                 SetRunwayTakeoffHeading(operationDirection);
@@ -752,19 +805,22 @@ namespace ATCJourneyJapan.Aircraft
             return !string.IsNullOrEmpty(activeRunwayEntryUsageId);
         }
 
-        private void StartTakeoffSpeedProfile(string operationDirection)
+        private void StartTakeoffSpeedProfile(string operationDirection, RunwayPerformanceProfile performanceProfile)
         {
+            activeRunwayPerformanceProfile = performanceProfile;
             takeoffSpeedProfileElapsed = 0f;
             route.Speed = takeoffInitialSpeed;
             LogTakeoffSpeedProfile(operationDirection);
         }
 
-        private void StartLandingSpeedProfile(string operationDirection, IReadOnlyList<Vector3> landingRollRoute)
+        private void StartLandingSpeedProfile(string operationDirection, IReadOnlyList<Vector3> landingRollRoute, RunwayPerformanceProfile performanceProfile)
         {
+            activeRunwayPerformanceProfile = performanceProfile;
             landingSpeedProfileElapsed = 0f;
             landingRolloutStartPosition = transform.position;
             landingRolloutEndPosition = landingRollRoute.Count > 0 ? landingRollRoute[landingRollRoute.Count - 1] : transform.position;
             landingRolloutDistance = Vector3.Distance(landingRolloutStartPosition, landingRolloutEndPosition);
+            activeLandingRolloutDistance = landingRolloutDistance;
             route.Speed = landingInitialSpeed;
             LogLandingSpeedProfile(operationDirection);
         }
@@ -774,7 +830,7 @@ namespace ATCJourneyJapan.Aircraft
             if (currentState == AircraftState.TakeoffRoll)
             {
                 takeoffSpeedProfileElapsed += deltaTime;
-                route.Speed = InterpolateSpeed(takeoffInitialSpeed, takeoffMaxSpeed, takeoffSpeedProfileElapsed, takeoffAccelerationTime);
+                route.Speed = InterpolateSpeed(takeoffInitialSpeed, takeoffMaxSpeed, takeoffSpeedProfileElapsed, GetActiveTakeoffAccelerationTime());
             }
             else if (currentState == AircraftState.LandingRoll)
             {
@@ -785,17 +841,18 @@ namespace ATCJourneyJapan.Aircraft
 
         private float InterpolateLandingRolloutSpeed()
         {
-            if (landingRolloutDistance > 0.1f && landingDecelerationCompletionProgress > 0.01f)
+            var touchdownToTaxiSpeedRatio = GetActiveTouchdownToTaxiSpeedRatio();
+            if (landingRolloutDistance > 0.1f && touchdownToTaxiSpeedRatio > 0.01f)
             {
                 var traveled = Vector3.Distance(landingRolloutStartPosition, transform.position);
                 var rolloutProgress = Mathf.Clamp01(traveled / landingRolloutDistance);
                 return Mathf.Lerp(
                     landingInitialSpeed,
                     landingRolloutEndSpeed,
-                    Mathf.Clamp01(rolloutProgress / landingDecelerationCompletionProgress));
+                    Mathf.Clamp01(rolloutProgress / touchdownToTaxiSpeedRatio));
             }
 
-            return InterpolateSpeed(landingInitialSpeed, landingRolloutEndSpeed, landingSpeedProfileElapsed, landingDecelerationTime);
+            return InterpolateSpeed(landingInitialSpeed, landingRolloutEndSpeed, landingSpeedProfileElapsed, GetActiveLandingDecelerationTime());
         }
 
         private float InterpolateSpeed(float fromSpeed, float toSpeed, float elapsed, float duration)
@@ -806,6 +863,124 @@ namespace ATCJourneyJapan.Aircraft
             }
 
             return Mathf.Lerp(fromSpeed, toSpeed, Mathf.Clamp01(elapsed / duration));
+        }
+
+        private RunwayPerformanceProfile ResolveRunwayPerformanceProfile()
+        {
+            var aircraftType = GetAircraftTypeLabel().ToUpperInvariant();
+            if (aircraftType.Contains("B787") || aircraftType.Contains("787") || aircraftType.Contains("B777") || aircraftType.Contains("777"))
+            {
+                return new RunwayPerformanceProfile("heavy", 0.72f, 0.7f, 6.2f, 7.2f, 0.82f, 0.04f);
+            }
+
+            if (aircraftType.Contains("A320") || aircraftType.Contains("B737") || aircraftType.Contains("737"))
+            {
+                return new RunwayPerformanceProfile("medium", 0.5f, 0.52f, 4.8f, 5.8f, 0.7f, 0.03f);
+            }
+
+            return new RunwayPerformanceProfile("medium-fallback", 0.55f, 0.58f, 5f, 6f, 0.75f, 0.03f);
+        }
+
+        private List<Vector3> BuildTakeoffRouteForProfile(string operationDirection, IEnumerable<Vector3> baseRoutePoints, RunwayPerformanceProfile performanceProfile)
+        {
+            var baseRoute = new List<Vector3>();
+            foreach (var point in baseRoutePoints)
+            {
+                baseRoute.Add(point);
+            }
+
+            var runway = airportManager != null ? airportManager.PrimaryRunwayGeometry : null;
+            if (runway == null || baseRoute.Count == 0)
+            {
+                activeTakeoffRollDistance = 0f;
+                return baseRoute;
+            }
+
+            var takeoffDirection = runway.GetTakeoffDirection(operationDirection);
+            var runwayStart = baseRoute[0];
+            var departureEnd = runway.GetDepartureEndPoint(operationDirection);
+            var availableDistance = Vector3.Dot(departureEnd - runwayStart, takeoffDirection);
+            if (availableDistance <= 0.1f)
+            {
+                availableDistance = Vector3.Distance(runwayStart, departureEnd);
+            }
+
+            var minimumRollDistance = Mathf.Min(runway.Length * 0.2f, Mathf.Max(availableDistance * 0.45f, 0.5f));
+            var maximumRollDistance = Mathf.Max(minimumRollDistance, availableDistance * (1f - performanceProfile.RunwayOccupancyPadding));
+            var targetRollDistance = Mathf.Clamp(runway.Length * performanceProfile.TakeoffRollDistanceRatio, minimumRollDistance, maximumRollDistance);
+            activeTakeoffRollDistance = targetRollDistance;
+
+            var rotationPoint = runwayStart + takeoffDirection * targetRollDistance;
+            rotationPoint.y = runwayStart.y;
+
+            var airborneDistance = Mathf.Min(targetRollDistance + runway.Length * 0.08f, availableDistance + runway.Length * 0.04f);
+            var airbornePoint = runwayStart + takeoffDirection * airborneDistance;
+            airbornePoint.y = 2.4f;
+
+            return new List<Vector3>
+            {
+                runwayStart,
+                rotationPoint,
+                airbornePoint
+            };
+        }
+
+        private List<Vector3> BuildLandingRolloutRouteForProfile(string operationDirection, IReadOnlyList<Vector3> baseRoute, RunwayPerformanceProfile performanceProfile)
+        {
+            var runway = airportManager != null ? airportManager.PrimaryRunwayGeometry : null;
+            if (runway == null || baseRoute.Count == 0)
+            {
+                activeLandingRolloutDistance = 0f;
+                return new List<Vector3>(baseRoute);
+            }
+
+            var landingDirection = runway.GetLandingDirection(operationDirection);
+            var touchdownPoint = baseRoute[0];
+            var fallbackRolloutEnd = baseRoute[baseRoute.Count - 1];
+            var availableDistance = Vector3.Dot(fallbackRolloutEnd - touchdownPoint, landingDirection);
+            if (availableDistance <= 0.1f)
+            {
+                availableDistance = Vector3.Distance(touchdownPoint, fallbackRolloutEnd);
+            }
+
+            var minimumRolloutDistance = Mathf.Min(runway.Length * 0.25f, Mathf.Max(availableDistance * 0.45f, 0.5f));
+            var targetRolloutDistance = Mathf.Clamp(runway.Length * performanceProfile.LandingRolloutDistanceRatio, minimumRolloutDistance, availableDistance);
+            activeLandingRolloutDistance = targetRolloutDistance;
+
+            var rolloutEndPoint = touchdownPoint + landingDirection * targetRolloutDistance;
+            rolloutEndPoint.y = touchdownPoint.y;
+
+            return new List<Vector3>
+            {
+                touchdownPoint,
+                rolloutEndPoint
+            };
+        }
+
+        private float GetActiveTakeoffAccelerationTime()
+        {
+            return activeRunwayPerformanceProfile.TakeoffAccelerationTime > 0.01f
+                ? activeRunwayPerformanceProfile.TakeoffAccelerationTime
+                : takeoffAccelerationTime;
+        }
+
+        private float GetActiveLandingDecelerationTime()
+        {
+            return activeRunwayPerformanceProfile.LandingDecelerationTime > 0.01f
+                ? activeRunwayPerformanceProfile.LandingDecelerationTime
+                : landingDecelerationTime;
+        }
+
+        private float GetActiveTouchdownToTaxiSpeedRatio()
+        {
+            return activeRunwayPerformanceProfile.TouchdownToTaxiSpeedRatio > 0.01f
+                ? activeRunwayPerformanceProfile.TouchdownToTaxiSpeedRatio
+                : landingDecelerationCompletionProgress;
+        }
+
+        private string GetAircraftTypeLabel()
+        {
+            return flightData != null && !string.IsNullOrEmpty(flightData.AircraftType) ? flightData.AircraftType : "Unknown";
         }
 
         private void SetState(AircraftState state, bool applyDefaultHeading = true)

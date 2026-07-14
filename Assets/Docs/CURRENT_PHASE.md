@@ -2,6 +2,16 @@
 
 ## Current Phase
 
+Phase 3.9-5T-2: 機種別Runway Performance Profile土台
+
+## Phase 3.9-5T-2で直したこと
+
+- A320/B737をmedium、B787/B777をheavyとして扱う、ゲーム用の暫定Runway Performance Profileを追加した
+- 離陸滑走ではprofileごとの `takeoffRollDistanceRatio` を使い、全機が滑走路全長を使い切る見え方を避けるようにした
+- 着陸滑走ではprofileごとの `landingRolloutDistanceRatio` と減速profileを使い、機種ごとにtaxi速度へ落ちる距離を変えられるようにした
+- 滑走路占有、Line Up / Takeoffの逆走防止、到着後Taxi-to-Spotの既存フローは維持した
+- 今回の値は実機性能の完全再現ではなく暫定ゲームバランス値であり、将来の機種データ・インシデント判定・ステージ難易度に合わせて調整する
+
 Phase 3.9-5T: 管制交信ログ土台整理
 
 ## Phase 3.9-5Tで直したこと
