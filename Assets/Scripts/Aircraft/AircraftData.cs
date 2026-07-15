@@ -102,6 +102,19 @@ namespace ATCJourneyJapan.Aircraft
             SelectedArrivalRouteId = routeId ?? string.Empty;
         }
 
+        public void AssignSpot(string spotId, string spotDisplayName)
+        {
+            if (!string.IsNullOrEmpty(spotId))
+            {
+                SpotId = spotId;
+            }
+
+            if (!string.IsNullOrEmpty(spotDisplayName))
+            {
+                SpotDisplayName = spotDisplayName;
+            }
+        }
+
         public void UpdateRuntimeState(
             string currentState,
             string controllerPosition,

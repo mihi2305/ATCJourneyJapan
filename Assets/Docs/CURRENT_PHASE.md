@@ -2,6 +2,16 @@
 
 ## Current Phase
 
+Phase 3.9-5U-0A: 出発機初期SPOT配置修正
+
+## Phase 3.9-5U-0Aで直したこと
+
+- 出発機の初期配置を、固定のDepartureSpawnPositionやHold Short付近ではなく、割り当てられたSPOT定義のpositionから決めるようにした
+- AJJ202はSPOT 02、AJJ204はSPOT 04でAtGate開始になり、滑走路横・誘導路外に直接置かれないようにした
+- spotIdが未設定またはSpot定義に見つからない場合は、SPOT 01へ安全にfallbackし、AircraftData側のSpot表示も揃えるようにした
+- 航空機生成時にcallsign、Departure、spot、position、fallback有無を1回だけDebug Logへ出すようにした
+- 最大4機程度の複数機運用、インシデント検知、Mission Failed演出は次Phase以降に回す
+
 Phase 3.9-5T-3B: 着陸Final Approach表示調整
 
 ## Phase 3.9-5T-3Bで直したこと

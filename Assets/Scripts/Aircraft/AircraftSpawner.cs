@@ -27,12 +27,12 @@ namespace ATCJourneyJapan.Aircraft
             var arrivalData = new AircraftData("AJJ101", "B737", "Arrival", runway.RunwayId, runway.SimpleNameJa, runway.CurrentActiveDesignator, "SPOT_01", "SPOT 01", "Miyazaki", "Naha", scheduledArrivalTime: "08:05", estimatedArrivalTime: "08:05");
             var secondArrivalData = new AircraftData("AJJ103", "B737", "Arrival", runway.RunwayId, runway.SimpleNameJa, runway.CurrentActiveDesignator, "SPOT_03", "SPOT 03", "Fukuoka", "Naha", scheduledArrivalTime: "08:12", estimatedArrivalTime: "08:12");
             var departureData = new AircraftData("AJJ202", "A320", "Departure", runway.RunwayId, runway.SimpleNameJa, string.Empty, "SPOT_02", "SPOT 02", "Naha", "Tokyo", scheduledDepartureTime: "08:10", estimatedDepartureTime: "08:10");
-            var secondDepartureData = new AircraftData("AJJ204", "A320", "Departure", runway.RunwayId, runway.SimpleNameJa, runway.CurrentActiveDesignator, "SPOT_04", "SPOT 04", "Naha", "Osaka", scheduledDepartureTime: "08:18", estimatedDepartureTime: "08:18");
+            var secondDepartureData = new AircraftData("AJJ204", "A320", "Departure", runway.RunwayId, runway.SimpleNameJa, string.Empty, "SPOT_04", "SPOT 04", "Naha", "Osaka", scheduledDepartureTime: "08:18", estimatedDepartureTime: "08:18");
 
             SpawnAircraft(arrivalData, true, AircraftState.Inbound, airportManager.ArrivalSpawnPosition, arrivalMaterial);
             SpawnAircraft(secondArrivalData, true, AircraftState.Inbound, airportManager.SecondaryArrivalSpawnPosition, arrivalMaterial);
-            SpawnAircraft(departureData, false, AircraftState.AtGate, airportManager.DepartureSpawnPosition, departureMaterial);
-            SpawnAircraft(secondDepartureData, false, AircraftState.HoldingShort, airportManager.HoldShortPosition + new Vector3(-2.2f, 0f, -0.8f), departureMaterial);
+            SpawnDepartureAircraftAtAssignedSpot(departureData);
+            SpawnDepartureAircraftAtAssignedSpot(secondDepartureData);
         }
 
         private void CreateMaterials()
@@ -59,6 +59,44 @@ namespace ATCJourneyJapan.Aircraft
             controller.Configure(flightData, arrival, state, airportManager, gameManager, material, selectedMaterial, visualSpec);
             gameManager.RegisterAircraft(controller);
             return controller;
+        }
+
+        private AircraftController SpawnDepartureAircraftAtAssignedSpot(AircraftData flightData)
+        {
+            var position = ResolveDepartureSpotPosition(flightData, out var fallbackUsed, out var fallbackReason);
+            Debug.Log(
+                $"Initial aircraft placement: {flightData.FlightId} type=Departure "
+                + $"spot={flightData.SpotDisplayName} position={FormatVector3(position)} "
+                + $"source=SpotDefinition fallbackUsed={fallbackUsed} fallbackReason={fallbackReason}");
+            return SpawnAircraft(flightData, false, AircraftState.AtGate, position, departureMaterial);
+        }
+
+        private Vector3 ResolveDepartureSpotPosition(AircraftData flightData, out bool fallbackUsed, out string fallbackReason)
+        {
+            fallbackUsed = false;
+            fallbackReason = "none";
+            if (flightData != null && airportManager.TryGetSpotPosition(flightData.SpotId, out var assignedSpotPosition))
+            {
+                return assignedSpotPosition;
+            }
+
+            fallbackUsed = true;
+            fallbackReason = string.IsNullOrEmpty(flightData?.SpotId) ? "missingSpotId" : "spotIdNotFound";
+            const string fallbackSpotId = "SPOT_01";
+            const string fallbackSpotDisplayName = "SPOT 01";
+            if (flightData != null)
+            {
+                flightData.AssignSpot(fallbackSpotId, fallbackSpotDisplayName);
+            }
+
+            return airportManager.TryGetSpotPosition(fallbackSpotId, out var fallbackSpotPosition)
+                ? fallbackSpotPosition
+                : airportManager.DepartureSpawnPosition;
+        }
+
+        private string FormatVector3(Vector3 value)
+        {
+            return $"({value.x:0.##}, {value.y:0.##}, {value.z:0.##})";
         }
 
         private void CreateAircraftVisual(Transform parent, Material material, AircraftVisualSpec visualSpec)

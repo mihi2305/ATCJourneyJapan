@@ -65,6 +65,22 @@ namespace ATCJourneyJapan.Airport
         public Vector3 PrimaryRunwayLineUpPosition => GetPrimaryRunwayLineupPoint(GetPrimaryRunwayDirection());
         public Vector3 PrimaryRunwayTakeoffDirection => GetPrimaryRunwayTakeoffDirection(GetPrimaryRunwayDirection());
 
+        public bool TryGetSpotPosition(string spotId, out Vector3 position)
+        {
+            var normalizedSpotId = NormalizeSpotId(spotId);
+            foreach (var spotDefinition in spotDefinitions)
+            {
+                if (NormalizeSpotId(spotDefinition.TutorialId) == normalizedSpotId)
+                {
+                    position = spotDefinition.Position;
+                    return true;
+                }
+            }
+
+            position = Vector3.zero;
+            return false;
+        }
+
         public void Initialize()
         {
             CreateMaterials();
