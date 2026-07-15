@@ -82,7 +82,9 @@ namespace ATCJourneyJapan.Aircraft
             public float InitialClimbPathAngleDegrees;
             public float InitialClimbPitchDegrees;
             public float ApproachPathAngleDegrees;
+            public float ApproachVisualPitchDegrees;
             public float FlarePitchDegrees;
+            public float FinalApproachExtensionDistance;
             public float PitchSmoothingSpeed;
 
             public RunwayPerformanceProfile(
@@ -97,7 +99,9 @@ namespace ATCJourneyJapan.Aircraft
                 float initialClimbPathAngleDegrees,
                 float initialClimbPitchDegrees,
                 float approachPathAngleDegrees,
+                float approachVisualPitchDegrees,
                 float flarePitchDegrees,
+                float finalApproachExtensionDistance,
                 float pitchSmoothingSpeed)
             {
                 ProfileName = profileName;
@@ -111,7 +115,9 @@ namespace ATCJourneyJapan.Aircraft
                 InitialClimbPathAngleDegrees = initialClimbPathAngleDegrees;
                 InitialClimbPitchDegrees = initialClimbPitchDegrees;
                 ApproachPathAngleDegrees = approachPathAngleDegrees;
+                ApproachVisualPitchDegrees = approachVisualPitchDegrees;
                 FlarePitchDegrees = flarePitchDegrees;
+                FinalApproachExtensionDistance = finalApproachExtensionDistance;
                 PitchSmoothingSpeed = pitchSmoothingSpeed;
             }
         }
@@ -321,14 +327,16 @@ namespace ATCJourneyJapan.Aircraft
             }
 
             activeRunwayPerformanceProfile = performanceProfile;
-            SetVisualPitch(performanceProfile.ApproachPathAngleDegrees, true);
+            SetVisualPitch(performanceProfile.ApproachVisualPitchDegrees, true);
             SetState(AircraftState.FinalApproach);
             SetRunwayLandingHeading(operationDirection);
             gameManager.OccupyPrimaryRunway(this, "着陸中");
             Debug.Log(
                 $"Approach profile start: {flightNumber} aircraftType={GetAircraftTypeLabel()} "
                 + $"profile={performanceProfile.ProfileName} runway={operationDirection} "
-                + $"pathAngle={performanceProfile.ApproachPathAngleDegrees:0.#} pitch={performanceProfile.ApproachPathAngleDegrees:0.#}");
+                + $"pathAngle={performanceProfile.ApproachPathAngleDegrees:0.#} "
+                + $"visualPitch={performanceProfile.ApproachVisualPitchDegrees:0.#} "
+                + $"finalStartAltitude={transform.position.y:0.##} touchdown={FormatVector3(finalApproachTouchdownPosition)}");
             StartRouteWithHeading(finalApproachRoute, airborneSpeed, () =>
             {
                 SetState(AircraftState.LandingRoll);
@@ -554,6 +562,7 @@ namespace ATCJourneyJapan.Aircraft
                 + $"taxiSpeedRatio={GetActiveTouchdownToTaxiSpeedRatio():0.##} "
                 + $"decelerationTime={GetActiveLandingDecelerationTime():0.##} "
                 + $"approachAngle={activeRunwayPerformanceProfile.ApproachPathAngleDegrees:0.#} "
+                + $"approachVisualPitch={activeRunwayPerformanceProfile.ApproachVisualPitchDegrees:0.#} "
                 + $"flarePitch={activeRunwayPerformanceProfile.FlarePitchDegrees:0.#}");
         }
 
@@ -944,15 +953,15 @@ namespace ATCJourneyJapan.Aircraft
             var aircraftType = GetAircraftTypeLabel().ToUpperInvariant();
             if (aircraftType.Contains("B787") || aircraftType.Contains("787") || aircraftType.Contains("B777") || aircraftType.Contains("777"))
             {
-                return new RunwayPerformanceProfile("heavy", 0.72f, 0.7f, 6.2f, 7.2f, 0.82f, 0.04f, 8f, 3.5f, 8.5f, -3f, -0.5f, 18f);
+                return new RunwayPerformanceProfile("heavy", 0.72f, 0.7f, 6.2f, 7.2f, 0.82f, 0.04f, 8f, 3.5f, 8.5f, -3.8f, 2f, 5f, 8f, 18f);
             }
 
             if (aircraftType.Contains("A320") || aircraftType.Contains("B737") || aircraftType.Contains("737"))
             {
-                return new RunwayPerformanceProfile("medium", 0.5f, 0.52f, 4.8f, 5.8f, 0.7f, 0.03f, 10f, 4.5f, 10f, -3f, -0.5f, 22f);
+                return new RunwayPerformanceProfile("medium", 0.5f, 0.52f, 4.8f, 5.8f, 0.7f, 0.03f, 10f, 4.5f, 10f, -4.4f, 3f, 6f, 9f, 22f);
             }
 
-            return new RunwayPerformanceProfile("medium-fallback", 0.55f, 0.58f, 5f, 6f, 0.75f, 0.03f, 11f, 5f, 11f, -3f, -0.5f, 24f);
+            return new RunwayPerformanceProfile("medium-fallback", 0.55f, 0.58f, 5f, 6f, 0.75f, 0.03f, 11f, 5f, 11f, -4.8f, 3.5f, 6.5f, 10f, 24f);
         }
 
         private List<Vector3> BuildFinalApproachRouteForProfile(string operationDirection, IReadOnlyList<Vector3> baseRoute, RunwayPerformanceProfile performanceProfile)
@@ -964,15 +973,23 @@ namespace ATCJourneyJapan.Aircraft
 
             var runway = airportManager != null ? airportManager.PrimaryRunwayGeometry : null;
             var landingDirection = runway != null ? runway.GetLandingDirection(operationDirection) : GetRunwayLandingDirection(operationDirection);
-            finalApproachStartPosition = baseRoute[0];
-            finalApproachTouchdownPosition = baseRoute[baseRoute.Count - 1];
+            var routeSource = new List<Vector3>();
+            var extendedStart = baseRoute[0] - landingDirection * performanceProfile.FinalApproachExtensionDistance;
+            routeSource.Add(extendedStart);
+            for (var index = 0; index < baseRoute.Count; index++)
+            {
+                routeSource.Add(baseRoute[index]);
+            }
+
+            finalApproachStartPosition = routeSource[0];
+            finalApproachTouchdownPosition = routeSource[routeSource.Count - 1];
             flarePhaseLogged = false;
 
             var approachRoute = new List<Vector3>();
             var approachAngleRadians = Mathf.Abs(performanceProfile.ApproachPathAngleDegrees) * Mathf.Deg2Rad;
-            for (var index = 0; index < baseRoute.Count; index++)
+            for (var index = 0; index < routeSource.Count; index++)
             {
-                var point = baseRoute[index];
+                var point = routeSource[index];
                 var remainingDistance = Vector3.Dot(finalApproachTouchdownPosition - point, landingDirection);
                 if (remainingDistance < 0f)
                 {
@@ -980,9 +997,13 @@ namespace ATCJourneyJapan.Aircraft
                 }
 
                 var targetY = finalApproachTouchdownPosition.y + Mathf.Tan(approachAngleRadians) * remainingDistance;
-                if (index >= baseRoute.Count - 2)
+                if (index == routeSource.Count - 2)
                 {
-                    targetY = Mathf.Lerp(targetY, finalApproachTouchdownPosition.y, 0.55f);
+                    targetY = Mathf.Lerp(targetY, finalApproachTouchdownPosition.y, 0.3f);
+                }
+                else if (index == routeSource.Count - 1)
+                {
+                    targetY = finalApproachTouchdownPosition.y;
                 }
 
                 approachRoute.Add(new Vector3(point.x, targetY, point.z));
@@ -1132,15 +1153,15 @@ namespace ATCJourneyJapan.Aircraft
             var totalDistance = Vector3.Distance(finalApproachStartPosition, finalApproachTouchdownPosition);
             if (totalDistance <= 0.1f)
             {
-                return activeRunwayPerformanceProfile.ApproachPathAngleDegrees;
+                return activeRunwayPerformanceProfile.ApproachVisualPitchDegrees;
             }
 
             var remainingDistance = Vector3.Distance(transform.position, finalApproachTouchdownPosition);
             var progress = Mathf.Clamp01(1f - remainingDistance / totalDistance);
-            const float flareStartProgress = 0.78f;
+            const float flareStartProgress = 0.82f;
             if (progress < flareStartProgress)
             {
-                return activeRunwayPerformanceProfile.ApproachPathAngleDegrees;
+                return activeRunwayPerformanceProfile.ApproachVisualPitchDegrees;
             }
 
             if (!flarePhaseLogged)
@@ -1154,7 +1175,7 @@ namespace ATCJourneyJapan.Aircraft
             }
 
             var flareProgress = Mathf.Clamp01((progress - flareStartProgress) / (1f - flareStartProgress));
-            return Mathf.Lerp(activeRunwayPerformanceProfile.ApproachPathAngleDegrees, activeRunwayPerformanceProfile.FlarePitchDegrees, flareProgress);
+            return Mathf.Lerp(activeRunwayPerformanceProfile.ApproachVisualPitchDegrees, activeRunwayPerformanceProfile.FlarePitchDegrees, flareProgress);
         }
 
         private void SetVisualPitch(float targetPitchDegrees, bool immediate, float deltaTime = 0f)

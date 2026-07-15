@@ -2,6 +2,16 @@
 
 ## Current Phase
 
+Phase 3.9-5T-3B: 着陸Final Approach表示調整
+
+## Phase 3.9-5T-3Bで直したこと
+
+- Unity上で着陸進入が浅く見えすぎたため、ゲーム表示用のFinal Approach降下角を3度基準から4度前後へ強めた
+- Final Approach開始点を少し手前に延長し、touchdown pointへ向かう高度差が画面上で見えるようにした
+- 降下経路角と機体の見た目pitchを分離し、Final中は軽い機首上げ、Flare中はさらに機首を起こす表示へ調整した
+- Touchdown後は既存のLanding Rollout減速profileを使いながら、pitchを0度へ戻す流れを維持した
+- 今回の値は実機完全再現ではなく、ゲーム画面で「降りてくる感」を出すための暫定表示調整値として扱う
+
 Phase 3.9-5T-3: 離陸・着陸Pitch Profile調整
 
 ## Phase 3.9-5T-3で直したこと
