@@ -25,12 +25,12 @@ namespace ATCJourneyJapan.Aircraft
         {
             var runway = airportManager.PrimaryRunwayData;
             var arrivalData = new AircraftData("AJJ101", "B737", "Arrival", runway.RunwayId, runway.SimpleNameJa, runway.CurrentActiveDesignator, "SPOT_01", "SPOT 01", "Miyazaki", "Naha", scheduledArrivalTime: "08:05", estimatedArrivalTime: "08:05");
-            var secondArrivalData = new AircraftData("AJJ103", "B737", "Arrival", runway.RunwayId, runway.SimpleNameJa, runway.CurrentActiveDesignator, "SPOT_03", "SPOT 03", "Fukuoka", "Naha", scheduledArrivalTime: "08:12", estimatedArrivalTime: "08:12");
+            var secondArrivalData = new AircraftData("AJJ103", "A320", "Arrival", runway.RunwayId, runway.SimpleNameJa, runway.CurrentActiveDesignator, "SPOT_04", "SPOT 04", "Fukuoka", "Naha", scheduledArrivalTime: "08:12", estimatedArrivalTime: "08:12");
             var departureData = new AircraftData("AJJ202", "A320", "Departure", runway.RunwayId, runway.SimpleNameJa, string.Empty, "SPOT_02", "SPOT 02", "Naha", "Tokyo", scheduledDepartureTime: "08:10", estimatedDepartureTime: "08:10");
-            var secondDepartureData = new AircraftData("AJJ204", "A320", "Departure", runway.RunwayId, runway.SimpleNameJa, string.Empty, "SPOT_04", "SPOT 04", "Naha", "Osaka", scheduledDepartureTime: "08:18", estimatedDepartureTime: "08:18");
+            var secondDepartureData = new AircraftData("AJJ204", "B737", "Departure", runway.RunwayId, runway.SimpleNameJa, string.Empty, "SPOT_03", "SPOT 03", "Naha", "Osaka", scheduledDepartureTime: "08:18", estimatedDepartureTime: "08:18");
 
-            SpawnAircraft(arrivalData, true, AircraftState.Inbound, airportManager.ArrivalSpawnPosition, arrivalMaterial);
-            SpawnAircraft(secondArrivalData, true, AircraftState.Inbound, airportManager.SecondaryArrivalSpawnPosition, arrivalMaterial);
+            SpawnArrivalAircraft(arrivalData, airportManager.ArrivalSpawnPosition);
+            SpawnArrivalAircraft(secondArrivalData, airportManager.SecondaryArrivalSpawnPosition);
             SpawnDepartureAircraftAtAssignedSpot(departureData);
             SpawnDepartureAircraftAtAssignedSpot(secondDepartureData);
         }
@@ -61,13 +61,23 @@ namespace ATCJourneyJapan.Aircraft
             return controller;
         }
 
+        private AircraftController SpawnArrivalAircraft(AircraftData flightData, Vector3 position)
+        {
+            Debug.Log(
+                $"Scenario aircraft spawned: {flightData.FlightId} type=Arrival "
+                + $"aircraftType={flightData.AircraftType} spot={flightData.SpotDisplayName} "
+                + $"position={FormatVector3(position)} fallbackUsed=False");
+            return SpawnAircraft(flightData, true, AircraftState.Inbound, position, arrivalMaterial);
+        }
+
         private AircraftController SpawnDepartureAircraftAtAssignedSpot(AircraftData flightData)
         {
             var position = ResolveDepartureSpotPosition(flightData, out var fallbackUsed, out var fallbackReason);
             Debug.Log(
-                $"Initial aircraft placement: {flightData.FlightId} type=Departure "
-                + $"spot={flightData.SpotDisplayName} position={FormatVector3(position)} "
-                + $"source=SpotDefinition fallbackUsed={fallbackUsed} fallbackReason={fallbackReason}");
+                $"Scenario aircraft spawned: {flightData.FlightId} type=Departure "
+                + $"aircraftType={flightData.AircraftType} spot={flightData.SpotDisplayName} "
+                + $"position={FormatVector3(position)} source=SpotDefinition "
+                + $"fallbackUsed={fallbackUsed} fallbackReason={fallbackReason}");
             return SpawnAircraft(flightData, false, AircraftState.AtGate, position, departureMaterial);
         }
 

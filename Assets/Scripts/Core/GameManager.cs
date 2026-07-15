@@ -106,7 +106,7 @@ namespace ATCJourneyJapan.Core
 
             uiManager.Refresh();
 
-            if (!stageClear && handledAircraft.Count >= 2)
+            if (!stageClear && aircraft.Count > 0 && handledAircraft.Count >= aircraft.Count)
             {
                 stageClear = true;
                 uiManager.ShowStageClear();

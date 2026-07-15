@@ -2,6 +2,17 @@
 
 ## Current Phase
 
+Phase 3.9-5U-0B: 固定4機シナリオ土台
+
+## Phase 3.9-5U-0Bで直したこと
+
+- 固定シナリオを2 arrival + 2 departureの4機構成へ整理した
+- ARRIVALはAJJ101/B737/SPOT 01、AJJ103/A320/SPOT 04、DEPARTUREはAJJ202/A320/SPOT 02、AJJ204/B737/SPOT 03に割り当てた
+- 出発機2機はそれぞれ別SPOT上でAtGate開始し、滑走路横や誘導路外に直接配置されない状態を維持した
+- 航空機生成時にcallsign、Arrival/Departure、aircraftType、spot、positionを1回だけDebug Logへ出すようにした
+- Stage Clearは2機処理ではなく、登録済み4機すべての処理完了を待つようにした
+- Runway Conflict / Taxi Conflict / Near Miss検知、Mission Failed、事故演出は次Phase以降に回す
+
 Phase 3.9-5U-0A: 出発機初期SPOT配置修正
 
 ## Phase 3.9-5U-0Aで直したこと
