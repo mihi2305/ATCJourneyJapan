@@ -2,6 +2,16 @@
 
 ## Current Phase
 
+Phase 3.9-5U-0C: Departure Airborne Exit Flow追加
+
+## Phase 3.9-5U-0Cで直したこと
+
+- 出発機がairborne後に滑走路端付近で滞留せず、滑走路方向に沿って空港外のDeparture Exitへ抜けるrouteを追加した
+- Takeoff Roll / Rotation / Liftoffまでは既存profileを維持し、airborne到達後にInitial Climb point、Departure Exit pointへ進むようにした
+- RWY 18L / 36Rの離陸方向は既存のRunwayGeometryから取得し、滑走路方向と矛盾しないようにした
+- 滑走路占有はTakeoff Roll中に維持し、airborne後の既存releaseを保ったままDeparture Exit到達時に処理完了へ進める
+- 広域空域、Departure Route本格実装、Approach MapはPhase 6以降に回す
+
 Phase 3.9-5U-0B: 固定4機シナリオ土台
 
 ## Phase 3.9-5U-0Bで直したこと

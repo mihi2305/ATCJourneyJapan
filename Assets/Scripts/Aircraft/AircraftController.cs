@@ -839,7 +839,18 @@ namespace ATCJourneyJapan.Aircraft
                 gameManager.ReleasePrimaryRunway(this);
                 SetState(AircraftState.AirborneDeparture, false);
                 SetRunwayTakeoffHeading(operationDirection);
-                gameManager.NotifyAircraftHandled(this);
+                var airborneExitRoute = BuildDepartureAirborneExitRoute(operationDirection, performanceProfile);
+                Debug.Log(
+                    $"Departure airborne exit: {flightNumber} runway={operationDirection} "
+                    + $"exitPoint={FormatVector3(airborneExitRoute[airborneExitRoute.Count - 1])} "
+                    + $"altitude={airborneExitRoute[airborneExitRoute.Count - 1].y:0.##}");
+                StartRouteWithHeading(airborneExitRoute, airborneSpeed, () =>
+                {
+                    Debug.Log(
+                        $"Departure completed: {flightNumber} runway={operationDirection} "
+                        + $"reason=ReachedDepartureExit position={FormatVector3(transform.position)}");
+                    gameManager.NotifyAircraftHandled(this);
+                }, false);
             }, false);
         }
 
@@ -1089,6 +1100,27 @@ namespace ATCJourneyJapan.Aircraft
             {
                 touchdownPoint,
                 rolloutEndPoint
+            };
+        }
+
+        private List<Vector3> BuildDepartureAirborneExitRoute(string operationDirection, RunwayPerformanceProfile performanceProfile)
+        {
+            var runway = airportManager != null ? airportManager.PrimaryRunwayGeometry : null;
+            var takeoffDirection = runway != null ? runway.GetTakeoffDirection(operationDirection) : GetRunwayTakeoffDirection(operationDirection);
+            var runwayLength = runway != null ? runway.Length : 32.5f;
+            var startPoint = transform.position;
+            var initialClimbDistance = Mathf.Max(runwayLength * 0.45f, 10f);
+            var exitDistance = Mathf.Max(runwayLength * 1.15f, 34f);
+            var climbAngleRadians = performanceProfile.InitialClimbPathAngleDegrees * Mathf.Deg2Rad;
+            var initialClimbPoint = startPoint + takeoffDirection * initialClimbDistance;
+            initialClimbPoint.y = startPoint.y + Mathf.Tan(climbAngleRadians) * initialClimbDistance;
+            var departureExitPoint = startPoint + takeoffDirection * exitDistance;
+            departureExitPoint.y = startPoint.y + Mathf.Tan(climbAngleRadians) * exitDistance;
+
+            return new List<Vector3>
+            {
+                initialClimbPoint,
+                departureExitPoint
             };
         }
 
