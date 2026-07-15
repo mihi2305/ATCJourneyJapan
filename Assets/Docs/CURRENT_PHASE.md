@@ -2,6 +2,17 @@
 
 ## Current Phase
 
+Phase 3.9-5T-3: 離陸・着陸Pitch Profile調整
+
+## Phase 3.9-5T-3で直したこと
+
+- Runway Performance Profileに、rotation pitch、initial climb path angle、approach path angle、flare pitch、pitch smoothingを追加した
+- 離陸時はTakeoff Roll終盤でゆっくりRotationし、airborne後は3〜6度程度の浅い上昇経路へ入るようにした
+- 機体の見た目pitchと実際の上昇経路角を分け、30度以上の急上昇に見える挙動を避けるようにした
+- 着陸時は約3度のFinal Approach、接地前のFlare、Rollout中の水平姿勢へつながる簡易profileを追加した
+- Taxi / Pushback / Line Up中は基本pitch 0度へ戻し、既存のheading / turn / route選択 / 逆走防止は維持した
+- 角度値は実機完全再現ではなくゲーム用の見た目調整値であり、将来は機種・重量・天候・滑走路長に応じて調整する
+
 Phase 3.9-5T-2: 機種別Runway Performance Profile土台
 
 ## Phase 3.9-5T-2で直したこと

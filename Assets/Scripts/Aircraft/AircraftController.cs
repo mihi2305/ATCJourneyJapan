@@ -61,6 +61,12 @@ namespace ATCJourneyJapan.Aircraft
         private RunwayPerformanceProfile activeRunwayPerformanceProfile;
         private float activeTakeoffRollDistance;
         private float activeLandingRolloutDistance;
+        private float currentVisualPitchDegrees;
+        private Vector3 takeoffRollStartPosition;
+        private Vector3 finalApproachStartPosition;
+        private Vector3 finalApproachTouchdownPosition;
+        private bool rotationPhaseLogged;
+        private bool flarePhaseLogged;
 
         // Provisional game-tuned runway performance values. These are not real aircraft performance data.
         private struct RunwayPerformanceProfile
@@ -72,6 +78,12 @@ namespace ATCJourneyJapan.Aircraft
             public float LandingDecelerationTime;
             public float TouchdownToTaxiSpeedRatio;
             public float RunwayOccupancyPadding;
+            public float RotationPitchDegrees;
+            public float InitialClimbPathAngleDegrees;
+            public float InitialClimbPitchDegrees;
+            public float ApproachPathAngleDegrees;
+            public float FlarePitchDegrees;
+            public float PitchSmoothingSpeed;
 
             public RunwayPerformanceProfile(
                 string profileName,
@@ -80,7 +92,13 @@ namespace ATCJourneyJapan.Aircraft
                 float takeoffAccelerationTime,
                 float landingDecelerationTime,
                 float touchdownToTaxiSpeedRatio,
-                float runwayOccupancyPadding)
+                float runwayOccupancyPadding,
+                float rotationPitchDegrees,
+                float initialClimbPathAngleDegrees,
+                float initialClimbPitchDegrees,
+                float approachPathAngleDegrees,
+                float flarePitchDegrees,
+                float pitchSmoothingSpeed)
             {
                 ProfileName = profileName;
                 TakeoffRollDistanceRatio = takeoffRollDistanceRatio;
@@ -89,6 +107,12 @@ namespace ATCJourneyJapan.Aircraft
                 LandingDecelerationTime = landingDecelerationTime;
                 TouchdownToTaxiSpeedRatio = touchdownToTaxiSpeedRatio;
                 RunwayOccupancyPadding = runwayOccupancyPadding;
+                RotationPitchDegrees = rotationPitchDegrees;
+                InitialClimbPathAngleDegrees = initialClimbPathAngleDegrees;
+                InitialClimbPitchDegrees = initialClimbPitchDegrees;
+                ApproachPathAngleDegrees = approachPathAngleDegrees;
+                FlarePitchDegrees = flarePitchDegrees;
+                PitchSmoothingSpeed = pitchSmoothingSpeed;
             }
         }
 
@@ -158,6 +182,7 @@ namespace ATCJourneyJapan.Aircraft
             {
                 var previousPosition = transform.position;
                 UpdateActiveSpeedProfile(Time.deltaTime);
+                UpdateActiveAttitudeProfile(Time.deltaTime);
                 var routeHeadingHandled = UpdateHeadingTowardRouteWaypoint(Time.deltaTime);
                 route.Tick(transform, Time.deltaTime);
                 if (ShouldLockPushbackHeading())
@@ -284,17 +309,31 @@ namespace ATCJourneyJapan.Aircraft
         private void ClearLanding()
         {
             var operationDirection = GetOperationRunwayDirection();
+            var performanceProfile = ResolveRunwayPerformanceProfile();
             lastLandingRunwayDesignator = operationDirection;
-            transform.position = airportManager.GetArrivalFinalApproachStart(operationDirection);
+            var finalApproachRoute = BuildFinalApproachRouteForProfile(
+                operationDirection,
+                new List<Vector3>(airportManager.GetArrivalFinalRoute(operationDirection)),
+                performanceProfile);
+            if (finalApproachRoute.Count > 0)
+            {
+                transform.position = finalApproachRoute[0];
+            }
+
+            activeRunwayPerformanceProfile = performanceProfile;
+            SetVisualPitch(performanceProfile.ApproachPathAngleDegrees, true);
             SetState(AircraftState.FinalApproach);
             SetRunwayLandingHeading(operationDirection);
             gameManager.OccupyPrimaryRunway(this, "着陸中");
-            StartRouteWithHeading(airportManager.GetArrivalFinalRoute(operationDirection), airborneSpeed, () =>
+            Debug.Log(
+                $"Approach profile start: {flightNumber} aircraftType={GetAircraftTypeLabel()} "
+                + $"profile={performanceProfile.ProfileName} runway={operationDirection} "
+                + $"pathAngle={performanceProfile.ApproachPathAngleDegrees:0.#} pitch={performanceProfile.ApproachPathAngleDegrees:0.#}");
+            StartRouteWithHeading(finalApproachRoute, airborneSpeed, () =>
             {
                 SetState(AircraftState.LandingRoll);
                 SetRunwayLandingHeading(operationDirection);
                 gameManager.OccupyPrimaryRunway(this, "着陸滑走中");
-                var performanceProfile = ResolveRunwayPerformanceProfile();
                 var landingRollRoute = BuildLandingRolloutRouteForProfile(
                     operationDirection,
                     new List<Vector3>(airportManager.GetLandingRollRoute(operationDirection)),
@@ -308,6 +347,7 @@ namespace ATCJourneyJapan.Aircraft
                         + $"rolloutDistance={activeLandingRolloutDistance:0.##} position={FormatVector3(transform.position)}");
                     SetState(AircraftState.VacatingRunway);
                     gameManager.OccupyPrimaryRunway(this, "滑走路離脱中");
+                    SetVisualPitch(0f, true);
                     StartRouteWithHeading(airportManager.GetVacateRunwayRoute(operationDirection), taxiSpeed, () =>
                     {
                         gameManager.ReleasePrimaryRunway(this);
@@ -499,7 +539,9 @@ namespace ATCJourneyJapan.Aircraft
                 + $"profile={activeRunwayPerformanceProfile.ProfileName} RWY {runwayDesignator} "
                 + $"rollDistance={activeTakeoffRollDistance:0.##} "
                 + $"initial={takeoffInitialSpeed:0.##} max={takeoffMaxSpeed:0.##} "
-                + $"accelerationTime={GetActiveTakeoffAccelerationTime():0.##}");
+                + $"accelerationTime={GetActiveTakeoffAccelerationTime():0.##} "
+                + $"rotationPitch={activeRunwayPerformanceProfile.RotationPitchDegrees:0.#} "
+                + $"climbPathAngle={activeRunwayPerformanceProfile.InitialClimbPathAngleDegrees:0.#}");
         }
 
         private void LogLandingSpeedProfile(string runwayDesignator)
@@ -510,7 +552,9 @@ namespace ATCJourneyJapan.Aircraft
                 + $"rolloutDistance={activeLandingRolloutDistance:0.##} "
                 + $"initial={landingInitialSpeed:0.##} rolloutEnd={landingRolloutEndSpeed:0.##} "
                 + $"taxiSpeedRatio={GetActiveTouchdownToTaxiSpeedRatio():0.##} "
-                + $"decelerationTime={GetActiveLandingDecelerationTime():0.##}");
+                + $"decelerationTime={GetActiveLandingDecelerationTime():0.##} "
+                + $"approachAngle={activeRunwayPerformanceProfile.ApproachPathAngleDegrees:0.#} "
+                + $"flarePitch={activeRunwayPerformanceProfile.FlarePitchDegrees:0.#}");
         }
 
         private string GetConnectorSegmentId(TaxiRouteCandidate routeCandidate)
@@ -779,7 +823,10 @@ namespace ATCJourneyJapan.Aircraft
                 Debug.Log(
                     $"Takeoff airborne: {flightNumber} aircraftType={GetAircraftTypeLabel()} "
                     + $"profile={performanceProfile.ProfileName} runway={operationDirection} "
-                    + $"rollDistance={activeTakeoffRollDistance:0.##} position={FormatVector3(transform.position)}");
+                    + $"rollDistance={activeTakeoffRollDistance:0.##} "
+                    + $"pitch={performanceProfile.InitialClimbPitchDegrees:0.#} "
+                    + $"pathAngle={performanceProfile.InitialClimbPathAngleDegrees:0.#} "
+                    + $"position={FormatVector3(transform.position)}");
                 gameManager.ReleasePrimaryRunway(this);
                 SetState(AircraftState.AirborneDeparture, false);
                 SetRunwayTakeoffHeading(operationDirection);
@@ -839,6 +886,33 @@ namespace ATCJourneyJapan.Aircraft
             }
         }
 
+        private void UpdateActiveAttitudeProfile(float deltaTime)
+        {
+            var targetPitch = 0f;
+            switch (currentState)
+            {
+                case AircraftState.FinalApproach:
+                    targetPitch = GetFinalApproachPitchTarget();
+                    break;
+                case AircraftState.LandingRoll:
+                case AircraftState.VacatingRunway:
+                case AircraftState.TaxiToGate:
+                    targetPitch = 0f;
+                    break;
+                case AircraftState.TakeoffRoll:
+                    targetPitch = GetTakeoffPitchTarget();
+                    break;
+                case AircraftState.AirborneDeparture:
+                    targetPitch = activeRunwayPerformanceProfile.InitialClimbPitchDegrees;
+                    break;
+                default:
+                    targetPitch = 0f;
+                    break;
+            }
+
+            SetVisualPitch(targetPitch, false, deltaTime);
+        }
+
         private float InterpolateLandingRolloutSpeed()
         {
             var touchdownToTaxiSpeedRatio = GetActiveTouchdownToTaxiSpeedRatio();
@@ -870,15 +944,51 @@ namespace ATCJourneyJapan.Aircraft
             var aircraftType = GetAircraftTypeLabel().ToUpperInvariant();
             if (aircraftType.Contains("B787") || aircraftType.Contains("787") || aircraftType.Contains("B777") || aircraftType.Contains("777"))
             {
-                return new RunwayPerformanceProfile("heavy", 0.72f, 0.7f, 6.2f, 7.2f, 0.82f, 0.04f);
+                return new RunwayPerformanceProfile("heavy", 0.72f, 0.7f, 6.2f, 7.2f, 0.82f, 0.04f, 8f, 3.5f, 8.5f, -3f, -0.5f, 18f);
             }
 
             if (aircraftType.Contains("A320") || aircraftType.Contains("B737") || aircraftType.Contains("737"))
             {
-                return new RunwayPerformanceProfile("medium", 0.5f, 0.52f, 4.8f, 5.8f, 0.7f, 0.03f);
+                return new RunwayPerformanceProfile("medium", 0.5f, 0.52f, 4.8f, 5.8f, 0.7f, 0.03f, 10f, 4.5f, 10f, -3f, -0.5f, 22f);
             }
 
-            return new RunwayPerformanceProfile("medium-fallback", 0.55f, 0.58f, 5f, 6f, 0.75f, 0.03f);
+            return new RunwayPerformanceProfile("medium-fallback", 0.55f, 0.58f, 5f, 6f, 0.75f, 0.03f, 11f, 5f, 11f, -3f, -0.5f, 24f);
+        }
+
+        private List<Vector3> BuildFinalApproachRouteForProfile(string operationDirection, IReadOnlyList<Vector3> baseRoute, RunwayPerformanceProfile performanceProfile)
+        {
+            if (baseRoute.Count == 0)
+            {
+                return new List<Vector3>();
+            }
+
+            var runway = airportManager != null ? airportManager.PrimaryRunwayGeometry : null;
+            var landingDirection = runway != null ? runway.GetLandingDirection(operationDirection) : GetRunwayLandingDirection(operationDirection);
+            finalApproachStartPosition = baseRoute[0];
+            finalApproachTouchdownPosition = baseRoute[baseRoute.Count - 1];
+            flarePhaseLogged = false;
+
+            var approachRoute = new List<Vector3>();
+            var approachAngleRadians = Mathf.Abs(performanceProfile.ApproachPathAngleDegrees) * Mathf.Deg2Rad;
+            for (var index = 0; index < baseRoute.Count; index++)
+            {
+                var point = baseRoute[index];
+                var remainingDistance = Vector3.Dot(finalApproachTouchdownPosition - point, landingDirection);
+                if (remainingDistance < 0f)
+                {
+                    remainingDistance = Vector3.Distance(point, finalApproachTouchdownPosition);
+                }
+
+                var targetY = finalApproachTouchdownPosition.y + Mathf.Tan(approachAngleRadians) * remainingDistance;
+                if (index >= baseRoute.Count - 2)
+                {
+                    targetY = Mathf.Lerp(targetY, finalApproachTouchdownPosition.y, 0.55f);
+                }
+
+                approachRoute.Add(new Vector3(point.x, targetY, point.z));
+            }
+
+            return approachRoute;
         }
 
         private List<Vector3> BuildTakeoffRouteForProfile(string operationDirection, IEnumerable<Vector3> baseRoutePoints, RunwayPerformanceProfile performanceProfile)
@@ -909,13 +1019,17 @@ namespace ATCJourneyJapan.Aircraft
             var maximumRollDistance = Mathf.Max(minimumRollDistance, availableDistance * (1f - performanceProfile.RunwayOccupancyPadding));
             var targetRollDistance = Mathf.Clamp(runway.Length * performanceProfile.TakeoffRollDistanceRatio, minimumRollDistance, maximumRollDistance);
             activeTakeoffRollDistance = targetRollDistance;
+            takeoffRollStartPosition = runwayStart;
+            rotationPhaseLogged = false;
 
             var rotationPoint = runwayStart + takeoffDirection * targetRollDistance;
             rotationPoint.y = runwayStart.y;
 
-            var airborneDistance = Mathf.Min(targetRollDistance + runway.Length * 0.08f, availableDistance + runway.Length * 0.04f);
+            var climbSegmentDistance = Mathf.Max(runway.Length * 0.18f, 3f);
+            var airborneDistance = Mathf.Min(targetRollDistance + climbSegmentDistance, availableDistance + runway.Length * 0.06f);
+            climbSegmentDistance = Mathf.Max(airborneDistance - targetRollDistance, 0.5f);
             var airbornePoint = runwayStart + takeoffDirection * airborneDistance;
-            airbornePoint.y = 2.4f;
+            airbornePoint.y = runwayStart.y + Mathf.Tan(performanceProfile.InitialClimbPathAngleDegrees * Mathf.Deg2Rad) * climbSegmentDistance;
 
             return new List<Vector3>
             {
@@ -976,6 +1090,99 @@ namespace ATCJourneyJapan.Aircraft
             return activeRunwayPerformanceProfile.TouchdownToTaxiSpeedRatio > 0.01f
                 ? activeRunwayPerformanceProfile.TouchdownToTaxiSpeedRatio
                 : landingDecelerationCompletionProgress;
+        }
+
+        private float GetTakeoffPitchTarget()
+        {
+            if (activeTakeoffRollDistance <= 0.1f)
+            {
+                return 0f;
+            }
+
+            if (transform.position.y > takeoffRollStartPosition.y + 0.15f)
+            {
+                return activeRunwayPerformanceProfile.InitialClimbPitchDegrees;
+            }
+
+            var takeoffDirection = GetRunwayTakeoffDirection(GetOperationRunwayDirection());
+            var traveled = Vector3.Dot(transform.position - takeoffRollStartPosition, takeoffDirection);
+            var progress = Mathf.Clamp01(traveled / activeTakeoffRollDistance);
+            const float rotationStartProgress = 0.74f;
+            if (progress < rotationStartProgress)
+            {
+                return 0f;
+            }
+
+            if (!rotationPhaseLogged)
+            {
+                rotationPhaseLogged = true;
+                Debug.Log(
+                    $"Takeoff rotation start: {flightNumber} aircraftType={GetAircraftTypeLabel()} "
+                    + $"profile={activeRunwayPerformanceProfile.ProfileName} phase=Rotation "
+                    + $"pitch={activeRunwayPerformanceProfile.RotationPitchDegrees:0.#} "
+                    + $"pathAngle={activeRunwayPerformanceProfile.InitialClimbPathAngleDegrees:0.#}");
+            }
+
+            var rotationProgress = Mathf.Clamp01((progress - rotationStartProgress) / (1f - rotationStartProgress));
+            return Mathf.Lerp(0f, activeRunwayPerformanceProfile.RotationPitchDegrees, rotationProgress);
+        }
+
+        private float GetFinalApproachPitchTarget()
+        {
+            var totalDistance = Vector3.Distance(finalApproachStartPosition, finalApproachTouchdownPosition);
+            if (totalDistance <= 0.1f)
+            {
+                return activeRunwayPerformanceProfile.ApproachPathAngleDegrees;
+            }
+
+            var remainingDistance = Vector3.Distance(transform.position, finalApproachTouchdownPosition);
+            var progress = Mathf.Clamp01(1f - remainingDistance / totalDistance);
+            const float flareStartProgress = 0.78f;
+            if (progress < flareStartProgress)
+            {
+                return activeRunwayPerformanceProfile.ApproachPathAngleDegrees;
+            }
+
+            if (!flarePhaseLogged)
+            {
+                flarePhaseLogged = true;
+                Debug.Log(
+                    $"Landing flare start: {flightNumber} aircraftType={GetAircraftTypeLabel()} "
+                    + $"profile={activeRunwayPerformanceProfile.ProfileName} phase=Flare "
+                    + $"pitch={activeRunwayPerformanceProfile.FlarePitchDegrees:0.#} "
+                    + $"pathAngle={activeRunwayPerformanceProfile.ApproachPathAngleDegrees:0.#}");
+            }
+
+            var flareProgress = Mathf.Clamp01((progress - flareStartProgress) / (1f - flareStartProgress));
+            return Mathf.Lerp(activeRunwayPerformanceProfile.ApproachPathAngleDegrees, activeRunwayPerformanceProfile.FlarePitchDegrees, flareProgress);
+        }
+
+        private void SetVisualPitch(float targetPitchDegrees, bool immediate, float deltaTime = 0f)
+        {
+            var smoothingSpeed = activeRunwayPerformanceProfile.PitchSmoothingSpeed > 0.01f
+                ? activeRunwayPerformanceProfile.PitchSmoothingSpeed
+                : 20f;
+            var nextPitch = immediate
+                ? targetPitchDegrees
+                : Mathf.MoveTowards(currentVisualPitchDegrees, targetPitchDegrees, smoothingSpeed * deltaTime);
+            if (Mathf.Abs(nextPitch - currentVisualPitchDegrees) <= 0.001f)
+            {
+                return;
+            }
+
+            currentVisualPitchDegrees = nextPitch;
+            ReapplyCurrentYawWithVisualPitch();
+        }
+
+        private Quaternion ApplyVisualPitch(Quaternion yawRotation)
+        {
+            return yawRotation * Quaternion.Euler(-currentVisualPitchDegrees, 0f, 0f);
+        }
+
+        private void ReapplyCurrentYawWithVisualPitch()
+        {
+            var yawRotation = Quaternion.LookRotation(new Vector3(facingDirection.x, 0f, facingDirection.y), Vector3.up);
+            transform.rotation = ApplyVisualPitch(yawRotation);
         }
 
         private string GetAircraftTypeLabel()
@@ -1144,12 +1351,13 @@ namespace ATCJourneyJapan.Aircraft
 
             var normalized = worldDirection.normalized;
             var targetRotation = Quaternion.LookRotation(normalized, Vector3.up);
-            var angleToTarget = Quaternion.Angle(transform.rotation, targetRotation);
+            var targetRotationWithPitch = ApplyVisualPitch(targetRotation);
+            var angleToTarget = Quaternion.Angle(transform.rotation, targetRotationWithPitch);
             facingDirection = new Vector2(normalized.x, normalized.z);
             headingDegrees = -Mathf.Atan2(facingDirection.x, facingDirection.y) * Mathf.Rad2Deg;
             transform.rotation = smooth
-                ? Quaternion.RotateTowards(transform.rotation, targetRotation, routeHeadingTurnSpeed * deltaTime)
-                : targetRotation;
+                ? Quaternion.RotateTowards(transform.rotation, targetRotationWithPitch, routeHeadingTurnSpeed * deltaTime)
+                : targetRotationWithPitch;
             UpdateTaxiTurnSpeed(angleToTarget);
             SyncFlightData();
         }
