@@ -414,6 +414,30 @@ namespace ATCJourneyJapan.Airport
             };
         }
 
+        public IEnumerable<Vector3> GetVacateRunwayRoute(string operationDirection, string runwayExitUsageId, Vector3 currentPosition)
+        {
+            if (string.IsNullOrEmpty(runwayExitUsageId))
+            {
+                return GetVacateRunwayRoute(operationDirection);
+            }
+
+            var accessPoint = GetAccessPointForUsage(runwayExitUsageId);
+            var connectorSegment = accessPoint != null ? GetTaxiwaySegment(accessPoint.ConnectedSegmentId) : null;
+            if (accessPoint != null && connectorSegment != null && connectorSegment.Waypoints.Count >= 2)
+            {
+                var runwayExitPoint = accessPoint.Position;
+                runwayExitPoint.y = currentPosition.y;
+                return new[]
+                {
+                    runwayExitPoint,
+                    connectorSegment.Waypoints[1],
+                    connectorSegment.Waypoints[0]
+                };
+            }
+
+            return GetVacateRunwayRoute(operationDirection);
+        }
+
         public IEnumerable<Vector3> GetTaxiToAvailableGateRoute()
         {
             var arrivalGateLink = GetTaxiwayRoute("TWY_ARRIVAL_GATE_LINK");

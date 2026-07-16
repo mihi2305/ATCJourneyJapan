@@ -2,6 +2,16 @@
 
 ## Current Phase
 
+Phase 3.9-5U-0C: Arrival Runway Vacate修正
+
+## Phase 3.9-5U-0Cで直したこと
+
+- 到着機がLanding Rollout後に、Spot routeへ斜めに直行せず、`runwayExitUsageId` に対応する取付誘導路を経由して滑走路を離脱するようにした
+- 到着Taxi routeは `TaxiRouteCandidate` の `routeId` / `runwayExitUsageId` / `segmentIds` / `waypoints` を同じcandidate由来で扱い、default routeとの混在を避けるようにした
+- 滑走路解放はRollout完了直後ではなく、Runway Vacateで取付誘導路を抜けた後に行うようにした
+- `VacatingRunway` 中にTaxi to Spotへ切り替えて先に滑走路を解放する挙動を止め、`Waiting` 到達後にTaxi to Spotへ進む流れへ戻した
+- 到着Exit選択UI、高速脱出/通常離脱UI、インシデント本実装、Mission Failed演出は後続Phaseに回す
+
 Phase 3.9-5U-0C: Departure Airborne Exit Flow追加
 
 ## Phase 3.9-5U-0Cで直したこと
