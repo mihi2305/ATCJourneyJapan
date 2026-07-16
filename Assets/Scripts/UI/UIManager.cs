@@ -515,6 +515,15 @@ namespace ATCJourneyJapan.UI
             var candidate = activeRouteSelectionCandidates[index];
             ShowRouteSelectionHighlight(index);
             routeSelectionAircraft.SetSelectedTaxiRoute(routeSelectionPurpose, candidate.RouteId);
+            if (routeSelectionMode == RouteSelectionModeArrivalExit)
+            {
+                Debug.Log(
+                    $"Arrival exit selected: {routeSelectionAircraft.FlightNumber} runway={candidate.RunwayDesignator} "
+                    + $"exitUsage={candidate.RunwayExitUsageId} routeId={candidate.RouteId} "
+                    + $"segments={FormatRouteSegmentIds(candidate)} firstWaypoint={FormatRouteWaypoint(candidate, true)} "
+                    + $"lastWaypoint={FormatRouteWaypoint(candidate, false)}");
+            }
+
             Debug.Log(
                 $"Route selection overlay selected: {routeSelectionAircraft.FlightNumber} {routeSelectionMode} {routeSelectionPurpose} "
                 + $"RWY {candidate.RunwayDesignator} {candidate.SpotId} {GetPlayerRouteName(candidate, index, routeSelectionMode)} "
@@ -569,7 +578,7 @@ namespace ATCJourneyJapan.UI
 
         private void SortRouteSelectionCandidates(List<TaxiRouteCandidate> candidates, string mode)
         {
-            if (mode != RouteSelectionModeDeparture)
+            if (mode != RouteSelectionModeDeparture && mode != RouteSelectionModeArrivalExit)
             {
                 return;
             }
@@ -579,6 +588,12 @@ namespace ATCJourneyJapan.UI
 
         private float GetRouteCandidateRunwayPosition(TaxiRouteCandidate candidate)
         {
+            if (!string.IsNullOrEmpty(candidate.RunwayExitUsageId))
+            {
+                var exitUsage = gameManager != null && gameManager.Airport != null ? gameManager.Airport.GetRunwayAccessUsage(candidate.RunwayExitUsageId) : null;
+                return exitUsage != null ? exitUsage.RunwayPositionRatio : 1f;
+            }
+
             if (HasRouteSegment(candidate, "A_CONNECTOR_MID_01"))
             {
                 return 0.5f;
@@ -705,7 +720,7 @@ namespace ATCJourneyJapan.UI
                 var candidate = activeRouteSelectionCandidates[index];
                 values.Add(
                     $"{GetPlayerRouteName(candidate, index, routeSelectionMode)} "
-                    + $"routeId={candidate.RouteId} entryUsage={candidate.RunwayEntryUsageId} "
+                    + $"routeId={candidate.RouteId} entryUsage={candidate.RunwayEntryUsageId} exitUsage={candidate.RunwayExitUsageId} "
                     + $"access={GetRouteAccessSummary(candidate)} segments={FormatRouteSegmentIds(candidate)} fallback=false");
             }
 
@@ -747,7 +762,7 @@ namespace ATCJourneyJapan.UI
         {
             if (mode == RouteSelectionModeArrivalExit)
             {
-                return IsRapidExitCandidate(candidate) ? "高速脱出" : "通常離脱";
+                return $"Exit {(char)('A' + index)}";
             }
 
             return $"Route {(char)('A' + index)}";
@@ -775,9 +790,9 @@ namespace ATCJourneyJapan.UI
                 case RouteSelectionModeDeparture:
                     return "タクシールートを選択";
                 case RouteSelectionModeArrivalExit:
-                    return "Runway Exit Selection";
+                    return "滑走路離脱誘導路を選択";
                 case RouteSelectionModeArrivalSpotTaxi:
-                    return "Spot Taxi Route";
+                    return "スポット経路を選択";
                 default:
                     return "Route Selection";
             }
@@ -790,7 +805,7 @@ namespace ATCJourneyJapan.UI
                 case RouteSelectionModeDeparture:
                     return "出発前にタクシールートを選択します。Route A/B/Cは表示名で、内部ではrouteIdを保存します。";
                 case RouteSelectionModeArrivalExit:
-                    return "着陸滑走中の離脱方式を選択します。表示文言ではなく、内部ではrunwayExitUsageIdを持つrouteIdを保存します。";
+                    return "着陸後に使う滑走路離脱誘導路を選択します。表示名ではなく、内部ではrunwayExitUsageIdを持つrouteIdを保存します。";
                 case RouteSelectionModeArrivalSpotTaxi:
                     return "滑走路離脱後のスポットまでの候補を選択します。候補が一意の場合、この選択UIは表示しません。";
                 default:
@@ -830,7 +845,8 @@ namespace ATCJourneyJapan.UI
 
         private string GetRunwayExitPositionDescription(TaxiRouteCandidate candidate)
         {
-            return GetAccessPhysicalSideDescription(candidate.RunwayExitUsageId, "離脱誘導路");
+            var typeLabel = IsRapidExitCandidate(candidate) ? "高速脱出誘導路" : "通常取付誘導路";
+            return $"{typeLabel} / {GetAccessPhysicalSideDescription(candidate.RunwayExitUsageId, "離脱")}";
         }
 
         private string GetSpotTaxiRoutePositionDescription(TaxiRouteCandidate candidate)
@@ -1170,7 +1186,7 @@ namespace ATCJourneyJapan.UI
 
         private void UpdateRouteSelectionEntryLabels(string mode)
         {
-            if (mode != RouteSelectionModeDeparture || gameManager == null || gameManager.Airport == null)
+            if ((mode != RouteSelectionModeDeparture && mode != RouteSelectionModeArrivalExit) || gameManager == null || gameManager.Airport == null)
             {
                 ClearRouteSelectionEntryLabels();
                 return;
@@ -1180,12 +1196,13 @@ namespace ATCJourneyJapan.UI
             var labelIndex = 0;
             foreach (var candidate in activeRouteSelectionCandidates)
             {
-                if (string.IsNullOrEmpty(candidate.RunwayEntryUsageId) || usedUsageIds.Contains(candidate.RunwayEntryUsageId))
+                var usageId = mode == RouteSelectionModeArrivalExit ? candidate.RunwayExitUsageId : candidate.RunwayEntryUsageId;
+                if (string.IsNullOrEmpty(usageId) || usedUsageIds.Contains(usageId))
                 {
                     continue;
                 }
 
-                var usage = gameManager.Airport.GetRunwayAccessUsage(candidate.RunwayEntryUsageId);
+                var usage = gameManager.Airport.GetRunwayAccessUsage(usageId);
                 var accessPoint = usage != null ? gameManager.Airport.GetRunwayAccessPoint(usage.AccessPointId) : null;
                 if (usage == null || accessPoint == null)
                 {
@@ -1195,12 +1212,12 @@ namespace ATCJourneyJapan.UI
                 EnsureRouteSelectionEntryLabelCount(labelIndex + 1);
                 var label = routeSelectionEntryLabelTexts[labelIndex++];
                 label.gameObject.SetActive(true);
-                label.text = GetRunwayEntryPositionDescription(candidate);
+                label.text = mode == RouteSelectionModeArrivalExit ? GetRunwayExitPositionDescription(candidate) : GetRunwayEntryPositionDescription(candidate);
                 label.color = new Color(1f, 0.92f, 0.56f, 0.96f);
                 label.transform.SetAsLastSibling();
                 var rectTransform = label.GetComponent<RectTransform>();
                 rectTransform.anchoredPosition = RouteWorldToMap(accessPoint.Position) + new Vector2(0f, -30f);
-                usedUsageIds.Add(candidate.RunwayEntryUsageId);
+                usedUsageIds.Add(usageId);
             }
 
             for (var index = labelIndex; index < routeSelectionEntryLabelTexts.Count; index++)
@@ -1471,7 +1488,8 @@ namespace ATCJourneyJapan.UI
             DrawAirportMapBlock(parent, mapSize, round, $"{prefix} Taxiway Main", new Vector3(2.7f, 0f, -5f), new Vector2(52f, 1.24f), new Color(0.2f, 0.34f, 0.42f, 0.98f));
             DrawAirportMapBlock(parent, mapSize, round, $"{prefix} Taxiway 36R End", new Vector3(-10.8f, 0f, -2.5f), new Vector2(1.7f, 5f), new Color(0.2f, 0.34f, 0.42f, 0.98f));
             DrawAirportMapBlock(parent, mapSize, round, $"{prefix} Taxiway 36R Near", new Vector3(-7f, 0f, -2.5f), new Vector2(1.7f, 5f), new Color(0.2f, 0.34f, 0.42f, 0.98f));
-            DrawAirportMapBlock(parent, mapSize, round, $"{prefix} Taxiway Mid", new Vector3(0f, 0f, -2.5f), new Vector2(1.7f, 5f), new Color(0.2f, 0.34f, 0.42f, 0.98f));
+            DrawAirportMapLineSegment(parent, mapSize, round, $"{prefix} Rapid Exit 36R Side", new Vector3(-2.6f, 0f, 0f), new Vector3(0.2f, 0f, -5f), 1.55f, new Color(0.2f, 0.34f, 0.42f, 0.98f));
+            DrawAirportMapLineSegment(parent, mapSize, round, $"{prefix} Rapid Exit 18L Side", new Vector3(8f, 0f, 0f), new Vector3(5.2f, 0f, -5f), 1.55f, new Color(0.2f, 0.34f, 0.42f, 0.98f));
             DrawAirportMapBlock(parent, mapSize, round, $"{prefix} Taxiway 18L Near", new Vector3(12f, 0f, -2.5f), new Vector2(1.7f, 5f), new Color(0.2f, 0.34f, 0.42f, 0.98f));
             DrawAirportMapBlock(parent, mapSize, round, $"{prefix} Taxiway 18L End", new Vector3(15.2f, 0f, -2.5f), new Vector2(1.7f, 5f), new Color(0.2f, 0.34f, 0.42f, 0.98f));
             DrawAirportMapBlock(parent, mapSize, round, $"{prefix} Hold A 36R", new Vector3(-7f, 0f, -3f), new Vector2(3.2f, 2.4f), new Color(0.92f, 0.72f, 0.16f, 0.72f));
@@ -1490,7 +1508,8 @@ namespace ATCJourneyJapan.UI
             {
                 CreateAirportMapText($"{prefix} Entry 36R End", parent, mapSize, "36R端", 9, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector3(-10.8f, 0f, -6.7f), new Vector2(48f, 14f), Vector2.zero, round);
                 CreateAirportMapText($"{prefix} Entry 36R Near", parent, mapSize, "36R側", 9, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector3(-7f, 0f, -6.7f), new Vector2(48f, 14f), Vector2.zero, round);
-                CreateAirportMapText($"{prefix} Entry Mid", parent, mapSize, "中央", 9, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector3(0f, 0f, -6.7f), new Vector2(48f, 14f), Vector2.zero, round);
+                CreateAirportMapText($"{prefix} Rapid 36R Side", parent, mapSize, "高速", 9, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector3(0.2f, 0f, -6.7f), new Vector2(48f, 14f), Vector2.zero, round);
+                CreateAirportMapText($"{prefix} Rapid 18L Side", parent, mapSize, "高速", 9, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector3(5.2f, 0f, -6.7f), new Vector2(48f, 14f), Vector2.zero, round);
                 CreateAirportMapText($"{prefix} Entry 18L Near", parent, mapSize, "18L側", 9, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector3(12f, 0f, -6.7f), new Vector2(48f, 14f), Vector2.zero, round);
                 CreateAirportMapText($"{prefix} Entry 18L End", parent, mapSize, "18L端", 9, FontStyle.Bold, TextAnchor.MiddleCenter, new Vector3(15.2f, 0f, -6.7f), new Vector2(48f, 14f), Vector2.zero, round);
             }
@@ -1499,6 +1518,17 @@ namespace ATCJourneyJapan.UI
         private Image DrawAirportMapBlock(Transform parent, Vector2 mapSize, bool round, string name, Vector3 worldCenter, Vector2 worldSize, Color color)
         {
             return CreateAirportMapBlock(parent, mapSize, name, worldCenter, worldSize, color, round);
+        }
+
+        private Image DrawAirportMapLineSegment(Transform parent, Vector2 mapSize, bool round, string name, Vector3 worldStart, Vector3 worldEnd, float worldThickness, Color color)
+        {
+            var start = ConvertAirportWorldToMapPoint(worldStart, mapSize, round);
+            var end = ConvertAirportWorldToMapPoint(worldEnd, mapSize, round);
+            var line = CreateMapBlock(name, parent, Vector2.zero, new Vector2(20f, 4f), color);
+            var rectTransform = line.GetComponent<RectTransform>();
+            var thickness = ConvertAirportWorldSizeToMapSize(new Vector2(worldThickness, worldThickness), mapSize, round).y;
+            ApplyRouteSelectionLineSegment(rectTransform, start, end, Mathf.Max(4f, thickness));
+            return line;
         }
 
         private Image CreateAirportMapBlock(Transform parent, Vector2 mapSize, string name, Vector3 worldCenter, Vector2 worldSize, Color color, bool round)
@@ -2318,8 +2348,31 @@ namespace ATCJourneyJapan.UI
                 return;
             }
 
+            if (mode == RouteSelectionModeArrivalSpotTaxi && HasValidSelectedArrivalRoute(selected.FlightData, candidates))
+            {
+                return;
+            }
+
             var label = GetRouteSelectionStripLabel(mode, selected);
             actions.Add(new StripAction(label, () => OpenRouteSelectionOverlay(selected, mode), true));
+        }
+
+        private bool HasValidSelectedArrivalRoute(AircraftData data, IReadOnlyList<TaxiRouteCandidate> candidates)
+        {
+            if (data == null || string.IsNullOrEmpty(data.SelectedArrivalRouteId))
+            {
+                return false;
+            }
+
+            foreach (var candidate in candidates)
+            {
+                if (candidate.RouteId == data.SelectedArrivalRouteId)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void ConfigureStripActions(IReadOnlyList<StripAction> actions)

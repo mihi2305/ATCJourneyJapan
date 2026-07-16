@@ -372,13 +372,15 @@ namespace ATCJourneyJapan.Aircraft
                     LogRunwayVacateStarted(routeCandidate, vacateRoute);
                     StartRouteWithHeading(vacateRoute, taxiSpeed, () =>
                     {
+                        var rapidExit = IsActiveRunwayExitRapid();
                         Debug.Log(
-                            $"Connector entered: {flightNumber} runway={operationDirection} "
+                            $"{(rapidExit ? "Rapid exit entered" : "Connector entered")}: {flightNumber} runway={operationDirection} "
                             + $"routeId={FormatUsageId(activeArrivalRouteId)} exitUsage={FormatUsageId(activeRunwayExitUsageId)} "
                             + $"position={FormatVector3(transform.position)}");
+                        var vacateReason = rapidExit ? "VacatedViaRapidExit" : "VacatedViaConnector";
                         gameManager.ReleasePrimaryRunway(this);
                         Debug.Log(
-                            $"Runway released: A RWY by {flightNumber} reason=VacatedViaConnector "
+                            $"Runway released: A RWY by {flightNumber} reason={vacateReason} "
                             + $"exitUsage={FormatUsageId(activeRunwayExitUsageId)} position={FormatVector3(transform.position)}");
                         SetState(AircraftState.Waiting);
                     });
@@ -655,6 +657,19 @@ namespace ATCJourneyJapan.Aircraft
         private string FormatUsageId(string usageId)
         {
             return string.IsNullOrEmpty(usageId) ? "none" : usageId;
+        }
+
+        private bool IsActiveRunwayExitRapid()
+        {
+            var usage = airportManager != null ? airportManager.GetRunwayAccessUsage(activeRunwayExitUsageId) : null;
+            if (usage == null)
+            {
+                return false;
+            }
+
+            return usage.AccessType == RunwayAccessType.RapidExit
+                || usage.MaxExitSpeedLevel == RunwayExitSpeedLevel.Medium
+                || usage.MaxExitSpeedLevel == RunwayExitSpeedLevel.High;
         }
 
         private TaxiRouteCandidate SelectRouteCandidate(IReadOnlyList<TaxiRouteCandidate> routeCandidates, string selectedRouteId)

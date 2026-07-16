@@ -2,6 +2,17 @@
 
 ## Current Phase
 
+Phase 3.9-5U-0E: Arrival Rapid Exit Selection土台
+
+## Phase 3.9-5U-0Eで直したこと
+
+- A滑走路にゲーム用の斜め高速脱出誘導路 `A_RAPID_EXIT_18L_SIDE_01` / `A_RAPID_EXIT_36R_SIDE_01` を追加した
+- Rapid Exit用の `RunwayAccessPoint` / `RunwayAccessUsage` / 到着 `TaxiRouteCandidate` を追加し、18L/36R着陸方向に対して前方Exit候補として扱うようにした
+- 到着Taxi candidateのwaypointsに滑走路側Exit pointから平行誘導路・Spotまでを含め、Map表示と実際のRunway Vacate / Taxi-to-Spotが同じcandidate由来になるようにした
+- 到着機のLanding Roll中に既存Route selection overlayで `Exit A/B` を選べる土台を整え、選択中Exit routeをMap上でハイライトできるようにした
+- 中央付近の中途半端な直交取付誘導路は通常arrival候補から外し、Rapid Exit候補を優先して使う構造にした
+- インシデント検知、Mission Failed、事故演出、高速脱出/通常離脱の本格判定は後続Phaseに回す
+
 Phase 3.9-5U-0D: Departure Exit完了判定修正
 
 ## Phase 3.9-5U-0Dで直したこと
