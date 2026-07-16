@@ -69,6 +69,7 @@ namespace ATCJourneyJapan.Aircraft
         private Vector3 finalApproachTouchdownPosition;
         private bool rotationPhaseLogged;
         private bool flarePhaseLogged;
+        private bool departureCompleted;
 
         // Provisional game-tuned runway performance values. These are not real aircraft performance data.
         private struct RunwayPerformanceProfile
@@ -130,7 +131,7 @@ namespace ATCJourneyJapan.Aircraft
         public AircraftState CurrentState => currentState;
         public float HeadingDegrees => headingDegrees;
         public Vector2 FacingDirection => facingDirection;
-        public bool IsComplete => arrivalAircraft ? currentState == AircraftState.AtGate : currentState == AircraftState.AirborneDeparture;
+        public bool IsComplete => arrivalAircraft ? currentState == AircraftState.AtGate : departureCompleted;
         public bool IsOnRunway => currentState == AircraftState.FinalApproach
                                   || currentState == AircraftState.LandingRoll
                                   || currentState == AircraftState.LiningUp
@@ -175,6 +176,7 @@ namespace ATCJourneyJapan.Aircraft
             activeRunwayEntryUsageId = string.Empty;
             activeArrivalRouteId = string.Empty;
             activeRunwayExitUsageId = string.Empty;
+            departureCompleted = false;
             airportManager = airport;
             gameManager = manager;
             normalMaterial = normal;
@@ -961,20 +963,33 @@ namespace ATCJourneyJapan.Aircraft
                     + $"pitch={performanceProfile.InitialClimbPitchDegrees:0.#} "
                     + $"pathAngle={performanceProfile.InitialClimbPathAngleDegrees:0.#} "
                     + $"position={FormatVector3(transform.position)}");
-                gameManager.ReleasePrimaryRunway(this);
                 SetState(AircraftState.AirborneDeparture, false);
                 SetRunwayTakeoffHeading(operationDirection);
                 var airborneExitRoute = BuildDepartureAirborneExitRoute(operationDirection, performanceProfile);
+                var departureExitPoint = airborneExitRoute.Count > 1 ? airborneExitRoute[1] : airborneExitRoute[airborneExitRoute.Count - 1];
+                var departureCompletePoint = airborneExitRoute[airborneExitRoute.Count - 1];
                 Debug.Log(
-                    $"Departure airborne exit: {flightNumber} runway={operationDirection} "
-                    + $"exitPoint={FormatVector3(airborneExitRoute[airborneExitRoute.Count - 1])} "
-                    + $"altitude={airborneExitRoute[airborneExitRoute.Count - 1].y:0.##}");
-                StartRouteWithHeading(airborneExitRoute, airborneSpeed, () =>
+                    $"Departure airborne exit started: {flightNumber} runway={operationDirection} "
+                    + $"exitPoint={FormatVector3(departureExitPoint)} completePoint={FormatVector3(departureCompletePoint)} "
+                    + $"altitude={departureCompletePoint.y:0.##}");
+                var runwayClearRoute = new List<Vector3> { airborneExitRoute[0] };
+                StartRouteWithHeading(runwayClearRoute, airborneSpeed, () =>
                 {
-                    Debug.Log(
-                        $"Departure completed: {flightNumber} runway={operationDirection} "
-                        + $"reason=ReachedDepartureExit position={FormatVector3(transform.position)}");
-                    gameManager.NotifyAircraftHandled(this);
+                    gameManager.ReleasePrimaryRunway(this, "AirbornePastRunwayEnd");
+                    var departureExitRoute = new List<Vector3>();
+                    for (var i = 1; i < airborneExitRoute.Count; i++)
+                    {
+                        departureExitRoute.Add(airborneExitRoute[i]);
+                    }
+
+                    StartRouteWithHeading(departureExitRoute, airborneSpeed, () =>
+                    {
+                        departureCompleted = true;
+                        Debug.Log(
+                            $"Departure completed: {flightNumber} runway={operationDirection} "
+                            + $"reason=ReachedDepartureExit position={FormatVector3(transform.position)}");
+                        gameManager.NotifyAircraftHandled(this);
+                    }, false);
                 }, false);
             }, false);
         }
@@ -1241,11 +1256,15 @@ namespace ATCJourneyJapan.Aircraft
             initialClimbPoint.y = startPoint.y + Mathf.Tan(climbAngleRadians) * initialClimbDistance;
             var departureExitPoint = startPoint + takeoffDirection * exitDistance;
             departureExitPoint.y = startPoint.y + Mathf.Tan(climbAngleRadians) * exitDistance;
+            var completeDistance = Mathf.Max(runwayLength * 1.55f, 46f);
+            var departureCompletePoint = startPoint + takeoffDirection * completeDistance;
+            departureCompletePoint.y = startPoint.y + Mathf.Tan(climbAngleRadians) * completeDistance;
 
             return new List<Vector3>
             {
                 initialClimbPoint,
-                departureExitPoint
+                departureExitPoint,
+                departureCompletePoint
             };
         }
 

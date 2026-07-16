@@ -2,6 +2,16 @@
 
 ## Current Phase
 
+Phase 3.9-5U-0D: Departure Exit完了判定修正
+
+## Phase 3.9-5U-0Dで直したこと
+
+- 出発機のLiftoff後を `Initial Climb -> Departure Exit -> Complete point` のrouteに分け、滑走路端や画面内で停止・滞留しないようにした
+- `AirborneDeparture` 状態になっただけでは出発完了扱いにせず、Departure Exit到達後に `NotifyAircraftHandled` するようにした
+- 滑走路解放と出発完了を分離し、Initial Climb point到達時に `AirbornePastRunwayEnd` として滑走路を解放し、Departure Exit到達後に処理完了へ進める
+- 訓練完了ログを追加し、全到着機のSpot到着と全出発機のDeparture Exit到達が揃ってからStage Clearへ進む構造を確認しやすくした
+- 広域空域、本格Departure Route、インシデント本実装、Mission Failed演出はPhase 6以降に回す
+
 Phase 3.9-5U-0C: Arrival Runway Vacate修正
 
 ## Phase 3.9-5U-0Cで直したこと

@@ -109,6 +109,7 @@ namespace ATCJourneyJapan.Core
             if (!stageClear && aircraft.Count > 0 && handledAircraft.Count >= aircraft.Count)
             {
                 stageClear = true;
+                LogTrainingCompleted();
                 uiManager.ShowStageClear();
             }
         }
@@ -127,6 +128,30 @@ namespace ATCJourneyJapan.Core
             {
                 scoreManager.SetHandledAircraftCount(handledAircraft.Count);
             }
+        }
+
+        private void LogTrainingCompleted()
+        {
+            var arrivalsComplete = 0;
+            var departuresComplete = 0;
+            foreach (var controller in handledAircraft)
+            {
+                if (controller == null)
+                {
+                    continue;
+                }
+
+                if (controller.IsArrivalAircraft)
+                {
+                    arrivalsComplete++;
+                }
+                else
+                {
+                    departuresComplete++;
+                }
+            }
+
+            Debug.Log($"Training completed: arrivalsComplete={arrivalsComplete} departuresComplete={departuresComplete}");
         }
 
         public void StartTraining()
@@ -207,8 +232,15 @@ namespace ATCJourneyJapan.Core
 
         public void ReleasePrimaryRunway(AircraftController controller)
         {
+            ReleasePrimaryRunway(controller, string.Empty);
+        }
+
+        public void ReleasePrimaryRunway(AircraftController controller, string releaseReason)
+        {
             var runway = GetPrimaryRunwayController();
-            var reason = runway != null ? runway.OccupiedReason : string.Empty;
+            var reason = !string.IsNullOrEmpty(releaseReason)
+                ? releaseReason
+                : (runway != null ? runway.OccupiedReason : string.Empty);
             var wasOccupiedByController = runway != null && runway.IsOccupiedBy(controller);
             runway?.Release(controller);
             if (wasOccupiedByController && controller != null)
