@@ -2,6 +2,19 @@
 
 ## Current Phase
 
+Phase 3.9-5U-0E-2: Rapid Exit表示統一と到着予定Exit選択
+
+## Phase 3.9-5U-0E-2で直したこと
+
+- A滑走路の高速脱出誘導路 `A_RAPID_EXIT_18L_SIDE_01` / `A_RAPID_EXIT_36R_SIDE_01` のwaypointを空港本体表示と一致する向きへ揃えた
+- 右上ミニマップ / Airport Map Overlay / Route highlightは、Rapid Exitの手描き座標ではなく `TaxiwaySegment` のwaypointsを参照して同じ向きで描画するようにした
+- 到着機はRWY選択後、着陸許可前のInbound、Final中、Landing Roll中に「予定Exit」を選択できるようにした
+- 選択した到着Exit routeは `SelectedArrivalRouteId -> runwayExitUsageId -> activeRunwayExitUsageId` として機体ごとに保持し、Landing Rollout後のRunway Vacate / Taxi-to-Spotでも同じcandidate由来のwaypoints / segmentIdsを使う
+- 中央付近の暫定直交connectorは通常の到着Exit候補UIから外し、Rapid Exit / 前方Exit候補を優先して表示する
+- 実務寄りには滑走路離脱指示は着陸後が自然だが、現状のゲームスケールでは接地後の選択時間が短いため、当面は着陸前/Final中の「予定Exit選択」として扱う
+- TODO: `Phase 3.9-5U-0F: Runway scale and timing normalization` で、滑走路スケール、離着陸時間、Exit選択タイミングの整合を独立して調整する
+- インシデント検知、Mission Failed、事故演出、高速脱出/通常離脱の本格判定は後続Phaseに回す
+
 Phase 3.9-5U-0E: Arrival Rapid Exit Selection土台
 
 ## Phase 3.9-5U-0Eで直したこと

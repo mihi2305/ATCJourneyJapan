@@ -804,8 +804,8 @@ namespace ATCJourneyJapan.Airport
                 TaxiwayAxisType.Diagonal,
                 "RWY 36R着陸後に前方18L側へ抜けるゲーム用の暫定高速脱出誘導路",
                 true,
-                new Vector3(5.2f, 0.6f, -5f),
-                new Vector3(8f, 0.6f, 0f));
+                new Vector3(8f, 0.6f, -5f),
+                new Vector3(5.2f, 0.6f, 0f));
             AddTaxiwaySegment(
                 "A_RAPID_EXIT_36R_SIDE_01",
                 "Rapid Exit 36R Side",
@@ -814,8 +814,8 @@ namespace ATCJourneyJapan.Airport
                 TaxiwayAxisType.Diagonal,
                 "RWY 18L着陸後に前方36R側へ抜けるゲーム用の暫定高速脱出誘導路",
                 true,
-                new Vector3(0.2f, 0.6f, -5f),
-                new Vector3(-2.6f, 0.6f, 0f));
+                new Vector3(-2.6f, 0.6f, -5f),
+                new Vector3(0.2f, 0.6f, 0f));
             AddTaxiwaySegment(
                 "A_CONNECTOR_36R_01",
                 "TWY A9",
@@ -957,7 +957,7 @@ namespace ATCJourneyJapan.Airport
                 "Provisional A runway rapid exit toward 18L side",
                 RunwayAccessPhysicalSide.Near18L,
                 "A_RAPID_EXIT_18L_SIDE_01",
-                GetRunwaySideConnectorPoint("A_RAPID_EXIT_18L_SIDE_01", new Vector3(8f, 0.6f, 0f)),
+                GetRunwaySideConnectorPoint("A_RAPID_EXIT_18L_SIDE_01", new Vector3(5.2f, 0.6f, 0f)),
                 "RWY 36R着陸後に前方18L側で使うゲーム用高速脱出誘導路。displayNameではなくaccessPointIdをロジックキーにする",
                 true);
             AddRunwayAccessPoint(
@@ -966,7 +966,7 @@ namespace ATCJourneyJapan.Airport
                 "Provisional A runway rapid exit toward 36R side",
                 RunwayAccessPhysicalSide.Near36R,
                 "A_RAPID_EXIT_36R_SIDE_01",
-                GetRunwaySideConnectorPoint("A_RAPID_EXIT_36R_SIDE_01", new Vector3(-2.6f, 0.6f, 0f)),
+                GetRunwaySideConnectorPoint("A_RAPID_EXIT_36R_SIDE_01", new Vector3(0.2f, 0.6f, 0f)),
                 "RWY 18L着陸後に前方36R側で使うゲーム用高速脱出誘導路。displayNameではなくaccessPointIdをロジックキーにする",
                 true);
             AddRunwayAccessPoint(
